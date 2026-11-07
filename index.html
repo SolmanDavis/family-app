@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Family App">
 <meta name="theme-color" content="#2FA4C7">
-<link rel="apple-touch-icon" href="icon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
 <title>Family App</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -919,7 +919,11 @@ function charSVG(id, opt = {}) {
   if (c.baggy) legs = `<path d="M37,124 L59,124 L58,170 L39,170 Z" fill="${legFill}"/><path d="M61,124 L83,124 L81,170 L62,170 Z" fill="${legFill}"/><path d="M59,128 L61,128 L61,150" stroke="${c.legsDark}" stroke-width="1.2" fill="none"/><path d="M42,140 q4,6 2,14 M76,140 q-4,6 -2,14" stroke="${c.legsDark}" stroke-width="1.2" fill="none"/>`;
   else legs = `<rect x="40" y="${c.crop ? 116 : 124}" width="19" height="${c.crop ? 60 : 52}" rx="4" fill="${legFill}"/><rect x="61" y="${c.crop ? 116 : 124}" width="19" height="${c.crop ? 60 : 52}" rx="4" fill="${legFill}"/>${c.legsDark ? `<path d="M44,${c.crop ? 120 : 128} L44,172 M76,${c.crop ? 120 : 128} L76,172" stroke="${c.legsDark}" stroke-width="1" opacity=".6"/>` : ''}`;
   let shoes = '';
-  if (c.shoes === 'ugg') shoes = `<rect x="38" y="160" width="22" height="24" rx="5" fill="#5A3A22"/><rect x="60" y="160" width="22" height="24" rx="5" fill="#5A3A22"/><rect x="37" y="158" width="24" height="7" rx="3.5" fill="#E8D8C0"/><rect x="59" y="158" width="24" height="7" rx="3.5" fill="#E8D8C0"/><ellipse cx="46" cy="184" rx="11" ry="3.5" fill="#4A2E1A"/><ellipse cx="74" cy="184" rx="11" ry="3.5" fill="#4A2E1A"/>`;
+  if (c.shoes === 'ugg') {
+    const boots = `<rect x="38" y="160" width="22" height="24" rx="5" fill="#5A3A22"/><rect x="60" y="160" width="22" height="24" rx="5" fill="#5A3A22"/><ellipse cx="46" cy="184" rx="11" ry="3.5" fill="#4A2E1A"/><ellipse cx="74" cy="184" rx="11" ry="3.5" fill="#4A2E1A"/>`;
+    const over = `<path d="M37,124 L59,124 L60,172 Q55,177 49,174 Q43,177 36,172 Z" fill="${legFill}"/><path d="M61,124 L83,124 L84,172 Q77,177 71,174 Q65,177 60,172 Z" fill="${legFill}"/><path d="M59,128 L61,128 L61,150" stroke="${c.legsDark}" stroke-width="1.2" fill="none"/><path d="M42,140 q4,6 2,14 M76,140 q-4,6 -2,14 M40,164 q8,3 17,0 M63,164 q8,3 18,0" stroke="${c.legsDark}" stroke-width="1.2" fill="none"/>`;
+    legs = boots + over;
+  }
   else { const sf = c.shoes === 'leo' ? `url(#${p}leo)` : c.shoes; shoes = `<path d="M37,176 Q37,170 46,170 L58,170 L59,184 L36,184 Z" fill="${sf}"/><path d="M61,170 L74,170 Q83,170 83,176 L84,184 L61,184 Z" fill="${sf}"/><rect x="35" y="182" width="25" height="4" rx="2" fill="${c.sole}"/><rect x="60" y="182" width="25" height="4" rx="2" fill="${c.sole}"/>${c.shoes === '#FFFFFF' ? '<path d="M44,174 l8,0 M66,174 l8,0" stroke="#C9CED2" stroke-width="1"/>' : ''}`; }
   // torso
   const torsoBottom = c.crop ? 112 : 128;
@@ -1058,7 +1062,7 @@ function eventRow(e, d) {
 }
 
 /* ===== Views ===== */
-const TITLES = { family:'The family', chat:'Family chat', votes:'Family votes', home:'', chores:'Chores', pet:'', calendar:'Calendar', more:'More', feel:'How am I feeling?', calm:'Calm down', collection:'My collection', rewards:'Rewards shop', badges:'Badges', lists:'Lists', list:'List', contacts:'Contacts', sunny:'Sunny', diary:'My diary', homework:'Homework', notices:'Noticeboard', meals:'Meals', challenges:'Sister challenges', todo:'Our to-do list', summary:'Weekly summary', settings:'Settings', kid:'' };
+const TITLES = { tasks:'Tasks', family:'The family', chat:'Family chat', votes:'Family votes', home:'', chores:'Chores', pet:'', calendar:'Calendar', more:'More', feel:'How am I feeling?', calm:'Calm down', collection:'My collection', rewards:'Rewards shop', badges:'Badges', lists:'Lists', list:'List', contacts:'Contacts', sunny:'Sunny', diary:'My diary', homework:'Homework', notices:'Noticeboard', meals:'Meals', challenges:'Sister challenges', todo:'Our to-do list', summary:'Weekly summary', settings:'Settings', kid:'' };
 const V = {};
 
 V.home = () => isKid() ? kidHome() : parentHome();
@@ -1109,7 +1113,9 @@ const calmEntry = (mid, d) => K('calmday').find(c => c.data.member === mid && c.
 function calmYesDays(mid) { return [...new Set(K('calmday').filter(c => c.data.member === mid && c.data.status === 'approved' && c.data.answer).map(c => c.data.date))].sort(); }
 function calmStreak(mid) { const set = new Set(calmYesDays(mid)); let d = set.has(today()) ? today() : addDays(today(), -1), n = 0; while (set.has(d)) { n++; d = addDays(d, -1); } return n; }
 function calmBest(mid) { let best = 0, run = 0, prev = null; for (const d of calmYesDays(mid)) { run = prev && daysBetween(prev, d) === 1 ? run + 1 : 1; best = Math.max(best, run); prev = d; } return best; }
-function calmQuestionDay() { const h = new Date().getHours(); if (h >= 20 && !calmEntry(me.id, today())) return today(); if (h < 12 && !calmEntry(me.id, addDays(today(), -1))) return addDays(today(), -1); return null; }
+const askAt = m => design(m) === 'fern' ? 20 * 60 : 20 * 60 + 30;
+const askLabel = m => design(m) === 'fern' ? '8pm' : '8:30pm';
+function calmQuestionDay() { const n = new Date(), h = n.getHours(); if (h * 60 + n.getMinutes() >= askAt(me) && !calmEntry(me.id, today())) return today(); if (h < 12 && !calmEntry(me.id, addDays(today(), -1))) return addDays(today(), -1); return null; }
 function calmAskHtml(d) { return `<p style="font-weight:700;margin:6px 0 10px">${chk(me).q(d === today() ? 'today' : 'yesterday')}</p><div class="grid2"><button class="btn" style="background:linear-gradient(180deg,#2BB673,#1F9D63)" data-act="calmAnswer" data-x="1" data-d="${d}">😊 Yes, I did!</button><button class="btn sec" data-act="calmAnswer" data-x="0" data-d="${d}">😕 Not today</button></div><p class="muted mt" style="margin-bottom:0">Be honest. Mum or Dad will check, and tomorrow is a fresh start either way.</p>`; }
 function calmStreakCard(mid) {
   const c = calmStreak(mid), b = calmBest(mid), kid = isKid(), qd = kid ? calmQuestionDay() : null, pend = K('calmday').find(x => x.data.member === mid && x.data.status === 'pending');
@@ -1117,7 +1123,7 @@ function calmStreakCard(mid) {
   let h = `<div class="card" style="background:linear-gradient(160deg,${k.bg},#FFFFFF)">${secH(design(member(mid)) === 'fern' ? 'record_voice_over' : 'sentiment_satisfied', design(member(mid)) === 'fern' ? 'purple' : 'teal', kid ? 'My ' + k.title : esc(nameOf(mid)) + "'s " + k.title)}<div class="row"><div class="grow"><div class="stat" style="color:${k.col}">${k.icon} ${c} <span style="font-size:16px">${c === 1 ? 'day' : 'days'}</span></div><div class="muted">Best ever: <b>${b} ${b === 1 ? 'day' : 'days'}</b>${b > 0 && c >= b ? ' · New record! 🏆' : ''}</div></div></div>`;
   if (qd) h += calmAskHtml(qd);
   else if (pend) h += `<div class="streak-warn" style="background:#E6F6F4;color:#0F766E">${pend.data.answer ? k.yesK : 'You said it was a tough day'}. Waiting for Mum or Dad to check.</div>`;
-  else if (kid && !calmEntry(me.id, today())) h += `<div class="muted mt">At 8pm I'll ask how today went.</div>`;
+  else if (kid && !calmEntry(me.id, today())) h += `<div class="muted mt">At ${askLabel(me)} I'll ask how today went.</div>`;
   return h + `</div>`;
 }
 function helloCard() {
@@ -1140,19 +1146,21 @@ function latestNotice() {
   return n ? `<div class="card tap" data-act="go" data-v="notices">${secH('push_pin', 'red', 'Noticeboard', ic('chevron_right', 'chev'))}<p>${esc(n.data.text)}</p><div class="row muted">${initialAvatar(n.owner, 22)} ${esc(nameOf(n.owner))}</div></div>` : '';
 }
 
-function parentHome() {
-  let h = familyCard() + weatherCard() + countdownRow() + chatCard() + votesCard();
+function waitingItems() {
   const pi = K('ipad').filter(s => s.data.status === 'pending'), pe = K('event').filter(e => e.data.status === 'pending'), pm = K('meal').filter(m => m.data.status === 'pending'), pc = K('challenge').filter(c => c.data.claimed && !c.data.done), pr = K('redeem').filter(r => r.data.status === 'pending'), pcd = K('calmday').filter(c => c.data.status === 'pending');
-  if (pi.length + pe.length + pm.length + pc.length + pr.length + pcd.length) {
-    h += `<div class="card">${secH('notifications_active', 'amber', 'Waiting for you', `<span class="pill warn">${pi.length + pe.length + pm.length + pc.length + pr.length + pcd.length}</span>`)}<ul class="list">`;
+  let h = '';
     pcd.forEach(c => h += `<li>${initialAvatar(c.data.member, 34)}<div class="grow">${c.data.answer ? `<b>${esc(nameOf(c.data.member))}</b> says she <b>${chk(member(c.data.member)).yesP}</b> ${c.data.date === today() ? 'today' : 'yesterday'} 😊` : `<b>${esc(nameOf(c.data.member))}</b> says ${c.data.date === today() ? 'today' : 'yesterday'} was a tough day`}<div class="muted">${chk(member(c.data.member)).icon} Streak: ${calmStreak(c.data.member)} · best ${calmBest(c.data.member)}</div></div>${c.data.answer ? `<button class="btn ok small" data-act="approveCalm" data-id="${c.id}">Agree</button><button class="btn danger small" data-act="rejectCalm" data-id="${c.id}">Not quite</button>` : `<button class="btn sec small" data-act="rejectCalm" data-id="${c.id}">OK</button>`}</li>`);
     pi.forEach(s => h += `<li>${initialAvatar(s.data.member, 34)}<div class="grow"><b>${esc(nameOf(s.data.member))}</b> wants ${s.data.minutes} min of iPad time<div class="muted">${balance(s.data.member)} points banked</div></div><button class="btn ok small" data-act="approveIpad" data-id="${s.id}">Yes</button><button class="btn danger small" data-act="declineIpad" data-id="${s.id}">No</button></li>`);
     pr.forEach(r => h += `<li>${initialAvatar(r.data.member, 34)}<div class="grow"><b>${esc(nameOf(r.data.member))}</b> wants ${esc(r.data.name)}<div class="muted">${r.data.cost} points</div></div><button class="btn ok small" data-act="approveRedeem" data-id="${r.id}">Yes</button><button class="btn danger small" data-act="declineRedeem" data-id="${r.id}">No</button></li>`);
     pe.forEach(e => h += `<li>${initialAvatar(e.owner, 34)}<div class="grow"><b>${esc(nameOf(e.owner))}</b> added "${esc(e.data.title)}"<div class="muted">${dayLabel(e.data.date)}${e.data.time ? ' at ' + esc(e.data.time) : ''}</div></div><button class="btn ok small" data-act="approveEvent" data-id="${e.id}">Yes</button><button class="btn danger small" data-act="declineEvent" data-id="${e.id}">No</button></li>`);
     pm.forEach(m => h += `<li>${initialAvatar(m.owner, 34)}<div class="grow"><b>${esc(nameOf(m.owner))}</b> suggests ${esc(recipeName(m.data.recipe))}<div class="muted">${dayLabel(m.data.date)}</div></div><button class="btn ok small" data-act="approveMeal" data-id="${m.id}">Yes</button><button class="btn danger small" data-act="delMeal" data-id="${m.id}">No</button></li>`);
     pc.forEach(c => h += `<li><span class="chip c-green">${ic('handshake', 'fill')}</span><div class="grow">The girls say they did <b>${esc(c.data.text)}</b></div><button class="btn ok small" data-act="doneChallenge" data-id="${c.id}">Confirm</button></li>`);
-    h += `</ul></div>`;
-  }
+  return { n: pi.length + pe.length + pm.length + pc.length + pr.length + pcd.length, html: h };
+}
+function parentHome() {
+  let h = familyCard() + weatherCard() + countdownRow() + chatCard() + votesCard();
+  const w = waitingItems();
+  if (w.n) h += `<div class="card tap" data-act="go" data-v="tasks">${secH('notifications_active', 'amber', 'Waiting for you', `<span class="pill warn">${w.n}</span>${ic('chevron_right', 'chev')}`)}<div class="muted">Tap to see and approve them in Tasks.</div></div>`;
   h += streakCard();
   kids().forEach(k => {
     const run = runningSession(k.id), cd = choresDoneToday(k.id), pct = cd.total ? Math.round(cd.done / cd.total * 100) : 0;
@@ -1514,7 +1522,7 @@ V.more = () => {
   }
   const pr = K('redeem').filter(r => r.data.status === 'pending').length;
   return `<div class="group-label">Rewards</div><div class="group">${row('rewards', 'redeem', 'purple', 'Rewards shop', pr ? `<span class="pill warn">${pr} waiting</span>` : 'Things the girls can spend points on')}${row('badges', 'military_tech', 'amber', 'Badges')}${row('challenges', 'handshake', 'green', 'Sister challenges')}</div>
-    <div class="group-label">Family</div><div class="group">${row('votes', 'how_to_vote', 'pink', 'Family votes', openVotesForMe() ? `<span class="pill warn">${openVotesForMe()} to vote on</span>` : 'Decide together')}${row('sunny', 'pets', 'amber', 'Sunny')}${row('lists', 'checklist', 'teal', 'Lists', 'Packing, gifts and more')}${row('todo', 'task', 'blue', 'Our to-do list')}${row('notices', 'push_pin', 'red', 'Noticeboard')}${row('contacts', 'contacts', 'blue', 'Contacts')}</div>
+    <div class="group-label">Family</div><div class="group">${row('votes', 'how_to_vote', 'pink', 'Family votes', openVotesForMe() ? `<span class="pill warn">${openVotesForMe()} to vote on</span>` : 'Decide together')}${row('sunny', 'pets', 'amber', 'Sunny')}${row('meals', 'restaurant', 'orange', 'Meals')}${row('lists', 'checklist', 'teal', 'Lists', 'Packing, gifts and more')}${row('todo', 'task', 'blue', 'Our to-do list')}${row('notices', 'push_pin', 'red', 'Noticeboard')}${row('contacts', 'contacts', 'blue', 'Contacts')}</div>
     <div class="group-label">Insights</div><div class="group">${row('summary', 'insights', 'pink', 'Weekly summary')}</div>
     <div class="group-label">App</div><div class="group">${row('settings', 'settings', 'slate', 'Settings')}</div>`;
 };
@@ -1633,6 +1641,13 @@ V.notices = () => {
   return `<div class="card"><form data-form="addNotice"><label>New message</label><textarea name="text" required style="min-height:70px"></textarea><button class="btn mt">Post</button></form></div>${n.map(x => `<div class="card"><div class="row"><span class="dot" style="background:${colorOf(x.owner)}"></span><b class="grow">${esc(nameOf(x.owner))}</b><span class="muted">${dayLabel(x.created_at.slice(0, 10))}</span>${x.owner === me.id || !isKid() ? `<button class="btn sec small" data-act="delItem" data-id="${x.id}" aria-label="Delete">${ic('close')}</button>` : ''}</div><p style="white-space:pre-wrap;margin-top:8px">${esc(x.data.text)}</p></div>`).join('')}`;
 };
 
+V.tasks = () => {
+  const w = waitingItems();
+  let h = `<div class="card">${secH('notifications_active', 'amber', 'Needs approving', w.n ? `<span class="pill warn">${w.n}</span>` : '')}${w.n ? `<ul class="list">${w.html}</ul>` : '<p class="muted" style="margin:0">Nothing waiting. All caught up! 🎉</p>'}</div>`;
+  const t = K('todo').filter(x => !x.data.done);
+  h += `<div class="card">${secH('checklist', 'teal', 'Our to-do list', t.length ? `<span class="pill">${t.length}</span>` : '')}<form data-form="addTodo" class="row" style="margin-bottom:8px"><input name="text" required placeholder="Add a job for Chris or Kerry"><button class="btn">Add</button></form>${t.length ? `<ul class="list">${t.map(x => `<li><span class="check" data-act="toggleTodo" data-id="${x.id}"></span><div class="grow">${esc(x.data.text)}</div></li>`).join('')}</ul>` : '<p class="muted" style="margin:0">No jobs on the list.</p>'}<button class="btn sec small mt" data-act="go" data-v="todo">See done jobs</button></div>`;
+  return h;
+};
 V.todo = () => {
   const t = K('todo').sort((a, b) => a.data.done - b.data.done);
   return `<div class="card"><form data-form="addTodo" class="row"><input name="text" required placeholder="Add a job"><button class="btn">Add</button></form></div><div class="card"><ul class="list">${t.map(x => `<li><span class="check ${x.data.done ? 'on' : ''}" data-act="toggleTodo" data-id="${x.id}">${x.data.done ? '✓' : ''}</span><div class="grow" style="${x.data.done ? 'text-decoration:line-through;color:var(--muted)' : ''}">${esc(x.data.text)}</div><button class="btn sec small" data-act="delItem" data-id="${x.id}" aria-label="Delete">${ic('close')}</button></li>`).join('') || '<li class="muted">All clear!</li>'}</ul></div>`;
@@ -1732,7 +1747,7 @@ V.settings = () => {
 
 /* ===== Layout ===== */
 function header() {
-  const main = ['home','chores','pet','calendar','more','meals','chat'].includes(view);
+  const main = ['home','chores','pet','calendar','more','meals','chat','tasks'].includes(view);
   let title = TITLES[view] ?? '', eyebrow = '';
   if (view === 'home') { const hr = new Date().getHours(); eyebrow = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }); title = isKid() ? `Hi ${me.name}!` : `${hr < 12 ? 'Good morning' : hr < 18 ? 'Good afternoon' : 'Good evening'}, ${me.name}`; }
   if (view === 'pet') title = PETS[design()]?.name || 'My pet';
@@ -1742,9 +1757,9 @@ function header() {
 }
 function tabs() {
   const t = isKid() ? [['home','home','Home'],['chores','task_alt','Chores'],['pet', design() === 'fern' ? 'eco' : 'flutter_dash', PETS[design()]?.name || 'Pet'],['calendar','calendar_month','Calendar'],['chat','forum','Chat'],['more','apps','More']]
-    : [['home','home','Home'],['calendar','calendar_month','Calendar'],['chores','task_alt','Chores'],['meals','restaurant','Meals'],['chat','forum','Chat'],['more','apps','More']];
-  const n = unreadChat();
-  return `<nav class="tabs">${t.map(([v, i, nm]) => `<button class="${view === v ? 'on' : ''}" data-act="go" data-v="${v}" ${v === 'chat' ? `aria-label="Chat${n ? ', ' + n + ' unread' : ''}"` : ''}>${ic(i)}${esc(nm)}${v === 'chat' ? `<span class="tab-dot" id="chatDot" ${n ? '' : 'hidden'}>${n > 9 ? '9+' : n}</span>` : ''}</button>`).join('')}</nav>`;
+    : [['home','home','Home'],['tasks','assignment_turned_in','Tasks'],['calendar','calendar_month','Calendar'],['chores','task_alt','Chores'],['chat','forum','Chat'],['more','apps','More']];
+  const n = unreadChat(), tn = isKid() ? 0 : waitingItems().n;
+  return `<nav class="tabs">${t.map(([v, i, nm]) => `<button class="${view === v ? 'on' : ''}" data-act="go" data-v="${v}" ${v === 'chat' ? `aria-label="Chat${n ? ', ' + n + ' unread' : ''}"` : ''}>${ic(i)}${esc(nm)}${v === 'tasks' ? `<span class="tab-dot" id="tasksDot" ${tn ? '' : 'hidden'}>${tn > 9 ? '9+' : tn}</span>` : ''}${v === 'chat' ? `<span class="tab-dot" id="chatDot" ${n ? '' : 'hidden'}>${n > 9 ? '9+' : n}</span>` : ''}</button>`).join('')}</nav>`;
 }
 function render() {
   if (!me) return;
@@ -1768,6 +1783,7 @@ function render() {
 function softRender() {
   const a = document.activeElement;
   checkNewMessages();
+  if (!isKid()) { const d = $('#tasksDot'), n = waitingItems().n; if (d) { d.textContent = n > 9 ? '9+' : n; d.hidden = !n; } }
   if (view === 'chat' && !$('#modal').innerHTML) { const inp = $('#chatInput'), val = inp ? inp.value : '', foc = a === inp; render(); const i2 = $('#chatInput'); if (i2) { i2.value = val; if (foc) i2.focus(); } return; }
   if (['pet','calm'].includes(view) || (a && /INPUT|TEXTAREA|SELECT/.test(a.tagName)) || $('#modal').innerHTML) { pendingRender = true; checkPopups(); return; }
   render();
@@ -2212,9 +2228,18 @@ function nextOccurrence(e) {
   return x.date;
 }
 function countdownRow() {
-  const cd = K('event').filter(e => e.data.countdown && e.data.status === 'approved').map(e => ({ e, d: nextOccurrence(e) })).filter(o => o.d >= today()).sort((a, b) => a.d.localeCompare(b.d)).slice(0, 6);
+  const mine = e => { const w = e.data.who; return w === me.id || (Array.isArray(w) && w.includes(me.id)); };
+  const forAll = e => { const w = e.data.who; return !w || w === 'all'; };
+  const show = e => {
+    if (e.data.status === 'declined') return false;
+    if (!isKid()) return e.data.countdown && e.data.status === 'approved';
+    if (e.data.status === 'pending') return mine(e) && e.owner === me.id;
+    if (mine(e)) return e.data.countdown || !e.data.repeat;
+    return forAll(e) && e.data.countdown;
+  };
+  const cd = K('event').filter(show).map(e => ({ e, d: nextOccurrence(e) })).filter(o => o.d >= today() && (o.e.data.countdown || daysBetween(today(), o.d) <= 30)).sort((a, b) => a.d.localeCompare(b.d)).slice(0, 6);
   if (!cd.length) return '';
-  return `<div class="cd-row">${cd.map(({ e, d }) => { const n = daysBetween(today(), d); return `<div class="cd" style="--cc:${colorOf(e.data.who)}"><div class="cd-n">${n === 0 ? '🎉' : n}</div><div class="cd-l">${n === 0 ? 'Today!' : n === 1 ? 'day to go' : 'days to go'}</div><div class="cd-t">${e.data.type === 'birthday' ? '🎂 ' : ''}${esc(e.data.title)}</div></div>`; }).join('')}</div>`;
+  return `<div class="cd-row">${cd.map(({ e, d }) => { const n = daysBetween(today(), d); return `<div class="cd" style="--cc:${colorOf(e.data.who)}"><div class="cd-n">${n === 0 ? '🎉' : n}</div><div class="cd-l">${n === 0 ? 'Today!' : n === 1 ? 'day to go' : 'days to go'}</div><div class="cd-t">${e.data.type === 'birthday' ? '🎂 ' : ''}${esc(e.data.title)}${e.data.status === 'pending' ? '<div class="cd-w">Waiting for OK</div>' : ''}</div></div>`; }).join('')}</div>`;
 }
 
 /* ===== Weather and surf ===== */
