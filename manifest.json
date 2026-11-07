@@ -1,0 +1,9 @@
+{
+  "name": "Family App",
+  "short_name": "Family App",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#EAF6FB",
+  "theme_color": "#2FA4C7",
+  "icons": [{ "src": "icon.png", "sizes": "512x512", "type": "image/png" }]
+}
