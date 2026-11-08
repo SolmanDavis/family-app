@@ -1124,7 +1124,7 @@ function kidHome() {
   const used = minutesUsedToday(me.id), cd = choresDoneToday(me.id);
   const ban = activeBan(me.id), fl = freeLeft(me.id);
   let h = `<div class="card hero" style="padding:12px">${surferSVG(me)}<div class="hero-chips"><div><b>${bal}</b><span>points</span></div><div><b>${ban ? '✕' : fl.length}<small style="font-size:14px"> left</small></b><span>iPad sessions</span></div><div><b>${cd.done}<small style="font-size:14px">/${cd.total}</small></b><span>chores</span></div></div></div>`;
-  h += helloCard();
+  h += pingCard() + helloCard();
   if (run) h += `<div class="card center"><h3>${design() === 'fern' ? 'Shot clock' : 'iPad time left'}</h3>${design() === 'fern' ? `<div style="background:#111;color:#FF3B30;border-radius:16px;padding:6px;font-family:'Courier New',monospace" class="timer" data-end="${endOf(run)}">--:--</div>` : `<div class="timer" data-end="${endOf(run)}">--:--</div>`}<div class="grid2"><button class="btn" data-act="pauseIpad" data-id="${run.id}">${ic('pause', 'fill')} Pause</button><button class="btn sec" data-act="stopIpad" data-id="${run.id}">I've finished</button></div><p class="muted" style="margin:8px 0 0">Pause keeps the rest for later today.</p></div>`;
   else if (pausedSession(me.id) && !activeBan(me.id)) { const ps = pausedSession(me.id); h += `<div class="card center"><h3>iPad paused</h3><div class="timer" style="opacity:.55">${fmtLeft(ps.data.remainSec)}</div><p class="muted">You've got ${fmtLeft(ps.data.remainSec)} left of this session. Carry on whenever you like today.</p><button class="btn big" data-act="resumeIpad" data-id="${ps.id}">${ic('play_arrow', 'fill')} Carry on</button></div>`; }
   else if (ban) h += `<div class="card">${banStamp(ban)}</div>`;
@@ -1224,7 +1224,7 @@ function waitingItems() {
   return { n: pi.length + pe.length + pm.length + pc.length + pr.length + pcd.length, html: h };
 }
 function parentHome() {
-  let h = familyCard() + weatherCard() + countdownRow() + chatCard() + votesCard();
+  let h = pingCard() + familyCard() + weatherCard() + countdownRow() + chatCard() + votesCard();
   const w = waitingItems();
   if (w.n) h += `<div class="card tap" data-act="go" data-v="tasks">${secH('notifications_active', 'amber', 'Waiting for you', `<span class="pill warn">${w.n}</span>${ic('chevron_right', 'chev')}`)}<div class="muted">Tap to see and approve them in Tasks.</div></div>`;
   h += streakCard();
@@ -1943,7 +1943,7 @@ A.back = () => {
 };
 A.close = () => closeModal();
 A.closeBg = (el, ev) => { if (ev.target === el) closeModal(); };
-A.whoMenu = () => openModal(`<h3>${esc(me.name)}</h3><button class="btn big sec" data-act="signOut">${store.demo ? 'Switch person' : 'Sign out'}</button>${(isIOS && !isStandalone()) || ('Notification' in window && Notification.permission !== 'denied') ? '<button class="btn big sec" data-act="notify">Turn on message pings</button>' : ''}<button class="btn big" data-act="close">Close</button>`);
+A.whoMenu = () => openModal(`<h3>${esc(me.name)}</h3><p class="muted">Message pings on this device: <b>${{ granted: 'On ✅', denied: 'Blocked in iPhone Settings', default: 'Not turned on yet', homescreen: 'Open the app from the Home Screen first', unsupported: 'Not supported here' }[pingState()]}</b></p>${pingState() === 'granted' ? '<button class="btn big sec" data-act="testPing">Send me a test ping</button>' : pingState() === 'default' ? '<button class="btn big" data-act="notify">Turn on message pings</button>' : ''}<button class="btn big sec" data-act="signOut">${store.demo ? 'Switch person' : 'Sign out'}</button><button class="btn big" data-act="close">Close</button>`);
 A.notify = async () => { closeModal(); await turnOnAlerts(); };
 A.signOut = async () => { closeModal(); if (store.demo) { lsSet('familyapp-me', ''); me = null; showPicker(); } else { await pushUnsubscribe(); await sb.auth.signOut(); location.reload(); } };
 A.resetDemo = () => openModal(`<h3>Reset all demo data?</h3><p class="muted">This clears every point, chore and message on this device.</p><div class="row mt"><button class="btn danger grow" data-act="resetDemoYes">Reset</button><button class="btn sec" data-act="close">Cancel</button></div>`);
@@ -2630,10 +2630,26 @@ async function pushSubscribe() {
 async function pushUnsubscribe() {
   try { const reg = await swRegister(); const s = reg && await reg.pushManager.getSubscription(); if (s) { if (sb) await sb.rpc('remove_push_sub', { p_endpoint: s.endpoint }); await s.unsubscribe(); } } catch (e) {}
 }
+function pingState() {
+  if (isIOS && !isStandalone()) return 'homescreen';
+  if (!('Notification' in window) || !('serviceWorker' in navigator)) return 'unsupported';
+  return Notification.permission; // granted, denied, default
+}
+function pingCard() {
+  const st = pingState();
+  if (st === 'granted' || st === 'unsupported' || store.demo) return '';
+  const msg = st === 'homescreen' ? 'To get pings and the red number on the app icon, open the app from its Home Screen icon (Share, then Add to Home Screen).'
+    : st === 'denied' ? 'Pings are switched off for this app. On your iPhone go to Settings, then Notifications, then Family App, and turn on Allow Notifications.'
+    : 'Get a ping and a red number on the app icon when someone sends a message, even when the app is closed.';
+  return `<div class="card" style="border:2px solid #FCA5A5">${secH('notifications_active', 'red', 'Message pings are off')}<p class="muted" style="margin-top:0">${msg}</p>${st === 'default' ? '<button class="btn big" style="margin:0" data-act="notify">Turn on message pings</button>' : ''}</div>`;
+}
+A.testPing = async () => {
+  try { const reg = await swRegister(); if (!reg) return toast('Pings need the app opened from the Home Screen'); await reg.showNotification('💬 Test ping', { body: 'Pings are working on this phone!', icon: 'icon.png', tag: 'test' }); try { navigator.setAppBadge && navigator.setAppBadge(1); } catch (e) {} toast('Sent! Check your notifications.'); } catch (e) { toast('Could not show a ping: ' + (e.message || e)); }
+};
 async function turnOnAlerts() {
   if (isIOS && !isStandalone()) { toast('First add the app to your Home Screen (Share, then Add to Home Screen), then open it from there.'); return; }
   try { await Notification.requestPermission(); } catch (e) {}
-  if (Notification.permission === 'granted') { const ok = await pushSubscribe(); toast(ok ? "Message pings are on 🔔" : 'Alerts are on'); }
+  if (Notification.permission === 'granted') { const ok = await pushSubscribe(); toast(ok ? "Message pings are on 🔔" : 'Pings allowed, but this phone could not sign up. Close the app and open it again.'); render(); updateChatBadge(); }
   else if (Notification.permission === 'denied') toast('Alerts are blocked. Turn them on in Settings, Notifications, Family App.');
 }
 
