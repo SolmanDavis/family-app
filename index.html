@@ -1054,12 +1054,25 @@ async function petSave(patch) { const p = petItem(); if (p) await upd(p.id, patc
 
 /* ===== Sound ===== */
 let ac = null;
-function audio() { if (!ac) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (ac && ac.state === 'suspended') ac.resume(); return ac; }
-function tone(f, t0, d, type = 'sine', vol = .2) { const a = audio(); if (!a) return; const o = a.createOscillator(), g = a.createGain(); o.type = type; o.frequency.value = f; g.gain.setValueAtTime(vol, a.currentTime + t0); g.gain.exponentialRampToValueAtTime(.001, a.currentTime + t0 + d); o.connect(g).connect(a.destination); o.start(a.currentTime + t0); o.stop(a.currentTime + t0 + d + .05); }
+let silentEl = null;
+function silentWavUrl() { const n = 4410, b = new ArrayBuffer(44 + n * 2), v = new DataView(b), w = (o, t) => [...t].forEach((c, i) => v.setUint8(o + i, c.charCodeAt(0))); w(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); w(8, 'WAVE'); w(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, 44100, true); v.setUint32(28, 88200, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, 'data'); v.setUint32(40, n * 2, true); return URL.createObjectURL(new Blob([b], { type: 'audio/wav' })); }
+function audio() {
+  // iPhones and iPads mute web sounds on silent unless the page asks for normal playback
+  try { if (navigator.audioSession && navigator.audioSession.type !== 'playback') navigator.audioSession.type = 'playback'; } catch (e) {}
+  if (!ac) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+  if (ac && ac.state !== 'running') { try { ac.resume(); } catch (e) {} }
+  return ac;
+}
+function unlockAudio() {
+  audio();
+  if (!silentEl) { try { silentEl = new Audio(silentWavUrl()); silentEl.setAttribute('playsinline', ''); silentEl.volume = 0.01; } catch (e) {} }
+  if (silentEl && !silentEl.dataset.ok) { const p = silentEl.play(); if (p && p.then) p.then(() => { silentEl.dataset.ok = '1'; }).catch(() => {}); }
+}
+function tone(f, t0, d, type = 'sine', vol = .2, dest) { const a = audio(); if (!a) return; const o = a.createOscillator(), g = a.createGain(); o.type = type; o.frequency.value = f; g.gain.setValueAtTime(vol, a.currentTime + t0); g.gain.exponentialRampToValueAtTime(.001, a.currentTime + t0 + d); o.connect(g).connect(dest || a.destination); o.start(a.currentTime + t0); o.stop(a.currentTime + t0 + d + .05); }
 function alarmSound() { for (let i = 0; i < 10; i++) { tone(880, i * .5, .2, 'square', .12); tone(660, i * .5 + .25, .2, 'square', .12); } }
-function chime() { tone(660, 0, .3); tone(880, .15, .45); }
-function whistleTune() { [784, 880, 988, 784, 659, 784, 988, 1175].forEach((f, i) => tone(f, i * .2, .18, 'sine', .15)); }
-['touchstart', 'click'].forEach(ev => document.addEventListener(ev, audio, { once: true, passive: true }));
+function chime() { tone(660, 0, .3, 'sine', .3); tone(880, .15, .45, 'sine', .3); }
+function whistleTune() { [784, 880, 988, 784, 659, 784, 988, 1175].forEach((f, i) => tone(f, i * .2, .18, 'sine', .3)); }
+['touchend', 'click', 'pointerup'].forEach(ev => document.addEventListener(ev, unlockAudio, { passive: true, capture: true }));
 
 /* ===== Celebrations ===== */
 function celebrate(force) {
@@ -2506,19 +2519,20 @@ V.brush = () => {
   const b = brushBirds().find(x => x.key === param) || brushBirds()[0];
   return `<div class="card brush-card center"><div class="brush-name">🎵 ${esc(b.name)} is brushing with you! 🎵</div><div class="brush-stage"><div class="brush-ring"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="54" fill="none" stroke="#E0F2FE" stroke-width="10"/><circle id="brushArc" cx="60" cy="60" r="54" fill="none" stroke="#FF2E93" stroke-width="10" stroke-linecap="round" stroke-dasharray="339.3" stroke-dashoffset="0" transform="rotate(-90 60 60)"/></svg></div><div class="brush-bird bdance-bob" id="brushBird">${b.svg(170)}</div><div class="brush-notes" id="brushNotes"></div></div><div class="brush-time" id="brushTime">2:00</div><div class="brush-step" id="brushStep">${BRUSH_STEPS[0][0]} ${BRUSH_STEPS[0][1]}</div><div class="bar" style="margin:12px 0"><i id="brushBar" style="width:0%"></i></div><button class="btn sec" data-act="brushStop">Stop</button></div>`;
 };
-function brushChirp(t0) { const a = audio(); if (!a) return; const o = a.createOscillator(), g = a.createGain(), base = 1800 + Math.random() * 900; o.type = 'sine'; o.frequency.setValueAtTime(base, a.currentTime + t0); o.frequency.exponentialRampToValueAtTime(base * 1.5, a.currentTime + t0 + .08); o.frequency.exponentialRampToValueAtTime(base * .9, a.currentTime + t0 + .16); g.gain.setValueAtTime(.0001, a.currentTime + t0); g.gain.exponentialRampToValueAtTime(.09, a.currentTime + t0 + .02); g.gain.exponentialRampToValueAtTime(.0001, a.currentTime + t0 + .18); o.connect(g).connect(a.destination); o.start(a.currentTime + t0); o.stop(a.currentTime + t0 + .2); }
+function brushChirp(t0, dest) { const a = audio(); if (!a) return; const o = a.createOscillator(), g = a.createGain(), base = 1800 + Math.random() * 900; o.type = 'sine'; o.frequency.setValueAtTime(base, a.currentTime + t0); o.frequency.exponentialRampToValueAtTime(base * 1.5, a.currentTime + t0 + .08); o.frequency.exponentialRampToValueAtTime(base * .9, a.currentTime + t0 + .16); g.gain.setValueAtTime(.0001, a.currentTime + t0); g.gain.exponentialRampToValueAtTime(.18, a.currentTime + t0 + .02); g.gain.exponentialRampToValueAtTime(.0001, a.currentTime + t0 + .18); o.connect(g).connect(dest || a.destination); o.start(a.currentTime + t0); o.stop(a.currentTime + t0 + .2); }
 const BRUSH_TUNE = [[523, 1], [659, 1], [784, 1], [659, 1], [698, 1], [880, 1], [784, 2], [659, 1], [587, 1], [523, 1], [587, 1], [659, 2], [523, 2]];
 function brushMusic() {
-  let t = 0; const beat = .26;
-  BRUSH_TUNE.forEach(([f, n]) => { tone(f, t, beat * n * .9, 'triangle', .07); t += beat * n; });
-  [131, 175, 196, 131].forEach((f, i) => tone(f, i * beat * 4, beat * 3.6, 'sine', .06));
-  for (let i = 0; i < 3; i++) brushChirp(1 + Math.random() * (t - 1));
+  const bus = brush && brush.bus; let t = 0; const beat = .26;
+  BRUSH_TUNE.forEach(([f, n]) => { tone(f, t, beat * n * .9, 'triangle', .22, bus); t += beat * n; });
+  [131, 175, 196, 131].forEach((f, i) => tone(f, i * beat * 4, beat * 3.6, 'sine', .16, bus));
+  for (let i = 0; i < 3; i++) brushChirp(1 + Math.random() * (t - 1), bus);
   return t;
 }
 function brushStart() {
   brushStop(true);
   brush = { start: Date.now(), dur: 120000, step: -1, dance: 0, done: false };
-  audio(); const loopLen = brushMusic() * 1000;
+  const a = audio(); if (a) { brush.bus = a.createGain(); brush.bus.gain.value = 1; brush.bus.connect(a.destination); }
+  const loopLen = brushMusic() * 1000;
   brush.music = setInterval(brushMusic, loopLen);
   brush.tick = setInterval(brushTick, 200);
   try { if (navigator.wakeLock) navigator.wakeLock.request('screen').then(w => brush && (brush.wake = w)).catch(() => {}); } catch (e) {}
@@ -2546,8 +2560,7 @@ function brushFinish() {
   openModal(`<div class="center"><div style="font-size:54px">✨🦷✨</div><h3>Sparkling teeth!</h3><p class="muted">${esc(name)} says that was brilliant brushing!</p>${ch ? `<button class="btn big ok" data-act="brushTick" data-id="${ch.id}">Tick off "${esc(ch.data.name)}"</button>` : ''}<button class="btn big sec" data-act="brushDone">Done</button></div>`);
 }
 function brushStop(keepView) {
-  if (brush) { clearInterval(brush.music); clearInterval(brush.tick); try { brush.wake && brush.wake.release(); } catch (e) {} }
-  try { if (ac) { ac.close(); ac = null; } } catch (e) {}
+  if (brush) { clearInterval(brush.music); clearInterval(brush.tick); try { brush.wake && brush.wake.release(); } catch (e) {} try { if (brush.bus) { brush.bus.gain.value = 0; brush.bus.disconnect(); brush.bus = null; } } catch (e) {} }
   if (!keepView) brush = null;
 }
 A.brushStop = () => { brushStop(); brush = null; go('home'); };
