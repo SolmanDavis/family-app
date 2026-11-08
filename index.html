@@ -72,6 +72,15 @@ p{margin:0 0 10px}
 .grow{flex:1;min-width:0}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.ban{position:relative;border:3px solid #DC2626;border-radius:18px;padding:22px 14px 14px;text-align:center;background:repeating-linear-gradient(-45deg,#FFF5F5,#FFF5F5 12px,#FFE9E9 12px,#FFE9E9 24px);overflow:hidden}
+.ban-stamp{display:inline-block;transform:rotate(-8deg);border:4px solid #DC2626;color:#DC2626;font-weight:900;font-size:30px;letter-spacing:.5px;white-space:nowrap;padding:4px 14px;border-radius:10px;background:rgba(255,255,255,.7);margin-bottom:12px}
+.ban.small{padding:12px}.ban.small .ban-stamp{font-size:20px;border-width:3px;margin-bottom:6px}
+.ban-back{font-size:17px;color:#7F1D1D}.ban-why{margin-top:6px;color:#991B1B;font-style:italic}.ban-by{margin-top:6px;font-size:12px;color:#B91C1C;opacity:.8}
+.ses-row{display:flex;gap:8px;flex-wrap:wrap}.ses{flex:1;min-width:42px;text-align:center;padding:10px 0;border-radius:12px;background:#E0F2FE;color:#0369A1;font-weight:800}
+.ses::after{content:' min';font-weight:600;font-size:11px}.ses.used{background:#E5E7EB;color:#9CA3AF;text-decoration:line-through}.ses.gone{background:#FEE2E2;color:#DC2626;text-decoration:line-through}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.btn.disabled{opacity:.45}
+.how{max-height:55vh;overflow:auto;margin:10px 0}.how-part{display:flex;gap:12px;padding:10px;border-radius:14px;transition:background .3s}.how-part.on{background:#E0F2FE}.how-e{font-size:28px;line-height:1}.how-part p{margin:4px 0 0;color:var(--muted);line-height:1.45}
+
 .tile{background:#fff;border-radius:18px;padding:16px 10px;text-align:center;border:0;font-size:15px;font-weight:700;color:var(--ink);box-shadow:var(--shadow);font-family:inherit}
 .tile .ic{font-size:32px;display:block;margin-bottom:4px}
 input,select,textarea{font:inherit;font-size:16px;padding:12px 13px;border:1.5px solid #DCE5E9;border-radius:13px;width:100%;background:#FAFCFD;color:var(--ink);transition:border-color .15s,box-shadow .15s}
@@ -369,7 +378,8 @@ function fail(e) { console.error(e); toast('Something went wrong: ' + (e && e.me
 
 /* ===== Points values and defaults ===== */
 const DEFAULT_POINTS = {
-  pointsPerMinute: 1,     // 1 point = 1 minute of iPad time
+  pointsPerMinute: 1,     // (old) kept for older saved sessions
+  buyPerMinute: 2,        // points for 1 extra bought minute of iPad time
   calm: 10,               // using a calming tool
   restoreMax: 10,         // lost points won back by calming down (per calming tool)
   allChoresBonus: 10,     // every chore done today
@@ -380,7 +390,7 @@ const DEFAULT_POINTS = {
   checkin: 2,             // morning surf report
   challenge: 20           // sister challenge, each
 };
-const DEFAULT_SETTINGS = { points: DEFAULT_POINTS, dailyCap: 60, autoStartMax: 15, unlockEvery: 100,
+const DEFAULT_SETTINGS = { points: DEFAULT_POINTS, dailyCap: 60, autoStartMax: 15, unlockEvery: 100, ipadWeekday: '15,15,15,15', ipadWeekend: '20,20,20,20,10', sessionsNeedOk: false,
   goal: { name: 'Beach day', target: 1500, since: '2000-01-01' }, playlists: {}, colors: {}, dietary: '', sunnyCarer: '' };
 const DEFAULT_CHORES = [
   { name: 'Get dressed', points: 3, routine: 'morning' },
@@ -569,10 +579,22 @@ const sessions = mid => K('ipad').filter(i => i.data.member === mid);
 const runningSession = mid => sessions(mid).find(s => s.data.status === 'running');
 const endOf = s => new Date(s.data.startedAt).getTime() + s.data.minutes * 60000;
 const minutesUsedToday = mid => sum(sessions(mid).filter(s => ['running','done'].includes(s.data.status) && s.data.date === today()).map(s => s.data.usedMinutes ?? s.data.minutes));
+const kindOf = s => s.data.kind || 'free';
+const isWeekend = d => [0, 6].includes(new Date((d || today()) + 'T12:00:00').getDay());
+const planFor = d => String(isWeekend(d) ? settings().ipadWeekend : settings().ipadWeekday).split(',').map(n => parseInt(n, 10)).filter(n => n > 0);
+const planText = d => { const p = planFor(d), c = {}; p.forEach(m => c[m] = (c[m] || 0) + 1); return Object.entries(c).sort((a, b) => b[0] - a[0]).map(([m, n]) => `${n === 1 ? 'one' : ['', '', 'two', 'three', 'four', 'five', 'six'][n] || n} ${m}-minute ${n === 1 ? 'session' : 'sessions'}`).join(' and '); };
+const freeUsed = mid => sessions(mid).filter(s => s.data.date === today() && kindOf(s) === 'free' && ['running', 'done', 'removed'].includes(s.data.status));
+const freeLeft = mid => planFor(today()).slice(freeUsed(mid).length);
+const removedToday = mid => freeUsed(mid).filter(s => s.data.status === 'removed').length;
+const buyCost = m => m * (settings().points.buyPerMinute || 2);
+function activeBan(mid) { return K('ipadban').filter(b => b.data.member === mid && !b.data.lifted && today() < b.data.until).sort((a, b) => b.data.until.localeCompare(a.data.until))[0] || null; }
+const backDay = b => new Date(b.data.until + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+function banStamp(b, big = true) {
+  return `<div class="ban ${big ? '' : 'small'}"><div class="ban-stamp">iPad removed</div><div class="ban-back">Back on <b>${esc(backDay(b))}</b></div>${b.data.reason ? `<div class="ban-why">${esc(b.data.reason)}</div>` : ''}<div class="ban-by">Removed by ${esc(b.data.byName || 'Mum or Dad')}</div></div>`;
+}
 async function startSession(s, minutes, byName) {
-  const p = settings().points.pointsPerMinute;
   await upd(s.id, { status: 'running', minutes, startedAt: new Date().toISOString(), date: today(), approvedBy: byName }, { silent: true });
-  await award(s.data.member, -minutes * p, `iPad time (${minutes} min)`, 'ipad');
+  if (kindOf(s) === 'bought') await award(s.data.member, -buyCost(minutes), `Bought iPad time (${minutes} min)`, 'ipad');
   render();
 }
 
@@ -1040,7 +1062,7 @@ function celebrate(force) {
 
 /* ===== Modal ===== */
 function openModal(html) { $('#modal').innerHTML = `<div class="overlay" data-act="closeBg"><div class="sheet">${html}</div></div>`; }
-function closeModal() { $('#modal').innerHTML = ''; if (pendingRender) { pendingRender = false; render(); } else checkPopups(); }
+function closeModal() { if (typeof speaking !== 'undefined' && speaking) { try { speechSynthesis.cancel(); } catch (e) {} speaking = false; } $('#modal').innerHTML = ''; if (pendingRender) { pendingRender = false; render(); } else checkPopups(); }
 
 /* ===== Calendar helpers ===== */
 function eventsOn(d) {
@@ -1071,11 +1093,14 @@ function kidHome() {
   const s = settings(), P = s.points, bal = balance(me.id);
   const run = runningSession(me.id), pend = sessions(me.id).find(x => x.data.status === 'pending');
   const used = minutesUsedToday(me.id), cd = choresDoneToday(me.id);
-  let h = `<div class="card hero" style="padding:12px">${surferSVG(me)}<div class="hero-chips"><div><b>${bal}</b><span>points</span></div><div><b>${Math.max(0, Math.floor(bal / P.pointsPerMinute))}<small style="font-size:14px"> min</small></b><span>iPad banked</span></div><div><b>${cd.done}<small style="font-size:14px">/${cd.total}</small></b><span>chores</span></div></div></div>`;
+  const ban = activeBan(me.id), fl = freeLeft(me.id);
+  let h = `<div class="card hero" style="padding:12px">${surferSVG(me)}<div class="hero-chips"><div><b>${bal}</b><span>points</span></div><div><b>${ban ? '✕' : fl.length}<small style="font-size:14px"> left</small></b><span>iPad sessions</span></div><div><b>${cd.done}<small style="font-size:14px">/${cd.total}</small></b><span>chores</span></div></div></div>`;
   h += helloCard();
   if (run) h += `<div class="card center"><h3>${design() === 'fern' ? 'Shot clock' : 'iPad time left'}</h3>${design() === 'fern' ? `<div style="background:#111;color:#FF3B30;border-radius:16px;padding:6px;font-family:'Courier New',monospace" class="timer" data-end="${endOf(run)}">--:--</div>` : `<div class="timer" data-end="${endOf(run)}">--:--</div>`}<button class="btn sec" data-act="stopIpad" data-id="${run.id}">I've finished early</button></div>`;
-  else if (pend) h += `<div class="card">${secH('hourglass_top', 'amber', 'iPad time asked for')}<p>You asked for ${pend.data.minutes} minutes. Waiting for Mum or Dad to say yes.</p><button class="btn sec small" data-act="cancelIpad" data-id="${pend.id}">Cancel</button></div>`;
-  else h += `<button class="btn big" data-act="askIpad">${ic('tablet_mac', 'fill')} Ask for iPad time <span style="opacity:.8;font-weight:600;font-size:14px">· ${Math.max(0, s.dailyCap - used)} min left today</span></button>`;
+  else if (ban) h += `<div class="card">${banStamp(ban)}</div>`;
+  else if (pend) h += `<div class="card">${secH('hourglass_top', 'amber', 'iPad time asked for')}<p>${kindOf(pend) === 'bought' ? `You asked to buy ${pend.data.minutes} minutes for ${buyCost(pend.data.minutes)} points.` : `You asked to start a ${pend.data.minutes} minute session.`} Waiting for Mum or Dad to say yes.</p><button class="btn sec small" data-act="cancelIpad" data-id="${pend.id}">Cancel</button></div>`;
+  else h += ipadCard();
+  h += `<button class="btn big sec" data-act="howItWorks">${ic('record_voice_over')} How it works</button>`;
   if (design() === 'ginny') h += `<button class="btn big" style="background:linear-gradient(180deg,#2BB673,#1F9D63);box-shadow:0 2px 8px rgba(31,157,99,.3)" data-act="go" data-v="feel">${ic('waves')} How am I feeling?</button>`;
   else h += `<div class="grid2" style="margin-bottom:12px"><button class="btn big dark" style="margin:0" data-act="music">${ic('headphones', 'fill')} My music</button><button class="btn big" style="margin:0" data-act="go" data-v="calm" data-p="wave">${ic('waves')} Calm down</button></div>`;
   const ci = K('checkin').find(c => c.data.member === me.id && c.data.date === today());
@@ -1084,6 +1109,15 @@ function kidHome() {
   if (design() === 'ginny') { const n = unlockedCount(me.id, BIRDS.length); const b = BIRDS[(daysBetween('2026-01-01', today()) % n + n) % n]; h += `<div class="card"><div class="row">${birdSVG(b, false, 76)}<div class="grow"><div class="eyebrow-dark">Bird of the day</div><h3 style="margin:2px 0 4px">${b.name}</h3><div class="muted">${esc(b.fact)}</div></div></div></div>`; }
   h += goalCard() + todayCard() + latestNotice();
   return h;
+}
+function ipadCard() {
+  const plan = planFor(today()), used = freeUsed(me.id), fl = freeLeft(me.id);
+  const dots = plan.map((m, i) => { const u = used[i]; return `<span class="ses ${u ? (u.data.status === 'removed' ? 'gone' : 'used') : ''}">${m}</span>`; }).join('');
+  let h = `<div class="card">${secH('tablet_mac', 'blue', 'My iPad time', `<span class="pill">${fl.length} of ${plan.length} left</span>`)}<div class="ses-row">${dots}</div>`;
+  if (fl.length) h += `<button class="btn big" style="margin:10px 0 0" data-act="startFree">${ic('play_arrow', 'fill')} Start my ${fl[0]} minute session</button>`;
+  else h += `<p class="muted" style="margin:10px 0 6px">${removedToday(me.id) ? "That's all your sessions for today." : "You've used all today's sessions."} ${isWeekend(addDays(today(), 1)) ? 'Tomorrow you get ' + planText(addDays(today(), 1)) + '.' : 'More tomorrow!'}</p><button class="btn big sec" style="margin:0" data-act="buyIpad">${ic('shopping_cart')} Buy extra time</button>`;
+  if (removedToday(me.id)) h += `<div class="muted mt">Mum or Dad took ${removedToday(me.id) === 1 ? 'a session' : removedToday(me.id) + ' sessions'} away today.</div>`;
+  return h + `</div>`;
 }
 function streakDays(mid) { return [...new Set(ledger(mid).filter(i => i.data.cat === 'allchores').map(i => i.data.date))].sort(); }
 function currentStreak(mid) { const set = new Set(streakDays(mid)); let d = set.has(today()) ? today() : addDays(today(), -1), n = 0; while (set.has(d)) { n++; d = addDays(d, -1); } return n; }
@@ -1150,7 +1184,7 @@ function waitingItems() {
   const pi = K('ipad').filter(s => s.data.status === 'pending'), pe = K('event').filter(e => e.data.status === 'pending'), pm = K('meal').filter(m => m.data.status === 'pending'), pc = K('challenge').filter(c => c.data.claimed && !c.data.done), pr = K('redeem').filter(r => r.data.status === 'pending'), pcd = K('calmday').filter(c => c.data.status === 'pending');
   let h = '';
     pcd.forEach(c => h += `<li>${initialAvatar(c.data.member, 34)}<div class="grow">${c.data.answer ? `<b>${esc(nameOf(c.data.member))}</b> says she <b>${chk(member(c.data.member)).yesP}</b> ${c.data.date === today() ? 'today' : 'yesterday'} 😊` : `<b>${esc(nameOf(c.data.member))}</b> says ${c.data.date === today() ? 'today' : 'yesterday'} was a tough day`}<div class="muted">${chk(member(c.data.member)).icon} Streak: ${calmStreak(c.data.member)} · best ${calmBest(c.data.member)}</div></div>${c.data.answer ? `<button class="btn ok small" data-act="approveCalm" data-id="${c.id}">Agree</button><button class="btn danger small" data-act="rejectCalm" data-id="${c.id}">Not quite</button>` : `<button class="btn sec small" data-act="rejectCalm" data-id="${c.id}">OK</button>`}</li>`);
-    pi.forEach(s => h += `<li>${initialAvatar(s.data.member, 34)}<div class="grow"><b>${esc(nameOf(s.data.member))}</b> wants ${s.data.minutes} min of iPad time<div class="muted">${balance(s.data.member)} points banked</div></div><button class="btn ok small" data-act="approveIpad" data-id="${s.id}">Yes</button><button class="btn danger small" data-act="declineIpad" data-id="${s.id}">No</button></li>`);
+    pi.forEach(s => h += `<li>${initialAvatar(s.data.member, 34)}<div class="grow"><b>${esc(nameOf(s.data.member))}</b> ${kindOf(s) === 'bought' ? `wants to buy ${s.data.minutes} min of iPad time` : `wants to start a ${s.data.minutes} min iPad session`}<div class="muted">${kindOf(s) === 'bought' ? `Costs ${buyCost(s.data.minutes)} points · she has ${balance(s.data.member)}` : `${freeLeft(s.data.member).length} sessions left today`}</div></div><button class="btn ok small" data-act="approveIpad" data-id="${s.id}">Yes</button><button class="btn danger small" data-act="declineIpad" data-id="${s.id}">No</button></li>`);
     pr.forEach(r => h += `<li>${initialAvatar(r.data.member, 34)}<div class="grow"><b>${esc(nameOf(r.data.member))}</b> wants ${esc(r.data.name)}<div class="muted">${r.data.cost} points</div></div><button class="btn ok small" data-act="approveRedeem" data-id="${r.id}">Yes</button><button class="btn danger small" data-act="declineRedeem" data-id="${r.id}">No</button></li>`);
     pe.forEach(e => h += `<li>${initialAvatar(e.owner, 34)}<div class="grow"><b>${esc(nameOf(e.owner))}</b> added "${esc(e.data.title)}"<div class="muted">${dayLabel(e.data.date)}${e.data.time ? ' at ' + esc(e.data.time) : ''}</div></div><button class="btn ok small" data-act="approveEvent" data-id="${e.id}">Yes</button><button class="btn danger small" data-act="declineEvent" data-id="${e.id}">No</button></li>`);
     pm.forEach(m => h += `<li>${initialAvatar(m.owner, 34)}<div class="grow"><b>${esc(nameOf(m.owner))}</b> suggests ${esc(recipeName(m.data.recipe))}<div class="muted">${dayLabel(m.data.date)}</div></div><button class="btn ok small" data-act="approveMeal" data-id="${m.id}">Yes</button><button class="btn danger small" data-act="delMeal" data-id="${m.id}">No</button></li>`);
@@ -1166,10 +1200,11 @@ function parentHome() {
     const run = runningSession(k.id), cd = choresDoneToday(k.id), pct = cd.total ? Math.round(cd.done / cd.total * 100) : 0;
     h += `<div class="card"><div class="kidrow">${initialAvatar(k.id, 46)}<div class="grow"><h3 style="margin:0">${esc(k.name)}</h3><div class="muted">${(n => n + (n === 1 ? ' badge' : ' badges'))(earnedBadges(k.id).length)} · ${(n => n + ' ' + (design(k) === 'fern' ? 'car' : 'bird') + (n === 1 ? '' : 's'))(unlockedCount(k.id, (design(k) === 'fern' ? CARS : BIRDS).length))}</div></div><div style="text-align:right"><div class="stat" style="font-size:26px">${balance(k.id)}</div><div class="muted" style="font-size:12px">points</div></div></div>
       ${calmTracked(k) ? `<div class="row mt" style="background:${chk(k).bg};border-radius:14px;padding:10px 12px;color:${chk(k).col};font-weight:700">${chk(k).icon} ${chk(k).title[0].toUpperCase() + chk(k).title.slice(1)}: ${calmStreak(k.id)} ${calmStreak(k.id) === 1 ? 'day' : 'days'}<span class="grow"></span><span style="font-weight:600">Best ${calmBest(k.id)}</span></div>` : ''}
-      <div class="mini-stats"><div><b>${cd.done}/${cd.total}</b><span>chores</span></div><div><b>${minutesUsedToday(k.id)}</b><span>iPad min</span></div><div><b>${ledger(k.id).filter(i => i.data.cat === 'calm' && i.data.date === today()).length}</b><span>calm tools</span></div></div>
+      <div class="mini-stats"><div><b>${cd.done}/${cd.total}</b><span>chores</span></div><div><b>${activeBan(k.id) ? '✕' : freeLeft(k.id).length + '/' + planFor(today()).length}</b><span>sessions left</span></div><div><b>${ledger(k.id).filter(i => i.data.cat === 'calm' && i.data.date === today()).length}</b><span>calm tools</span></div></div>
       <div class="bar mt"><i style="width:${pct}%"></i></div>
+      ${activeBan(k.id) ? `<div class="mt">${banStamp(activeBan(k.id), false)}</div>` : ''}
       ${run ? `<div class="row mt" style="background:#FFF6E5;border-radius:14px;padding:10px 12px">${ic('tablet_mac', 'fill')}<div class="grow"><b>On the iPad</b></div><div class="stat" data-end="${endOf(run)}" style="font-size:22px">--:--</div><button class="btn sec small" data-act="stopIpad" data-id="${run.id}">Stop</button></div>` : ''}
-      <div class="kid-actions"><button data-act="bonusModal" data-id="${k.id}">${ic('add_circle', 'fill')}Points</button><button data-act="removeModal" data-id="${k.id}">${ic('remove_circle')}Take away</button><button data-act="kindModal" data-id="${k.id}">${ic('favorite', 'fill')}Well done</button><button data-act="${run ? 'go' : 'giveIpad'}" data-v="kid" data-p="${k.id}" data-id="${k.id}">${run ? ic('history') + 'History' : ic('tablet_mac') + 'iPad'}</button></div>
+      <div class="kid-actions"><button data-act="bonusModal" data-id="${k.id}">${ic('add_circle', 'fill')}Points</button><button data-act="removeModal" data-id="${k.id}">${ic('remove_circle')}Take away</button><button data-act="kindModal" data-id="${k.id}">${ic('favorite', 'fill')}Well done</button><button data-act="giveIpad" data-id="${k.id}">${ic('tablet_mac')}iPad</button></div>
       <button class="btn sec small mt" style="width:100%" data-act="go" data-v="kid" data-p="${k.id}">${ic('receipt_long')} Points history</button></div>`;
   });
   const dinner = mealOn(today());
@@ -1197,8 +1232,10 @@ function kidChores() {
   h += `<p class="muted center">Only tick a chore when it's really done. If it isn't, you lose double the points.</p>`;
   return h;
 }
-function choreFormHtml() {
-  return `<h3>Add a chore</h3><form data-form="addChore"><label>Chore</label><input name="name" required placeholder="e.g. Feed the fish"><div class="grid2"><div><label>Points</label><input name="points" type="number" min="1" value="5"></div><div><label>Type</label><select name="kind"><option value="daily">Daily chore</option><option value="morning">Morning routine</option><option value="bedtime">Bedtime routine</option><option value="grab">Up for grabs (one-off bonus)</option></select></div></div><label>Who</label><select name="who"><option value="all">Both girls</option>${kids().map(k => `<option value="${k.id}">${esc(k.name)} only</option>`).join('')}</select><label>Which days? (leave all off for every day)</label><div class="day-chips">${DAY_SHORT.map((d, i) => `<label><input type="checkbox" name="day${i}"><span>${d}</span></label>`).join('')}</div><div class="row mt"><button class="btn grow">Add chore</button><button type="button" class="btn sec" data-act="close">Cancel</button></div></form>`;
+function choreFormHtml(c) {
+  const x = c ? c.data : {}, kind = x.grab ? 'grab' : x.routine || 'daily', days = x.days || [];
+  const sel = (v, cur) => v === cur ? 'selected' : '';
+  return `<h3>${c ? 'Edit chore' : 'Add a chore'}</h3><form data-form="addChore">${c ? `<input type="hidden" name="id" value="${c.id}">` : ''}<label>Chore</label><input name="name" required placeholder="e.g. Feed the fish" value="${esc(x.name || '')}"><div class="grid2"><div><label>Points</label><input name="points" type="number" min="1" value="${x.points || 5}"></div><div><label>Type</label><select name="kind"><option value="daily" ${sel('daily', kind)}>Daily chore</option><option value="morning" ${sel('morning', kind)}>Morning routine</option><option value="bedtime" ${sel('bedtime', kind)}>Bedtime routine</option><option value="grab" ${sel('grab', kind)}>Up for grabs (one-off bonus)</option></select></div></div><label>Who</label><select name="who"><option value="all">Both girls</option>${kids().map(k => `<option value="${k.id}" ${sel(k.id, x.who)}>${esc(k.name)} only</option>`).join('')}</select><label>Which days? (leave all off for every day)</label><div class="day-chips">${DAY_SHORT.map((d, i) => `<label><input type="checkbox" name="day${i}" ${days.includes(i) ? 'checked' : ''}><span>${d}</span></label>`).join('')}</div><div class="row" style="gap:8px;margin-top:8px"><button type="button" class="btn sec small" data-act="choreDays" data-x="weekdays">Weekdays</button><button type="button" class="btn sec small" data-act="choreDays" data-x="weekend">Weekends</button><button type="button" class="btn sec small" data-act="choreDays" data-x="all">Every day</button></div><div class="row mt"><button class="btn grow">${c ? 'Save' : 'Add chore'}</button><button type="button" class="btn sec" data-act="close">Cancel</button></div></form>`;
 }
 function choreWhen(c) { const d = c.data.days; return d && d.length && d.length < 7 ? d.map(i => DAY_SHORT[i]).join(', ') : 'Every day'; }
 function parentChores() {
@@ -1209,7 +1246,7 @@ function parentChores() {
     const cs = choresFor(k.id), cd = choresDoneToday(k.id);
     h += `<div class="card"><div class="sec-h">${initialAvatar(k.id, 36)}<h3>${esc(k.name)} today</h3><span class="pill">${cd.done}/${cd.total}</span></div><div class="bar" style="margin-bottom:6px"><i style="width:${cd.total ? cd.done / cd.total * 100 : 0}%"></i></div><ul class="list">${cs.map(c => { const l = choreLog(c.id, k.id); const st = l?.data.status; return `<li><span class="check ${st === 'done' ? 'on' : st === 'notdone' ? 'no' : ''}">${st === 'done' ? '✓' : st === 'notdone' ? '✕' : ''}</span><div class="grow">${esc(c.data.name)}</div>${st === 'done' ? `<button class="btn danger small" data-act="notDone" data-id="${l.id}">Not done</button>` : st === 'notdone' ? '<span class="pill bad">Not done</span>' : '<span class="muted">To do</span>'}</li>`; }).join('') || '<li class="muted">No chores today.</li>'}</ul></div>`;
   });
-  h += `<div class="card">${secH('format_list_bulleted', 'slate', 'All chores')}<ul class="list">${K('chore').filter(c => !c.data.grab).map(c => `<li><div class="grow"><b>${esc(c.data.name)}</b><div class="muted">${c.data.points} pts · ${c.data.routine ? (c.data.routine === 'morning' ? 'Morning' : 'Bedtime') : 'Daily'} · ${choreWhen(c)} · ${c.data.who === 'all' ? 'Both girls' : esc(nameOf(c.data.who))}</div></div><button class="iconbtn sm" data-act="delChore" data-id="${c.id}" aria-label="Delete">${ic('delete')}</button></li>`).join('')}</ul></div>`;
+  h += `<div class="card">${secH('format_list_bulleted', 'slate', 'All chores')}<ul class="list">${K('chore').filter(c => !c.data.grab).map(c => `<li><div class="grow"><b>${esc(c.data.name)}</b><div class="muted">${c.data.points} pts · ${c.data.routine ? (c.data.routine === 'morning' ? 'Morning' : 'Bedtime') : 'Daily'} · ${choreWhen(c)} · ${c.data.who === 'all' ? 'Both girls' : esc(nameOf(c.data.who))}</div></div><button class="iconbtn sm" data-act="editChore" data-id="${c.id}" aria-label="Edit">${ic('edit')}</button><button class="iconbtn sm" data-act="delChore" data-id="${c.id}" aria-label="Delete">${ic('delete')}</button></li>`).join('')}</ul><p class="muted" style="margin-bottom:0">Tap ✏️ to change a chore's name, points or days.</p></div>`;
   return h;
 }
 V.feel = () => {
@@ -1517,7 +1554,7 @@ V.more = () => {
   const row = (v, icon, col, name, sub = '') => `<button class="gi" data-act="go" data-v="${v}"><span class="chip c-${col}">${ic(icon, 'fill')}</span><div class="grow">${name}${sub ? `<div class="muted">${sub}</div>` : ''}</div>${ic('chevron_right', 'chev')}</button>`;
   if (isKid()) {
     const fern = design() === 'fern', rw = goalReward(me.id);
-    return `<div class="group-label">Me</div><div class="group">${row('collection', fern ? 'sports_motorsports' : 'flutter_dash', 'blue', fern ? 'My race cars' : 'My birds', `${unlockedCount(me.id, (fern ? CARS : BIRDS).length)} collected`)}${row('rewards', 'redeem', 'purple', 'Rewards shop', rw ? 'Saving for ' + esc(rw.data.name) : 'Spend your points')}${row('badges', 'military_tech', 'amber', 'My badges', `${earnedBadges(me.id).length} of ${badgesFor(me.id).length}`)}${row(fern ? 'calm' : 'feel', 'waves', 'teal', fern ? 'Calm down' : 'How am I feeling?')}${row('diary', 'auto_stories', 'pink', 'My diary', 'Only you can see it')}${row('homework', 'school', 'orange', 'Homework')}</div>
+    return `<div class="group-label">Me</div><div class="group">${row('collection', fern ? 'sports_motorsports' : 'flutter_dash', 'blue', fern ? 'My race cars' : 'My birds', `${unlockedCount(me.id, (fern ? CARS : BIRDS).length)} collected`)}<button class="gi" data-act="howItWorks"><span class="chip c-teal">${ic('record_voice_over', 'fill')}</span><div class="grow">How it works<div class="muted">Points, iPad time and rewards, read aloud</div></div>${ic('chevron_right', 'chev')}</button>${row('rewards', 'redeem', 'purple', 'Rewards shop', rw ? 'Saving for ' + esc(rw.data.name) : 'Spend your points')}${row('badges', 'military_tech', 'amber', 'My badges', `${earnedBadges(me.id).length} of ${badgesFor(me.id).length}`)}${row(fern ? 'calm' : 'feel', 'waves', 'teal', fern ? 'Calm down' : 'How am I feeling?')}${row('diary', 'auto_stories', 'pink', 'My diary', 'Only you can see it')}${row('homework', 'school', 'orange', 'Homework')}</div>
       <div class="group-label">Family</div><div class="group">${row('votes', 'how_to_vote', 'pink', 'Family votes', openVotesForMe() ? `<span class="pill warn">${openVotesForMe()} to vote on</span>` : 'Decide together')}${row('sunny', 'pets', 'amber', 'Sunny')}${row('challenges', 'handshake', 'green', 'Sister challenges')}${row('meals', 'restaurant', 'orange', 'Meals')}${row('lists', 'checklist', 'teal', 'Lists')}${row('notices', 'push_pin', 'red', 'Noticeboard')}${row('contacts', 'contacts', 'blue', 'Contacts')}</div>`;
   }
   const pr = K('redeem').filter(r => r.data.status === 'pending').length;
@@ -1727,10 +1764,12 @@ V.summary = () => {
 
 V.settings = () => {
   const s = settings(), P = s.points;
-  const labels = { pointsPerMinute:'Points for 1 minute of iPad time', calm:'Using a calming tool', restoreMax:'Lost points won back per calming tool', allChoresBonus:'Bonus: every chore done', weekStreakBonus:'Bonus: 7 day streak', calmDayBonus:'Calm day award', sunnyFeed:'Feeding Sunny', sunnyOut:'Letting Sunny out', sunnyWalk:'Walking Sunny', homeworkOnTime:'Homework on time', homeworkLate:'Homework late', checkin:'Morning surf report', challenge:'Sister challenge (default)' };
+  const labels = { buyPerMinute:'Points for 1 extra bought minute of iPad time', calm:'Using a calming tool', restoreMax:'Lost points won back per calming tool', allChoresBonus:'Bonus: every chore done', weekStreakBonus:'Bonus: 7 day streak', calmDayBonus:'Calm day award', sunnyFeed:'Feeding Sunny', sunnyOut:'Letting Sunny out', sunnyWalk:'Walking Sunny', homeworkOnTime:'Homework on time', homeworkLate:'Homework late', checkin:'Morning surf report', challenge:'Sister challenge (default)' };
   let h = `<div class="card"><h3>Points values</h3><form data-form="savePoints">${Object.keys(labels).map(k => `<div class="row" style="margin-bottom:6px"><div class="grow">${labels[k]}</div><input name="${k}" type="number" min="0" value="${P[k]}" style="width:84px"></div>`).join('')}
-    <div class="row" style="margin-bottom:6px"><div class="grow">Most iPad minutes per day</div><input name="dailyCap" type="number" value="${s.dailyCap}" style="width:84px"></div>
-    <div class="row" style="margin-bottom:6px"><div class="grow">Start without asking, up to (min)</div><input name="autoStartMax" type="number" value="${s.autoStartMax}" style="width:84px"></div>
+    <h3 class="mt">iPad sessions</h3><p class="muted" style="margin-top:0">Minutes for each session, separated by commas.</p>
+    <label>Monday to Friday</label><input name="ipadWeekday" value="${esc(s.ipadWeekday)}">
+    <label>Saturday and Sunday</label><input name="ipadWeekend" value="${esc(s.ipadWeekend)}">
+    <label class="row" style="color:var(--ink);margin:10px 0"><input type="checkbox" name="sessionsNeedOk" ${s.sessionsNeedOk ? 'checked' : ''}> Each session needs a yes from Mum or Dad</label>
     <div class="row" style="margin-bottom:6px"><div class="grow">New bird or car every (points)</div><input name="unlockEvery" type="number" value="${s.unlockEvery}" style="width:84px"></div>
     <p class="muted">Chore points are set on the Chores page.</p><button class="btn">Save points</button></form></div>`;
   h += `<div class="card">${secH('partly_cloudy_day', 'blue', 'Weather and surf')}<form data-form="saveLocation"><label>Your town or favourite beach</label><div class="row"><input name="place" required placeholder="e.g. Newquay" value="${esc(s.location ? s.location.name : '')}"><button class="btn">Save</button></div><p class="muted mt" id="locMsg">${s.location ? 'Showing weather for ' + esc(s.location.name) + '.' : 'Shows the weather, waves and sea temperature on the home screen.'}</p></form></div>`;
@@ -1899,6 +1938,8 @@ A.editEvent = el => openModal(eventModalHtml(items.find(i => i.id === el.dataset
 A.approveEventD = async el => { await upd(el.dataset.id, { status: 'approved', approvedBy: me.name }, { silent: true }); openModal(dayDetailHtml(el.dataset.x)); pendingRender = true; };
 A.delEventD = async el => { await del(el.dataset.id, { silent: true }); openModal(dayDetailHtml(el.dataset.x)); pendingRender = true; toast('Deleted'); };
 A.choreModal = () => openModal(choreFormHtml());
+A.editChore = el => { const c = items.find(i => i.id === el.dataset.id); if (c) openModal(choreFormHtml(c)); };
+A.choreDays = el => { const want = { weekdays: [0, 1, 2, 3, 4], weekend: [5, 6], all: [] }[el.dataset.x]; document.querySelectorAll('.day-chips input').forEach((b, i) => b.checked = want.includes(i)); };
 A.feel = el => { const l = Number(el.dataset.lvl); param = l; add('feeling', { member: me.id, level: l, date: today(), time: new Date().toTimeString().slice(0, 5) }); };
 A.calmDone = async () => {
   const P = settings().points;
@@ -1931,42 +1972,65 @@ A.catchFly = el => {
   }, 1050);
 };
 A.acc = el => { const a = { ...(prefs(me.id).acc || {}) }; a[el.dataset.x] = !a[el.dataset.x]; setPrefs({ acc: a }); };
-A.askIpad = () => {
-  const s = settings(), ppm = s.points.pointsPerMinute, left = Math.max(0, s.dailyCap - minutesUsedToday(me.id)), canAfford = Math.floor(Math.max(0, balance(me.id)) / ppm);
-  const max = Math.min(left, canAfford), opts = [5, 10, 15, 20, 30, 45, 60].filter(m => m <= max);
-  if (!opts.length) return openModal(`<h3>Not enough time yet</h3><p>${left <= 0 ? `You've used all ${s.dailyCap} minutes today.` : `You need more points. Do some chores or look after ${design() === 'fern' ? 'Pumpkin' : 'Coco'} and Sunny!`}</p><button class="btn big" data-act="close">OK</button>`);
-  openModal(`<h3>How long?</h3><p class="muted">You have ${canAfford} minutes banked. Up to ${s.autoStartMax} minutes starts straight away; longer needs a yes from Mum or Dad.</p><div class="grid3">${opts.map(m => `<button class="btn sec" data-act="reqIpad" data-x="${m}">${m} min</button>`).join('')}</div><button class="btn big sec mt" data-act="close">Cancel</button>`);
-};
-A.reqIpad = async el => {
-  const m = Number(el.dataset.x); closeModal();
-  const it = await add('ipad', { member: me.id, minutes: m, status: 'pending', requestedAt: new Date().toISOString(), date: today() }, me.id, { silent: true });
+A.startFree = async () => {
+  if (activeBan(me.id)) return render();
+  const fl = freeLeft(me.id); if (!fl.length) return render();
+  const m = fl[0];
+  const it = await add('ipad', { member: me.id, minutes: m, kind: 'free', status: 'pending', requestedAt: new Date().toISOString(), date: today() }, me.id, { silent: true });
   if (!it) return;
-  if (m <= settings().autoStartMax) { await startSession(it, m, 'Automatic'); toast(`${m} minutes started!`); }
+  if (!settings().sessionsNeedOk) { await startSession(it, m, 'Automatic'); toast(`${m} minutes started! The alarm will tell you when to stop.`); }
   else { render(); toast('Asked! Waiting for a grown-up.'); }
 };
-A.cancelIpad = el => del(el.dataset.id);
-function ipadChooser(mid, sessionId, asked) {
-  const left = Math.max(0, settings().dailyCap - minutesUsedToday(mid));
-  const opts = [5, 10, 15, 20, 30, 45, 60].filter(m => m <= left);
-  if (!opts.length) return toast(`${nameOf(mid)} has used all today's time.`);
-  openModal(`<h3>How long for ${esc(nameOf(mid))}?</h3><p class="muted">${asked ? `Asked for ${asked} min · ` : ''}${balance(mid)} points banked · ${left} min left today</p><div class="grid3">${opts.map(m => `<button class="btn ${m === asked ? '' : 'sec'}" data-act="startIpad" data-id="${sessionId || ''}" data-kid="${mid}" data-x="${m}">${m} min</button>`).join('')}</div><button class="btn big sec mt" data-act="close">Cancel</button>`);
-}
-A.approveIpad = el => { const s = items.find(i => i.id === el.dataset.id); if (s) ipadChooser(s.data.member, s.id, s.data.minutes); };
-A.giveIpad = el => ipadChooser(el.dataset.id, null, 0);
-A.startIpad = async el => {
-  closeModal();
-  let s = el.dataset.id ? items.find(i => i.id === el.dataset.id) : null;
-  if (!s) s = await add('ipad', { member: el.dataset.kid, minutes: Number(el.dataset.x), status: 'pending', requestedAt: new Date().toISOString(), date: today() }, me.id, { silent: true });
-  if (s) await startSession(s, Number(el.dataset.x), me.name);
+A.buyIpad = () => {
+  if (activeBan(me.id)) return render();
+  const bal = Math.max(0, balance(me.id)), per = settings().points.buyPerMinute || 2;
+  const opts = [5, 10, 15, 20];
+  openModal(`<h3>Buy extra iPad time</h3><p class="muted">Extra time costs ${per} points a minute, and Mum or Dad have to say yes. You have <b>${bal} points</b>.</p><div class="grid2">${opts.map(m => `<button class="btn ${buyCost(m) <= bal ? 'sec' : 'sec disabled'}" ${buyCost(m) <= bal ? `data-act="reqBuy" data-x="${m}"` : 'disabled'}>${m} min<br><small>${buyCost(m)} points</small></button>`).join('')}</div>${buyCost(5) > bal ? `<p class="muted mt">You need ${buyCost(5)} points for 5 minutes. Do some chores or look after ${design() === 'fern' ? 'Pumpkin' : 'Coco'} and Sunny!</p>` : ''}<button class="btn big sec mt" data-act="close">Cancel</button>`);
 };
+A.reqBuy = async el => {
+  const m = Number(el.dataset.x); closeModal();
+  if (buyCost(m) > balance(me.id)) return toast('Not enough points yet');
+  await add('ipad', { member: me.id, minutes: m, kind: 'bought', status: 'pending', requestedAt: new Date().toISOString(), date: today() }, me.id, { silent: true });
+  render(); toast('Asked! Waiting for Mum or Dad.');
+};
+A.cancelIpad = el => del(el.dataset.id);
+function ipadPanel(mid) {
+  const ban = activeBan(mid), fl = freeLeft(mid), plan = planFor(today()), run = runningSession(mid);
+  let h = `<div class="row"><div class="grow"><div class="eyebrow-dark">iPad</div><h3 style="margin:2px 0 0">${esc(nameOf(mid))}</h3></div><button class="iconbtn sm" data-act="close" aria-label="Close">${ic('close')}</button></div>`;
+  if (ban) h += banStamp(ban, false) + `<button class="btn big ok mt" data-act="liftBan" data-id="${ban.id}">Give the iPad back now</button>`;
+  else {
+    h += `<p class="muted">${fl.length} of ${plan.length} sessions left today${run ? ' · on the iPad now' : ''}</p>`;
+    if (fl.length && !run) h += `<button class="btn big" data-act="parentStart" data-kid="${mid}">${ic('play_arrow', 'fill')} Start her next session (${fl[0]} min)</button>`;
+    if (fl.length) h += `<button class="btn big sec" data-act="takeSession" data-kid="${mid}">${ic('remove_circle')} Take away a session today</button>`;
+    h += `<label class="mt">Give extra time free</label><div class="grid4">${[5, 10, 15, 20].map(m => `<button class="btn sec small" data-act="giftIpad" data-kid="${mid}" data-x="${m}">${m} min</button>`).join('')}</div>`;
+    h += `<div class="card" style="background:#FFF1F1;margin-top:14px;box-shadow:none"><h3 style="color:#B91C1C;margin-top:0">Remove the iPad</h3><label>Reason (optional)</label><input id="banWhy" placeholder="e.g. Not coming off when the alarm went"><label>For how long?</label><div class="grid3">${[1, 2, 3, 5, 7, 14].map(n => `<button class="btn danger small" data-act="banIpad" data-kid="${mid}" data-x="${n}">${n} ${n === 1 ? 'day' : 'days'}</button>`).join('')}</div><p class="muted" style="margin-bottom:0">She'll see a big red "iPad removed" sign with the day she gets it back.</p></div>`;
+  }
+  return h;
+}
+A.approveIpad = async el => { const s = items.find(i => i.id === el.dataset.id); if (!s) return; if (activeBan(s.data.member)) return toast(`${nameOf(s.data.member)}'s iPad is removed at the moment`); if (runningSession(s.data.member)) return toast(`${nameOf(s.data.member)} is already on the iPad`); await startSession(s, s.data.minutes, me.name); toast(`${nameOf(s.data.member)}'s ${s.data.minutes} minutes started`); };
+A.giveIpad = el => openModal(ipadPanel(el.dataset.id));
+A.parentStart = async el => { const mid = el.dataset.kid, fl = freeLeft(mid); closeModal(); if (!fl.length) return; const it = await add('ipad', { member: mid, minutes: fl[0], kind: 'free', status: 'pending', requestedAt: new Date().toISOString(), date: today() }, me.id, { silent: true }); if (it) await startSession(it, fl[0], me.name); };
+A.giftIpad = async el => { const mid = el.dataset.kid, m = Number(el.dataset.x); closeModal(); if (runningSession(mid)) return toast(`${nameOf(mid)} is already on the iPad`); const it = await add('ipad', { member: mid, minutes: m, kind: 'gift', status: 'pending', requestedAt: new Date().toISOString(), date: today() }, me.id, { silent: true }); if (it) await startSession(it, m, me.name); toast(`${m} free minutes started for ${nameOf(mid)}`); };
+A.takeSession = async el => { const mid = el.dataset.kid, fl = freeLeft(mid); if (!fl.length) return; await add('ipad', { member: mid, minutes: fl[0], kind: 'free', status: 'removed', date: today(), by: me.name }, me.id, { silent: true }); toast(`Took a ${fl[0]} minute session from ${nameOf(mid)}`); openModal(ipadPanel(mid)); render(); };
+A.banIpad = async el => {
+  const mid = el.dataset.kid, n = Number(el.dataset.x), why = ($('#banWhy') || {}).value?.trim() || '';
+  closeModal();
+  const run = runningSession(mid);
+  if (run) { alarmed.add(run.id); await upd(run.id, { status: 'done', usedMinutes: Math.min(run.data.minutes, Math.ceil((Date.now() - new Date(run.data.startedAt).getTime()) / 60000)) }, { silent: true }); }
+  for (const p of sessions(mid).filter(x => x.data.status === 'pending')) await upd(p.id, { status: 'declined', approvedBy: me.name }, { silent: true });
+  await add('ipadban', { member: mid, from: today(), until: addDays(today(), n), days: n, reason: why, byName: me.name }, me.id, { silent: true });
+  render(); toast(`iPad removed for ${n} ${n === 1 ? 'day' : 'days'}`);
+};
+A.liftBan = async el => { closeModal(); await upd(el.dataset.id, { lifted: true, liftedBy: me.name }, { silent: true }); render(); toast('iPad given back'); };
 A.declineIpad = el => upd(el.dataset.id, { status: 'declined', approvedBy: me.name });
 A.stopIpad = async el => {
   const s = items.find(i => i.id === el.dataset.id); if (!s) return;
   const usedMin = Math.ceil((Date.now() - new Date(s.data.startedAt).getTime()) / 60000), unused = Math.max(0, s.data.minutes - usedMin);
   alarmed.add(s.id);
   await upd(s.id, { status: 'done', usedMinutes: Math.min(usedMin, s.data.minutes) }, { silent: true });
-  if (unused > 0) await add('ledger', { member: s.data.member, amount: unused * settings().points.pointsPerMinute, reason: `Unused iPad time back (${unused} min)`, cat: 'refund', date: today(), by: me.id }, me.id, { silent: true });
-  render(); toast(unused ? `${unused} minutes saved back in the bank` : 'Stopped');
+  const refund = kindOf(s) === 'bought' && unused > 0;
+  if (refund) await add('ledger', { member: s.data.member, amount: buyCost(unused), reason: `Unused bought iPad time back (${unused} min)`, cat: 'refund', date: today(), by: me.id }, me.id, { silent: true });
+  render(); toast(refund ? `${buyCost(unused)} points back for the ${unused} minutes you didn't use` : 'Stopped. Well done for coming off!');
 };
 A.bonusModal = el => openModal(`<h3>Points for ${esc(nameOf(el.dataset.id))}</h3><label>What for?</label><select id="bReason"><option>Good behaviour</option><option>Helped cook</option><option>Laid the table</option><option>Kind to her sister</option><option>Tried really hard</option><option value="Calm day">Calm day (${settings().points.calmDayBonus})</option><option>Other</option></select><div class="grid3 mt">${[5, 10, 20].map(a => `<button class="btn ok" data-act="bonus" data-id="${el.dataset.id}" data-x="${a}">+${a}</button>`).join('')}</div><button class="btn big sec mt" data-act="close">Cancel</button>`);
 A.bonus = async el => { let r = $('#bReason').value, a = Number(el.dataset.x); if (r === 'Calm day') a = settings().points.calmDayBonus; closeModal(); await award(el.dataset.id, a, r, r === 'Calm day' ? 'calmday' : 'bonus'); render(); toast(`+${a} for ${nameOf(el.dataset.id)}`); };
@@ -2030,7 +2094,9 @@ C.playlist = el => { const p = settings().playlists; p[el.dataset.x] = el.value.
 
 /* ===== Forms ===== */
 const F = {};
-F.addChore = f => { closeModal(); const days = DAY_SHORT.map((_, i) => f['day' + i] ? i : -1).filter(i => i >= 0); const grab = f.kind === 'grab'; toast(grab ? 'Bonus job posted' : 'Chore added'); return add('chore', { name: f.name, points: Number(f.points) || 5, routine: ['morning', 'bedtime'].includes(f.kind) ? f.kind : '', who: f.who, days: days.length === 7 ? [] : days, grab }, null); };
+F.addChore = f => { closeModal(); const days = DAY_SHORT.map((_, i) => f['day' + i] ? i : -1).filter(i => i >= 0); const grab = f.kind === 'grab'; const data = { name: f.name, points: Number(f.points) || 5, routine: ['morning', 'bedtime'].includes(f.kind) ? f.kind : '', who: f.who, days: days.length === 7 ? [] : days, grab };
+  if (f.id) { toast('Chore saved'); return upd(f.id, data); }
+  toast(grab ? 'Bonus job posted' : 'Chore added'); return add('chore', data, null); };
 F.addEvent = f => { closeModal(); const bd = f.type === 'birthday'; const data = { title: f.title, date: f.date, time: f.time, end: f.end, location: f.location, notes: f.notes, who: f.who, type: f.type, repeat: bd ? 'yearly' : (f.repeat || ''), countdown: bd || !!f.countdown };
   if (f.id) { toast('Saved'); return upd(f.id, data); }
   return add('event', { ...data, status: isKid() ? 'pending' : 'approved' }); };
@@ -2043,7 +2109,8 @@ F.addTodo = f => add('todo', { text: f.text, done: false }, null);
 F.addChallenge = f => add('challenge', { text: f.text, points: Number(f.points) || 20, claimed: false, done: false });
 F.addRecipe = f => add('recipe', { name: f.name, minutes: Number(f.minutes) || 0, tags: f.tags.split(',').map(s => s.trim()).filter(Boolean), ingredients: f.ingredients.split('\n').map(s => s.trim()).filter(Boolean), steps: (f.steps || '').split('\n').map(s => s.trim()).filter(Boolean) }, null);
 F.addShop = f => add('shop', { text: f.text, aisle: guessAisle(f.text), done: false }, null);
-F.savePoints = async f => { const p = {}; Object.keys(DEFAULT_POINTS).forEach(k => p[k] = Math.max(0, Number(f[k]) || 0)); p.pointsPerMinute = Math.max(1, p.pointsPerMinute); await saveSettings({ points: p, dailyCap: Number(f.dailyCap) || 60, autoStartMax: Number(f.autoStartMax) || 0, unlockEvery: Math.max(10, Number(f.unlockEvery) || 100) }); toast('Saved'); };
+F.savePoints = async f => { const p = {}; Object.keys(DEFAULT_POINTS).forEach(k => p[k] = Math.max(0, Number(f[k]) || 0)); p.pointsPerMinute = Math.max(1, p.pointsPerMinute || 1); p.buyPerMinute = Math.max(1, p.buyPerMinute || 2); const clean = v => String(v || '').split(',').map(n => parseInt(n, 10)).filter(n => n > 0).join(',');
+  await saveSettings({ points: p, ipadWeekday: clean(f.ipadWeekday) || '15,15,15,15', ipadWeekend: clean(f.ipadWeekend) || '20,20,20,20,10', sessionsNeedOk: !!f.sessionsNeedOk, unlockEvery: Math.max(10, Number(f.unlockEvery) || 100) }); toast('Saved'); };
 F.saveGoal = async f => { const g = { ...settings().goal, name: f.name, target: Math.max(1, Number(f.target) || 1500) }; if (f.restart) g.since = today(); await saveSettings({ goal: g }); toast('Saved'); };
 F.saveDiet = async f => { await saveSettings({ dietary: f.dietary }); toast('Saved'); };
 F.addMember = async f => {
@@ -2379,6 +2446,44 @@ function showPicker() {
   document.body.className = 'parent'; document.body.style.backgroundImage = '';
   $('#app').innerHTML = `<div class="login"><h2 class="center" style="font-size:28px">🌊 ${esc(CONFIG.APP_NAME)}</h2><div class="card"><h3>Who's using the app?</h3><p class="muted">Demo mode: everything is saved on this device only.</p><div class="grid2">${members.map(m => `<button class="tile" data-act="whoPick" data-id="${m.id}"><span class="ic">${m.role === 'parent' ? '🧑' : m.design === 'fern' ? '🏐' : '🐦'}</span>${esc(m.name)}</button>`).join('')}</div></div></div>`;
 }
+
+/* ===== How it works (read aloud to the girls) ===== */
+function howItWorksParts(m) {
+  const P = settings().points, fern = design(m) === 'fern', per = P.buyPerMinute || 2, name = m.name;
+  const chores = K('chore').filter(c => !c.data.grab && (c.data.who === 'all' || c.data.who === m.id));
+  const choreList = chores.map(c => `${c.data.name.replace(/^my /i, '')}: ${c.data.points}`);
+  const parts = [];
+  parts.push(['👋', `Hi ${name}!`, `Here's how the app works. Listen carefully, there might be a quiz! Only joking.`]);
+  parts.push(['📱', 'Your iPad time', `You don't need points for your normal iPad time. On school days you get ${planText('2026-11-09')}. At the weekend you get ${planText('2026-11-07')}. When you want one, tap Start my session. An alarm goes off when your time is up, so come off straight away. If you stop early, the rest of that session is gone, so pick a good moment.`]);
+  parts.push(['⭐', 'Earning points', `You earn points for doing your jobs. ${choreList.length ? 'Here they are: ' + choreList.join(', ') + '. ' : ''}If you do every chore in a day you get ${P.allChoresBonus} bonus points, and if you do that seven days in a row you get ${P.weekStreakBonus} more.`]);
+  parts.push([fern ? '💬' : '🌊', fern ? 'Being respectful' : 'Staying calm', fern ? `Every evening at 8 o'clock I'll ask if you spoke respectfully to Mum, Dad and your sister. If Mum or Dad agree, you get ${P.calmDayBonus} points and your respect streak grows.` : `Every evening at half past 8 I'll ask if you got through the day without a tantrum. If Mum or Dad agree, you get ${P.calmDayBonus} points and your no-tantrum streak grows. If you feel cross, tap How am I feeling and use a calming tool. That's ${P.calm} points, and it can win back points you've lost.`]);
+  parts.push(['🐶', 'More ways to earn', `Feeding Sunny is ${P.sunnyFeed} points, letting him out is ${P.sunnyOut}, and taking him for a walk is ${P.sunnyWalk}. Homework done on time is ${P.homeworkOnTime}. Sister challenges are ${P.challenge} points each, the morning surf report is ${P.checkin}, and Mum and Dad can give you bonus points for being brilliant.`]);
+  parts.push(['🛒', 'Spending points', `You can buy extra iPad time once your sessions are used up. It costs ${per} points a minute, so 15 extra minutes is ${15 * per} points, and Mum or Dad have to say yes. You can also spend points in the rewards shop, on treats you can save up for.`]);
+  parts.push([fern ? '🏎️' : '🐦', 'Collecting', `Every ${settings().unlockEvery} points you earn unlocks a new ${fern ? 'race car' : 'bird'}, and everyone's points help the family get to the ${settings().goal.name.toLowerCase()}. Spending points never takes these away.`]);
+  parts.push(['⚠️', 'Losing points and iPad time', `If you tick a chore you didn't really do, you lose double the points. Mum and Dad can take points away, take away an iPad session, or remove the iPad for a few days. If that happens, you'll see a big red sign telling you which day you get it back.`]);
+  parts.push(['🏄', "That's it!", `Do your jobs, be kind, and enjoy your iPad time. Good luck, ${name}!`]);
+  return parts;
+}
+let speaking = false;
+function speakParts(parts) {
+  if (!('speechSynthesis' in window)) return toast("This device can't read aloud");
+  speechSynthesis.cancel();
+  const voices = speechSynthesis.getVoices(), v = voices.find(x => /en-GB/i.test(x.lang) && /female|serena|kate|martha|stephanie|sonia|libby/i.test(x.name)) || voices.find(x => /en-GB/i.test(x.lang));
+  parts.forEach(([, t, b], i) => {
+    const u = new SpeechSynthesisUtterance(`${t}. ${b}`); u.lang = 'en-GB'; if (v) u.voice = v; u.rate = 0.95; u.pitch = 1.05;
+    u.onstart = () => { document.querySelectorAll('.how-part').forEach((el, k) => el.classList.toggle('on', k === i)); const el = document.querySelectorAll('.how-part')[i]; if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); };
+    if (i === parts.length - 1) u.onend = () => { speaking = false; document.querySelectorAll('.how-part').forEach(el => el.classList.remove('on')); const b = $('#howBtn'); if (b) b.innerHTML = `${ic('replay')} Read it again`; };
+    speechSynthesis.speak(u);
+  });
+  speaking = true;
+}
+A.howItWorks = () => {
+  const parts = howItWorksParts(me);
+  openModal(`<div class="row"><div class="grow"><div class="eyebrow-dark">For ${esc(me.name)}</div><h3 style="margin:2px 0 0">How it works</h3></div><button class="iconbtn sm" data-act="howClose" aria-label="Close">${ic('close')}</button></div><div class="how">${parts.map(([e, t, b]) => `<div class="how-part"><div class="how-e">${e}</div><div><b>${esc(t)}</b><p>${esc(b)}</p></div></div>`).join('')}</div><div class="grid2"><button class="btn" id="howBtn" data-act="howRead">${ic('stop_circle')} Stop reading</button><button class="btn sec" data-act="howClose">Close</button></div>`);
+  speakParts(parts);
+};
+A.howRead = () => { if (speaking) { speechSynthesis.cancel(); speaking = false; document.querySelectorAll('.how-part').forEach(el => el.classList.remove('on')); $('#howBtn').innerHTML = `${ic('volume_up')} Read it to me`; } else { speakParts(howItWorksParts(me)); $('#howBtn').innerHTML = `${ic('stop_circle')} Stop reading`; } };
+A.howClose = () => { try { speechSynthesis.cancel(); } catch (e) {} speaking = false; closeModal(); };
 
 /* ===== Phone notifications (message pings) ===== */
 const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
