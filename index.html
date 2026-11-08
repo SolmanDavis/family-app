@@ -78,6 +78,15 @@ p{margin:0 0 10px}
 .ban-back{font-size:17px;color:#7F1D1D}.ban-why{margin-top:6px;color:#991B1B;font-style:italic}.ban-by{margin-top:6px;font-size:12px;color:#B91C1C;opacity:.8}
 .ses-row{display:flex;gap:8px;flex-wrap:wrap}.ses{flex:1;min-width:42px;text-align:center;padding:10px 0;border-radius:12px;background:#E0F2FE;color:#0369A1;font-weight:800}
 .ses::after{content:' min';font-weight:600;font-size:11px}.ses.used{background:#E5E7EB;color:#9CA3AF;text-decoration:line-through}.ses.gone{background:#FEE2E2;color:#DC2626;text-decoration:line-through}
+.brush-pick{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-height:52vh;overflow:auto;padding:2px}.brush-pick button{border:2px solid #E5E7EB;background:#fff;border-radius:16px;padding:8px 4px;font:inherit;display:flex;flex-direction:column;align-items:center;gap:4px}.brush-pick button.on{border-color:#FF2E93;background:#FFF0F7}.brush-pick b{font-size:13px}
+.brush-card{background:linear-gradient(180deg,#FFF0F7,#FFFFFF)}.brush-name{font-weight:800;color:#BE185D;margin-bottom:6px}
+.brush-stage{position:relative;width:250px;height:250px;margin:0 auto}.brush-ring svg{position:absolute;inset:0;width:100%;height:100%}.brush-bird{position:absolute;left:50%;top:50%;width:170px;margin:-85px 0 0 -85px;transform-origin:50% 85%}.brush-bird svg{width:170px;height:auto}
+.brush-notes{position:absolute;inset:0;pointer-events:none}.brush-notes span{position:absolute;bottom:30%;font-size:26px;color:#FF2E93;animation:noteUp 2.2s ease-out forwards}
+@keyframes noteUp{from{transform:translateY(0) rotate(0);opacity:1}to{transform:translateY(-150px) rotate(25deg);opacity:0}}
+.bdance-bob{animation:bBob .5s ease-in-out infinite alternate}.bdance-sway{animation:bSway .7s ease-in-out infinite alternate}.bdance-hop{animation:bHop .6s cubic-bezier(.3,0,.5,1) infinite}.bdance-spin{animation:bSpin 2.4s ease-in-out infinite}
+@keyframes bBob{from{transform:translateY(6px) scale(1,.96)}to{transform:translateY(-10px) scale(1,1.03)}}@keyframes bSway{from{transform:rotate(-12deg)}to{transform:rotate(12deg)}}
+@keyframes bHop{0%,100%{transform:translateY(0)}40%{transform:translateY(-30px) rotate(-6deg)}60%{transform:translateY(-30px) rotate(6deg)}}@keyframes bSpin{0%{transform:scaleX(1)}25%{transform:scaleX(-1) translateY(-8px)}50%{transform:scaleX(-1)}75%{transform:scaleX(1) translateY(-8px)}100%{transform:scaleX(1)}}
+.brush-time{font-size:52px;font-weight:900;letter-spacing:1px;margin-top:6px}.brush-step{font-size:20px;font-weight:800;color:#0F172A}.brush-step.pop{animation:stepPop .5s ease}@keyframes stepPop{0%{transform:scale(.7)}60%{transform:scale(1.12)}100%{transform:scale(1)}}
 .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.btn.disabled{opacity:.45}
 .how{max-height:55vh;overflow:auto;margin:10px 0}.how-part{display:flex;gap:12px;padding:10px;border-radius:14px;transition:background .3s}.how-part.on{background:#E0F2FE}.how-e{font-size:28px;line-height:1}.how-part p{margin:4px 0 0;color:var(--muted);line-height:1.45}
 
@@ -577,14 +586,21 @@ function award(mid, amount, reason, cat) { return add('ledger', { member: mid, a
 /* ===== iPad time ===== */
 const sessions = mid => K('ipad').filter(i => i.data.member === mid);
 const runningSession = mid => sessions(mid).find(s => s.data.status === 'running');
+const pausedSession = mid => sessions(mid).find(s => s.data.status === 'paused' && s.data.date === today());
+const fmtLeft = sec => `${Math.floor(sec / 60)}:${String(Math.max(0, Math.round(sec % 60))).padStart(2, '0')}`;
 const endOf = s => new Date(s.data.startedAt).getTime() + s.data.minutes * 60000;
 const minutesUsedToday = mid => sum(sessions(mid).filter(s => ['running','done'].includes(s.data.status) && s.data.date === today()).map(s => s.data.usedMinutes ?? s.data.minutes));
 const kindOf = s => s.data.kind || 'free';
 const isWeekend = d => [0, 6].includes(new Date((d || today()) + 'T12:00:00').getDay());
 const planFor = d => String(isWeekend(d) ? settings().ipadWeekend : settings().ipadWeekday).split(',').map(n => parseInt(n, 10)).filter(n => n > 0);
 const planText = d => { const p = planFor(d), c = {}; p.forEach(m => c[m] = (c[m] || 0) + 1); return Object.entries(c).sort((a, b) => b[0] - a[0]).map(([m, n]) => `${n === 1 ? 'one' : ['', '', 'two', 'three', 'four', 'five', 'six'][n] || n} ${m}-minute ${n === 1 ? 'session' : 'sessions'}`).join(' and '); };
-const freeUsed = mid => sessions(mid).filter(s => s.data.date === today() && kindOf(s) === 'free' && ['running', 'done', 'removed'].includes(s.data.status));
-const freeLeft = mid => planFor(today()).slice(freeUsed(mid).length);
+const freeUsed = mid => sessions(mid).filter(s => s.data.date === today() && kindOf(s) === 'free' && ['running', 'paused', 'done', 'removed'].includes(s.data.status));
+function slotStatus(mid) {
+  const slots = planFor(today()).map(m => ({ m, st: '' }));
+  freeUsed(mid).forEach(u => { const i = slots.findIndex(x => !x.st && x.m === u.data.minutes); const j = i >= 0 ? i : slots.findIndex(x => !x.st); if (j >= 0) slots[j].st = u.data.status === 'removed' ? 'gone' : 'used'; });
+  return slots;
+}
+const freeLeft = mid => slotStatus(mid).filter(x => !x.st).map(x => x.m);
 const removedToday = mid => freeUsed(mid).filter(s => s.data.status === 'removed').length;
 const buyCost = m => m * (settings().points.buyPerMinute || 2);
 function activeBan(mid) { return K('ipadban').filter(b => b.data.member === mid && !b.data.lifted && today() < b.data.until).sort((a, b) => b.data.until.localeCompare(a.data.until))[0] || null; }
@@ -1084,7 +1100,7 @@ function eventRow(e, d) {
 }
 
 /* ===== Views ===== */
-const TITLES = { tasks:'Tasks', family:'The family', chat:'Family chat', votes:'Family votes', home:'', chores:'Chores', pet:'', calendar:'Calendar', more:'More', feel:'How am I feeling?', calm:'Calm down', collection:'My collection', rewards:'Rewards shop', badges:'Badges', lists:'Lists', list:'List', contacts:'Contacts', sunny:'Sunny', diary:'My diary', homework:'Homework', notices:'Noticeboard', meals:'Meals', challenges:'Sister challenges', todo:'Our to-do list', summary:'Weekly summary', settings:'Settings', kid:'' };
+const TITLES = { brush:'Brushing teeth', tasks:'Tasks', family:'The family', chat:'Family chat', votes:'Family votes', home:'', chores:'Chores', pet:'', calendar:'Calendar', more:'More', feel:'How am I feeling?', calm:'Calm down', collection:'My collection', rewards:'Rewards shop', badges:'Badges', lists:'Lists', list:'List', contacts:'Contacts', sunny:'Sunny', diary:'My diary', homework:'Homework', notices:'Noticeboard', meals:'Meals', challenges:'Sister challenges', todo:'Our to-do list', summary:'Weekly summary', settings:'Settings', kid:'' };
 const V = {};
 
 V.home = () => isKid() ? kidHome() : parentHome();
@@ -1096,11 +1112,13 @@ function kidHome() {
   const ban = activeBan(me.id), fl = freeLeft(me.id);
   let h = `<div class="card hero" style="padding:12px">${surferSVG(me)}<div class="hero-chips"><div><b>${bal}</b><span>points</span></div><div><b>${ban ? '✕' : fl.length}<small style="font-size:14px"> left</small></b><span>iPad sessions</span></div><div><b>${cd.done}<small style="font-size:14px">/${cd.total}</small></b><span>chores</span></div></div></div>`;
   h += helloCard();
-  if (run) h += `<div class="card center"><h3>${design() === 'fern' ? 'Shot clock' : 'iPad time left'}</h3>${design() === 'fern' ? `<div style="background:#111;color:#FF3B30;border-radius:16px;padding:6px;font-family:'Courier New',monospace" class="timer" data-end="${endOf(run)}">--:--</div>` : `<div class="timer" data-end="${endOf(run)}">--:--</div>`}<button class="btn sec" data-act="stopIpad" data-id="${run.id}">I've finished early</button></div>`;
+  if (run) h += `<div class="card center"><h3>${design() === 'fern' ? 'Shot clock' : 'iPad time left'}</h3>${design() === 'fern' ? `<div style="background:#111;color:#FF3B30;border-radius:16px;padding:6px;font-family:'Courier New',monospace" class="timer" data-end="${endOf(run)}">--:--</div>` : `<div class="timer" data-end="${endOf(run)}">--:--</div>`}<div class="grid2"><button class="btn" data-act="pauseIpad" data-id="${run.id}">${ic('pause', 'fill')} Pause</button><button class="btn sec" data-act="stopIpad" data-id="${run.id}">I've finished</button></div><p class="muted" style="margin:8px 0 0">Pause keeps the rest for later today.</p></div>`;
+  else if (pausedSession(me.id) && !activeBan(me.id)) { const ps = pausedSession(me.id); h += `<div class="card center"><h3>iPad paused</h3><div class="timer" style="opacity:.55">${fmtLeft(ps.data.remainSec)}</div><p class="muted">You've got ${fmtLeft(ps.data.remainSec)} left of this session. Carry on whenever you like today.</p><button class="btn big" data-act="resumeIpad" data-id="${ps.id}">${ic('play_arrow', 'fill')} Carry on</button></div>`; }
   else if (ban) h += `<div class="card">${banStamp(ban)}</div>`;
   else if (pend) h += `<div class="card">${secH('hourglass_top', 'amber', 'iPad time asked for')}<p>${kindOf(pend) === 'bought' ? `You asked to buy ${pend.data.minutes} minutes for ${buyCost(pend.data.minutes)} points.` : `You asked to start a ${pend.data.minutes} minute session.`} Waiting for Mum or Dad to say yes.</p><button class="btn sec small" data-act="cancelIpad" data-id="${pend.id}">Cancel</button></div>`;
   else h += ipadCard();
   h += `<button class="btn big sec" data-act="howItWorks">${ic('record_voice_over')} How it works</button>`;
+  if (design() === 'ginny') h += `<button class="btn big" style="background:linear-gradient(180deg,#FF5FAE,#E11D74);box-shadow:0 2px 8px rgba(225,29,116,.3)" data-act="brushTeeth">🪥 Brush my teeth with a bird</button>`;
   if (design() === 'ginny') h += `<button class="btn big" style="background:linear-gradient(180deg,#2BB673,#1F9D63);box-shadow:0 2px 8px rgba(31,157,99,.3)" data-act="go" data-v="feel">${ic('waves')} How am I feeling?</button>`;
   else h += `<div class="grid2" style="margin-bottom:12px"><button class="btn big dark" style="margin:0" data-act="music">${ic('headphones', 'fill')} My music</button><button class="btn big" style="margin:0" data-act="go" data-v="calm" data-p="wave">${ic('waves')} Calm down</button></div>`;
   const ci = K('checkin').find(c => c.data.member === me.id && c.data.date === today());
@@ -1111,10 +1129,11 @@ function kidHome() {
   return h;
 }
 function ipadCard() {
-  const plan = planFor(today()), used = freeUsed(me.id), fl = freeLeft(me.id);
-  const dots = plan.map((m, i) => { const u = used[i]; return `<span class="ses ${u ? (u.data.status === 'removed' ? 'gone' : 'used') : ''}">${m}</span>`; }).join('');
+  const plan = planFor(today()), fl = freeLeft(me.id), lens = [...new Set(fl)];
+  const dots = slotStatus(me.id).map(x => `<span class="ses ${x.st}">${x.m}</span>`).join('');
   let h = `<div class="card">${secH('tablet_mac', 'blue', 'My iPad time', `<span class="pill">${fl.length} of ${plan.length} left</span>`)}<div class="ses-row">${dots}</div>`;
-  if (fl.length) h += `<button class="btn big" style="margin:10px 0 0" data-act="startFree">${ic('play_arrow', 'fill')} Start my ${fl[0]} minute session</button>`;
+  if (lens.length === 1) h += `<button class="btn big" style="margin:10px 0 0" data-act="startFree" data-x="${lens[0]}">${ic('play_arrow', 'fill')} Start my ${lens[0]} minute session</button>`;
+  else if (lens.length > 1) h += `<p class="muted" style="margin:10px 0 6px">Pick which session you want:</p><div class="grid2">${lens.map(m => `<button class="btn" style="margin:0" data-act="startFree" data-x="${m}">${ic('play_arrow', 'fill')} ${m} min</button>`).join('')}</div>`;
   else h += `<p class="muted" style="margin:10px 0 6px">${removedToday(me.id) ? "That's all your sessions for today." : "You've used all today's sessions."} ${isWeekend(addDays(today(), 1)) ? 'Tomorrow you get ' + planText(addDays(today(), 1)) + '.' : 'More tomorrow!'}</p><button class="btn big sec" style="margin:0" data-act="buyIpad">${ic('shopping_cart')} Buy extra time</button>`;
   if (removedToday(me.id)) h += `<div class="muted mt">Mum or Dad took ${removedToday(me.id) === 1 ? 'a session' : removedToday(me.id) + ' sessions'} away today.</div>`;
   return h + `</div>`;
@@ -1203,6 +1222,7 @@ function parentHome() {
       <div class="mini-stats"><div><b>${cd.done}/${cd.total}</b><span>chores</span></div><div><b>${activeBan(k.id) ? '✕' : freeLeft(k.id).length + '/' + planFor(today()).length}</b><span>sessions left</span></div><div><b>${ledger(k.id).filter(i => i.data.cat === 'calm' && i.data.date === today()).length}</b><span>calm tools</span></div></div>
       <div class="bar mt"><i style="width:${pct}%"></i></div>
       ${activeBan(k.id) ? `<div class="mt">${banStamp(activeBan(k.id), false)}</div>` : ''}
+      ${!run && pausedSession(k.id) ? `<div class="row mt" style="background:#F1F5F9;border-radius:14px;padding:10px 12px">${ic('pause_circle', 'fill')}<div class="grow"><b>iPad paused</b></div><div class="stat" style="font-size:22px;opacity:.6">${fmtLeft(pausedSession(k.id).data.remainSec)}</div></div>` : ''}
       ${run ? `<div class="row mt" style="background:#FFF6E5;border-radius:14px;padding:10px 12px">${ic('tablet_mac', 'fill')}<div class="grow"><b>On the iPad</b></div><div class="stat" data-end="${endOf(run)}" style="font-size:22px">--:--</div><button class="btn sec small" data-act="stopIpad" data-id="${run.id}">Stop</button></div>` : ''}
       <div class="kid-actions"><button data-act="bonusModal" data-id="${k.id}">${ic('add_circle', 'fill')}Points</button><button data-act="removeModal" data-id="${k.id}">${ic('remove_circle')}Take away</button><button data-act="kindModal" data-id="${k.id}">${ic('favorite', 'fill')}Well done</button><button data-act="giveIpad" data-id="${k.id}">${ic('tablet_mac')}iPad</button></div>
       <button class="btn sec small mt" style="width:100%" data-act="go" data-v="kid" data-p="${k.id}">${ic('receipt_long')} Points history</button></div>`;
@@ -1811,6 +1831,7 @@ function render() {
   if (same) window.scrollTo(0, y); else window.scrollTo(0, 0);
   const hd = document.querySelector('header.top'); if (hd) document.documentElement.style.setProperty('--hdr', hd.offsetHeight + 'px');
   if (view === 'pet') { mountPet(); mountPetExtras(); }
+  maybeStartBrush();
   if (view === 'calm') mountCalm();
   if (view === 'calendar') mountCalendar();
   if (view === 'chat') mountChat();
@@ -1819,16 +1840,17 @@ function render() {
   tickTimers();
   checkPopups();
 }
+function maybeStartBrush() { if (view === 'brush' && $('#brushTime') && (!brush || brush.done === undefined)) brushStart(); }
 function softRender() {
   const a = document.activeElement;
   checkNewMessages();
   if (!isKid()) { const d = $('#tasksDot'), n = waitingItems().n; if (d) { d.textContent = n > 9 ? '9+' : n; d.hidden = !n; } }
   if (view === 'chat' && !$('#modal').innerHTML) { const inp = $('#chatInput'), val = inp ? inp.value : '', foc = a === inp; render(); const i2 = $('#chatInput'); if (i2) { i2.value = val; if (foc) i2.focus(); } return; }
-  if (['pet','calm'].includes(view) || (a && /INPUT|TEXTAREA|SELECT/.test(a.tagName)) || $('#modal').innerHTML) { pendingRender = true; checkPopups(); return; }
+  if (['pet','calm','brush'].includes(view) || (a && /INPUT|TEXTAREA|SELECT/.test(a.tagName)) || $('#modal').innerHTML) { pendingRender = true; checkPopups(); return; }
   render();
 }
 document.addEventListener('focusout', () => setTimeout(() => { const a = document.activeElement; if (pendingRender && !(a && /INPUT|TEXTAREA|SELECT/.test(a.tagName)) && !$('#modal').innerHTML && !['pet','calm'].includes(view)) render(); }, 200));
-function go(v, p = null) { view = v; param = p; if (v === 'calendar' || v === 'meals') weekOffset = 0; if (v === 'calendar') { monthOffset = 0; calSel = today(); } render(); }
+function go(v, p = null) { if (view === 'brush' && v !== 'brush') { brushStop(); brush = null; } view = v; param = p; if (v === 'calendar' || v === 'meals') weekOffset = 0; if (v === 'calendar') { monthOffset = 0; calSel = today(); } render(); }
 
 /* ===== Popups, timers and alarms ===== */
 function checkPopups() {
@@ -1972,10 +1994,11 @@ A.catchFly = el => {
   }, 1050);
 };
 A.acc = el => { const a = { ...(prefs(me.id).acc || {}) }; a[el.dataset.x] = !a[el.dataset.x]; setPrefs({ acc: a }); };
-A.startFree = async () => {
+A.startFree = async el => {
   if (activeBan(me.id)) return render();
+  if (pausedSession(me.id)) return toast('Finish your paused session first');
   const fl = freeLeft(me.id); if (!fl.length) return render();
-  const m = fl[0];
+  const want = Number(el && el.dataset.x), m = fl.includes(want) ? want : fl[0];
   const it = await add('ipad', { member: me.id, minutes: m, kind: 'free', status: 'pending', requestedAt: new Date().toISOString(), date: today() }, me.id, { silent: true });
   if (!it) return;
   if (!settings().sessionsNeedOk) { await startSession(it, m, 'Automatic'); toast(`${m} minutes started! The alarm will tell you when to stop.`); }
@@ -2000,7 +2023,9 @@ function ipadPanel(mid) {
   if (ban) h += banStamp(ban, false) + `<button class="btn big ok mt" data-act="liftBan" data-id="${ban.id}">Give the iPad back now</button>`;
   else {
     h += `<p class="muted">${fl.length} of ${plan.length} sessions left today${run ? ' · on the iPad now' : ''}</p>`;
-    if (fl.length && !run) h += `<button class="btn big" data-act="parentStart" data-kid="${mid}">${ic('play_arrow', 'fill')} Start her next session (${fl[0]} min)</button>`;
+    const ps = pausedSession(mid);
+    if (ps && !run) h += `<button class="btn big" data-act="parentStart" data-kid="${mid}">${ic('play_arrow', 'fill')} Carry on her paused session (${fmtLeft(ps.data.remainSec)} left)</button>`;
+    else if (fl.length && !run) h += `<button class="btn big" data-act="parentStart" data-kid="${mid}">${ic('play_arrow', 'fill')} Start her next session (${fl[0]} min)</button>`;
     if (fl.length) h += `<button class="btn big sec" data-act="takeSession" data-kid="${mid}">${ic('remove_circle')} Take away a session today</button>`;
     h += `<label class="mt">Give extra time free</label><div class="grid4">${[5, 10, 15, 20].map(m => `<button class="btn sec small" data-act="giftIpad" data-kid="${mid}" data-x="${m}">${m} min</button>`).join('')}</div>`;
     h += `<div class="card" style="background:#FFF1F1;margin-top:14px;box-shadow:none"><h3 style="color:#B91C1C;margin-top:0">Remove the iPad</h3><label>Reason (optional)</label><input id="banWhy" placeholder="e.g. Not coming off when the alarm went"><label>For how long?</label><div class="grid3">${[1, 2, 3, 5, 7, 14].map(n => `<button class="btn danger small" data-act="banIpad" data-kid="${mid}" data-x="${n}">${n} ${n === 1 ? 'day' : 'days'}</button>`).join('')}</div><p class="muted" style="margin-bottom:0">She'll see a big red "iPad removed" sign with the day she gets it back.</p></div>`;
@@ -2009,7 +2034,7 @@ function ipadPanel(mid) {
 }
 A.approveIpad = async el => { const s = items.find(i => i.id === el.dataset.id); if (!s) return; if (activeBan(s.data.member)) return toast(`${nameOf(s.data.member)}'s iPad is removed at the moment`); if (runningSession(s.data.member)) return toast(`${nameOf(s.data.member)} is already on the iPad`); await startSession(s, s.data.minutes, me.name); toast(`${nameOf(s.data.member)}'s ${s.data.minutes} minutes started`); };
 A.giveIpad = el => openModal(ipadPanel(el.dataset.id));
-A.parentStart = async el => { const mid = el.dataset.kid, fl = freeLeft(mid); closeModal(); if (!fl.length) return; const it = await add('ipad', { member: mid, minutes: fl[0], kind: 'free', status: 'pending', requestedAt: new Date().toISOString(), date: today() }, me.id, { silent: true }); if (it) await startSession(it, fl[0], me.name); };
+A.parentStart = async el => { const mid = el.dataset.kid, fl = freeLeft(mid); closeModal(); if (!fl.length) return; if (pausedSession(mid)) { const ps = pausedSession(mid); await upd(ps.id, { status: 'running', startedAt: new Date(Date.now() - (ps.data.minutes * 60 - ps.data.remainSec) * 1000).toISOString() }, { silent: true }); return render(); } const it = await add('ipad', { member: mid, minutes: fl[0], kind: 'free', status: 'pending', requestedAt: new Date().toISOString(), date: today() }, me.id, { silent: true }); if (it) await startSession(it, fl[0], me.name); };
 A.giftIpad = async el => { const mid = el.dataset.kid, m = Number(el.dataset.x); closeModal(); if (runningSession(mid)) return toast(`${nameOf(mid)} is already on the iPad`); const it = await add('ipad', { member: mid, minutes: m, kind: 'gift', status: 'pending', requestedAt: new Date().toISOString(), date: today() }, me.id, { silent: true }); if (it) await startSession(it, m, me.name); toast(`${m} free minutes started for ${nameOf(mid)}`); };
 A.takeSession = async el => { const mid = el.dataset.kid, fl = freeLeft(mid); if (!fl.length) return; await add('ipad', { member: mid, minutes: fl[0], kind: 'free', status: 'removed', date: today(), by: me.name }, me.id, { silent: true }); toast(`Took a ${fl[0]} minute session from ${nameOf(mid)}`); openModal(ipadPanel(mid)); render(); };
 A.banIpad = async el => {
@@ -2018,11 +2043,27 @@ A.banIpad = async el => {
   const run = runningSession(mid);
   if (run) { alarmed.add(run.id); await upd(run.id, { status: 'done', usedMinutes: Math.min(run.data.minutes, Math.ceil((Date.now() - new Date(run.data.startedAt).getTime()) / 60000)) }, { silent: true }); }
   for (const p of sessions(mid).filter(x => x.data.status === 'pending')) await upd(p.id, { status: 'declined', approvedBy: me.name }, { silent: true });
+  for (const p of sessions(mid).filter(x => x.data.status === 'paused')) await upd(p.id, { status: 'done', usedMinutes: Math.round(p.data.minutes - p.data.remainSec / 60) }, { silent: true });
   await add('ipadban', { member: mid, from: today(), until: addDays(today(), n), days: n, reason: why, byName: me.name }, me.id, { silent: true });
   render(); toast(`iPad removed for ${n} ${n === 1 ? 'day' : 'days'}`);
 };
 A.liftBan = async el => { closeModal(); await upd(el.dataset.id, { lifted: true, liftedBy: me.name }, { silent: true }); render(); toast('iPad given back'); };
 A.declineIpad = el => upd(el.dataset.id, { status: 'declined', approvedBy: me.name });
+A.pauseIpad = async el => {
+  const s = items.find(i => i.id === el.dataset.id); if (!s || s.data.status !== 'running') return;
+  const remainSec = Math.max(0, Math.round((endOf(s) - Date.now()) / 1000));
+  if (remainSec < 5) return A.stopIpad(el);
+  await upd(s.id, { status: 'paused', remainSec, pausedAt: new Date().toISOString() }, { silent: true });
+  render(); toast(`Paused with ${fmtLeft(remainSec)} left`);
+};
+A.resumeIpad = async el => {
+  const s = items.find(i => i.id === el.dataset.id); if (!s || s.data.status !== 'paused') return;
+  if (activeBan(s.data.member)) return render();
+  if (runningSession(s.data.member)) return toast('Already on the iPad');
+  const startedAt = new Date(Date.now() - (s.data.minutes * 60 - s.data.remainSec) * 1000).toISOString();
+  await upd(s.id, { status: 'running', startedAt }, { silent: true });
+  render(); toast('Carry on! The alarm will tell you when to stop.');
+};
 A.stopIpad = async el => {
   const s = items.find(i => i.id === el.dataset.id); if (!s) return;
   const usedMin = Math.ceil((Date.now() - new Date(s.data.startedAt).getTime()) / 60000), unused = Math.max(0, s.data.minutes - usedMin);
@@ -2447,6 +2488,72 @@ function showPicker() {
   $('#app').innerHTML = `<div class="login"><h2 class="center" style="font-size:28px">🌊 ${esc(CONFIG.APP_NAME)}</h2><div class="card"><h3>Who's using the app?</h3><p class="muted">Demo mode: everything is saved on this device only.</p><div class="grid2">${members.map(m => `<button class="tile" data-act="whoPick" data-id="${m.id}"><span class="ic">${m.role === 'parent' ? '🧑' : m.design === 'fern' ? '🏐' : '🐦'}</span>${esc(m.name)}</button>`).join('')}</div></div></div>`;
 }
 
+/* ===== Toothbrushing timer (Ginnie's birds) ===== */
+let brush = null;
+function brushBirds() {
+  const list = [{ key: 'coco', name: 'Coco', svg: w => cocoSVG(w) }];
+  BIRDS.slice(0, unlockedCount(me.id, BIRDS.length)).forEach((b, i) => list.push({ key: 'b' + i, name: b.name, svg: w => birdSVG(b, false, w) }));
+  return list;
+}
+A.brushTeeth = () => {
+  const list = brushBirds(), last = prefs(me.id).brushBird;
+  openModal(`<div class="row"><div class="grow"><div class="eyebrow-dark">2 minute toothbrushing</div><h3 style="margin:2px 0 0">Who's brushing with you?</h3></div><button class="iconbtn sm" data-act="close" aria-label="Close">${ic('close')}</button></div><p class="muted">Pick a bird. They'll dance and sing for 2 minutes while you brush.</p><div class="brush-pick">${list.map(b => `<button class="${b.key === last ? 'on' : ''}" data-act="brushGo" data-x="${b.key}"><div>${b.svg(64)}</div><b>${esc(b.name)}</b></button>`).join('')}</div>`);
+};
+A.brushGo = el => { closeModal(); setPrefs({ brushBird: el.dataset.x }); go('brush', el.dataset.x); };
+const BRUSH_STEPS = [['⬆️⬅️', 'Top teeth, left side'], ['⬆️➡️', 'Top teeth, right side'], ['⬇️⬅️', 'Bottom teeth, left side'], ['⬇️➡️', 'Bottom teeth, right side']];
+const BRUSH_DANCES = ['bdance-bob', 'bdance-sway', 'bdance-hop', 'bdance-spin'];
+V.brush = () => {
+  const b = brushBirds().find(x => x.key === param) || brushBirds()[0];
+  return `<div class="card brush-card center"><div class="brush-name">🎵 ${esc(b.name)} is brushing with you! 🎵</div><div class="brush-stage"><div class="brush-ring"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="54" fill="none" stroke="#E0F2FE" stroke-width="10"/><circle id="brushArc" cx="60" cy="60" r="54" fill="none" stroke="#FF2E93" stroke-width="10" stroke-linecap="round" stroke-dasharray="339.3" stroke-dashoffset="0" transform="rotate(-90 60 60)"/></svg></div><div class="brush-bird bdance-bob" id="brushBird">${b.svg(170)}</div><div class="brush-notes" id="brushNotes"></div></div><div class="brush-time" id="brushTime">2:00</div><div class="brush-step" id="brushStep">${BRUSH_STEPS[0][0]} ${BRUSH_STEPS[0][1]}</div><div class="bar" style="margin:12px 0"><i id="brushBar" style="width:0%"></i></div><button class="btn sec" data-act="brushStop">Stop</button></div>`;
+};
+function brushChirp(t0) { const a = audio(); if (!a) return; const o = a.createOscillator(), g = a.createGain(), base = 1800 + Math.random() * 900; o.type = 'sine'; o.frequency.setValueAtTime(base, a.currentTime + t0); o.frequency.exponentialRampToValueAtTime(base * 1.5, a.currentTime + t0 + .08); o.frequency.exponentialRampToValueAtTime(base * .9, a.currentTime + t0 + .16); g.gain.setValueAtTime(.0001, a.currentTime + t0); g.gain.exponentialRampToValueAtTime(.09, a.currentTime + t0 + .02); g.gain.exponentialRampToValueAtTime(.0001, a.currentTime + t0 + .18); o.connect(g).connect(a.destination); o.start(a.currentTime + t0); o.stop(a.currentTime + t0 + .2); }
+const BRUSH_TUNE = [[523, 1], [659, 1], [784, 1], [659, 1], [698, 1], [880, 1], [784, 2], [659, 1], [587, 1], [523, 1], [587, 1], [659, 2], [523, 2]];
+function brushMusic() {
+  let t = 0; const beat = .26;
+  BRUSH_TUNE.forEach(([f, n]) => { tone(f, t, beat * n * .9, 'triangle', .07); t += beat * n; });
+  [131, 175, 196, 131].forEach((f, i) => tone(f, i * beat * 4, beat * 3.6, 'sine', .06));
+  for (let i = 0; i < 3; i++) brushChirp(1 + Math.random() * (t - 1));
+  return t;
+}
+function brushStart() {
+  brushStop(true);
+  brush = { start: Date.now(), dur: 120000, step: -1, dance: 0, done: false };
+  audio(); const loopLen = brushMusic() * 1000;
+  brush.music = setInterval(brushMusic, loopLen);
+  brush.tick = setInterval(brushTick, 200);
+  try { if (navigator.wakeLock) navigator.wakeLock.request('screen').then(w => brush && (brush.wake = w)).catch(() => {}); } catch (e) {}
+  brushTick();
+}
+function brushNote() { const n = $('#brushNotes'); if (!n) return; const e = document.createElement('span'); e.textContent = ['♪', '♫', '♩', '♬'][Math.floor(Math.random() * 4)]; e.style.left = (15 + Math.random() * 70) + '%'; n.appendChild(e); setTimeout(() => e.remove(), 2200); }
+function brushTick() {
+  if (!brush || view !== 'brush') return;
+  const el = Date.now() - brush.start, left = Math.max(0, brush.dur - el), frac = Math.min(1, el / brush.dur);
+  const t = $('#brushTime'); if (!t) return;
+  t.textContent = fmtLeft(Math.ceil(left / 1000));
+  $('#brushArc').setAttribute('stroke-dashoffset', String(339.3 * frac)); $('#brushBar').style.width = (frac * 100) + '%';
+  const step = Math.min(3, Math.floor(el / 30000));
+  if (step !== brush.step) { brush.step = step; const st = $('#brushStep'); st.textContent = `${BRUSH_STEPS[step][0]} ${BRUSH_STEPS[step][1]}`; st.classList.remove('pop'); void st.offsetWidth; st.classList.add('pop'); if (step) chime(); }
+  const dance = Math.floor(el / 10000) % BRUSH_DANCES.length;
+  if (dance !== brush.dance) { brush.dance = dance; const bb = $('#brushBird'); if (bb) bb.className = 'brush-bird ' + BRUSH_DANCES[dance]; }
+  if (Math.random() < .25) brushNote();
+  if (left <= 0 && !brush.done) brushFinish();
+}
+function brushFinish() {
+  brush.done = true; const name = (brushBirds().find(x => x.key === param) || {}).name || 'Coco';
+  brushStop(true); whistleTune(); celebrate(true);
+  const hour = new Date().getHours(), routine = hour < 15 ? 'morning' : 'bedtime';
+  const ch = choresFor(me.id).find(c => /teeth/i.test(c.data.name) && (c.data.routine === routine || !c.data.routine) && !choreLog(c.id, me.id));
+  openModal(`<div class="center"><div style="font-size:54px">✨🦷✨</div><h3>Sparkling teeth!</h3><p class="muted">${esc(name)} says that was brilliant brushing!</p>${ch ? `<button class="btn big ok" data-act="brushTick" data-id="${ch.id}">Tick off "${esc(ch.data.name)}"</button>` : ''}<button class="btn big sec" data-act="brushDone">Done</button></div>`);
+}
+function brushStop(keepView) {
+  if (brush) { clearInterval(brush.music); clearInterval(brush.tick); try { brush.wake && brush.wake.release(); } catch (e) {} }
+  try { if (ac) { ac.close(); ac = null; } } catch (e) {}
+  if (!keepView) brush = null;
+}
+A.brushStop = () => { brushStop(); brush = null; go('home'); };
+A.brushDone = () => { closeModal(); brush = null; go('home'); };
+A.brushTick = async el => { closeModal(); brush = null; await tickChore(el.dataset.id); go('home'); };
+
 /* ===== How it works (read aloud to the girls) ===== */
 function howItWorksParts(m) {
   const P = settings().points, fern = design(m) === 'fern', per = P.buyPerMinute || 2, name = m.name;
@@ -2454,7 +2561,7 @@ function howItWorksParts(m) {
   const choreList = chores.map(c => `${c.data.name.replace(/^my /i, '')}: ${c.data.points}`);
   const parts = [];
   parts.push(['👋', `Hi ${name}!`, `Here's how the app works. Listen carefully, there might be a quiz! Only joking.`]);
-  parts.push(['📱', 'Your iPad time', `You don't need points for your normal iPad time. On school days you get ${planText('2026-11-09')}. At the weekend you get ${planText('2026-11-07')}. When you want one, tap Start my session. An alarm goes off when your time is up, so come off straight away. If you stop early, the rest of that session is gone, so pick a good moment.`]);
+  parts.push(['📱', 'Your iPad time', `You don't need points for your normal iPad time. On school days you get ${planText('2026-11-09')}. At the weekend you get ${planText('2026-11-07')}. When you want one, tap Start. At the weekend you can pick your 10-minute session whenever you like. An alarm goes off when your time is up, so come off straight away. If you need to stop for a bit, tap Pause and you can carry on later that day. If you tap I've finished, the rest of that session is gone.`]);
   parts.push(['⭐', 'Earning points', `You earn points for doing your jobs. ${choreList.length ? 'Here they are: ' + choreList.join(', ') + '. ' : ''}If you do every chore in a day you get ${P.allChoresBonus} bonus points, and if you do that seven days in a row you get ${P.weekStreakBonus} more.`]);
   parts.push([fern ? '💬' : '🌊', fern ? 'Being respectful' : 'Staying calm', fern ? `Every evening at 8 o'clock I'll ask if you spoke respectfully to Mum, Dad and your sister. If Mum or Dad agree, you get ${P.calmDayBonus} points and your respect streak grows.` : `Every evening at half past 8 I'll ask if you got through the day without a tantrum. If Mum or Dad agree, you get ${P.calmDayBonus} points and your no-tantrum streak grows. If you feel cross, tap How am I feeling and use a calming tool. That's ${P.calm} points, and it can win back points you've lost.`]);
   parts.push(['🐶', 'More ways to earn', `Feeding Sunny is ${P.sunnyFeed} points, letting him out is ${P.sunnyOut}, and taking him for a walk is ${P.sunnyWalk}. Homework done on time is ${P.homeworkOnTime}. Sister challenges are ${P.challenge} points each, the morning surf report is ${P.checkin}, and Mum and Dad can give you bonus points for being brilliant.`]);
