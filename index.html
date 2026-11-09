@@ -89,7 +89,7 @@ p{margin:0 0 10px}
 .brush-time{font-size:52px;font-weight:900;letter-spacing:1px;margin-top:6px}.brush-step{font-size:20px;font-weight:800;color:#0F172A}.brush-step.pop{animation:stepPop .5s ease}@keyframes stepPop{0%{transform:scale(.7)}60%{transform:scale(1.12)}100%{transform:scale(1)}}
 .wide main{max-width:1180px}
 .cal-top{display:flex;justify-content:space-between;align-items:flex-end;margin:2px 4px 12px}.cal-clock{font-size:34px;font-weight:800;letter-spacing:-.5px;line-height:1}.cal-wx{display:flex;align-items:center;gap:6px;font-size:20px;color:#B7791F}.cal-wx .ms{font-size:30px}
-.cd-strip{display:flex;gap:8px;overflow-x:auto;margin-bottom:12px;padding-bottom:2px}.cd-pill{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;white-space:nowrap;font-size:15px}.cd-pill em{font-style:normal;font-weight:800;margin-left:4px}
+.cd-strip{display:flex;gap:8px;overflow-x:auto;margin-bottom:12px;padding-bottom:2px}.cd-pill{border:0;font:inherit;color:inherit;cursor:pointer;display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;white-space:nowrap;font-size:15px}.cd-pill em{font-style:normal;font-weight:800;margin-left:4px}
 .seg{display:flex;background:#E9EEF1;border-radius:14px;padding:4px;margin-bottom:10px}.seg button{flex:1;border:0;background:none;padding:9px 0;border-radius:11px;font:inherit;font-weight:700;color:#5B6B73}.seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.08)}
 .who-filter{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 8px}.wf{display:flex;align-items:center;gap:6px;border:2px solid transparent;background:var(--fc,#eee);border-radius:999px;padding:3px 12px 3px 3px;font:inherit;font-weight:700;font-size:14px;color:#24343B;white-space:nowrap}.wf.on{border-color:var(--fd)}.wf.clear{background:#fff;border-color:#D6DEE2;padding:3px 12px}.wf .char-av,.wf .avatar{flex:none}
 .cal-nav{display:flex;align-items:center;gap:6px;margin:4px 0 10px}.cal-nav h3{flex:1;margin:0;text-align:center;font-size:19px}
@@ -172,7 +172,7 @@ label{display:block;font-size:13px;color:var(--muted);margin:12px 0 5px;font-wei
 .medal.xl{width:96px;height:96px}.medal.xl .ms{font-size:48px}
 .cd-row{display:flex;gap:10px;overflow-x:auto;margin:0 -16px 14px;padding:2px 16px 6px;scrollbar-width:none}
 .cd-row::-webkit-scrollbar{display:none}
-.cd{flex:none;width:132px;display:flex;flex-direction:column;border-radius:20px;padding:12px;box-shadow:var(--shadow);position:relative}.cd-faces{margin-top:8px}.cd .cd-t{color:#1F2E35}
+.cd{flex:none;width:132px;border:0;text-align:left;font:inherit;cursor:pointer;display:flex;flex-direction:column;border-radius:20px;padding:12px;box-shadow:var(--shadow);position:relative}.cd-faces{margin-top:8px}.cd .cd-t{color:#1F2E35}
 .cd-n{font-size:30px;font-weight:800;line-height:1;color:#1F2E35}
 .cd-l{font-size:12px;font-weight:700;color:#3D4D55}
 .cd-t{font-size:14px;font-weight:700;margin-top:6px;line-height:1.25}
@@ -1607,7 +1607,7 @@ const cdLive = (e, d) => e.data.countdown && (!e.data.cdStart || daysBetween(tod
 function countdownStrip() {
   const up = K('event').filter(e => e.data.countdown && e.data.status === 'approved' && (!isKid() || whoIds(e.data.who).includes(me.id))).map(e => ({ e, d: nextOccurrence(e) })).filter(o => cdLive(o.e, o.d)).filter(o => o.d >= today()).sort((a, b) => a.d.localeCompare(b.d)).slice(0, 3);
   if (!up.length) return '';
-  return `<div class="cd-strip">${up.map(({ e, d }) => { const n = daysBetween(today(), d); return `<div class="cd-pill" style="background:${evBg(e.data.who)}"><span>${evEmoji(e.data)}</span><b>${esc(e.data.title)}</b><em>${n === 0 ? 'Today!' : n === 1 ? 'Tomorrow' : n + ' days'}</em></div>`; }).join('')}</div>`;
+  return `<div class="cd-strip">${up.map(({ e, d }) => { const n = daysBetween(today(), d); return `<button class="cd-pill" data-act="eventDetail" data-id="${e.id}" data-x="${d}" style="background:${evBg(e.data.who)}"><span>${evEmoji(e.data)}</span><b>${esc(e.data.title)}</b><em>${n === 0 ? 'Today!' : n === 1 ? 'Tomorrow' : n + ' days'}</em></button>`; }).join('')}</div>`;
 }
 function mountCalendar() {
   document.body.classList.add('wide');
@@ -2456,7 +2456,7 @@ function countdownRow() {
   };
   const cd = K('event').filter(show).map(e => ({ e, d: nextOccurrence(e) })).filter(o => o.d >= today() && (o.e.data.countdown ? cdLive(o.e, o.d) : daysBetween(today(), o.d) <= 30)).sort((a, b) => a.d.localeCompare(b.d)).slice(0, 6);
   if (!cd.length) return '';
-  return `<div class="cd-row">${cd.map(({ e, d }) => { const n = daysBetween(today(), d); return `<div class="cd" style="background:${evBg(e.data.who)};--cc:${deepOf(whoIds(e.data.who)[0])}"><div class="cd-n">${n === 0 ? '🎉' : n}</div><div class="cd-l">${n === 0 ? 'Today!' : n === 1 ? 'day to go' : 'days to go'}</div><div class="cd-t">${e.data.type === 'birthday' ? '🎂 ' : ''}${esc(e.data.title)}${e.data.status === 'pending' ? '<div class="cd-w">Waiting for OK</div>' : ''}</div><div class="cd-faces">${facesOf(e.data.who, 22)}</div></div>`; }).join('')}</div>`;
+  return `<div class="cd-row">${cd.map(({ e, d }) => { const n = daysBetween(today(), d); return `<button class="cd" data-act="eventDetail" data-id="${e.id}" data-x="${d}" style="background:${evBg(e.data.who)};--cc:${deepOf(whoIds(e.data.who)[0])}"><div class="cd-n">${n === 0 ? '🎉' : n}</div><div class="cd-l">${n === 0 ? 'Today!' : n === 1 ? 'day to go' : 'days to go'}</div><div class="cd-t">${e.data.type === 'birthday' ? '🎂 ' : ''}${esc(e.data.title)}${e.data.status === 'pending' ? '<div class="cd-w">Waiting for OK</div>' : ''}</div><div class="cd-faces">${facesOf(e.data.who, 22)}</div></button>`; }).join('')}</div>`;
 }
 
 /* ===== Weather and surf ===== */
