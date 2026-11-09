@@ -104,8 +104,8 @@ p{margin:0 0 10px}
 .mhead{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:12px;font-weight:700;color:#7A8A92;margin-bottom:4px}
 .mgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}.mc{border:0;background:#F6F8F9;border-radius:10px;min-height:64px;padding:4px 3px;font:inherit;text-align:left;display:flex;flex-direction:column;gap:2px;overflow:hidden;cursor:pointer}.mc.empty{background:none}
 .mc-n{font-size:13px;font-weight:700;padding-left:3px}.mc.today .mc-n{background:#E8463C;color:#fff;border-radius:50%;width:22px;height:22px;display:grid;place-items:center;padding:0}.mc.sel{outline:2px solid #2FA4C7}
-.mc-ev{display:flex;flex-direction:column;gap:2px}.mc-ev i{display:block;height:7px;border-radius:4px;overflow:hidden}.mc-ev em{display:none;font-style:normal;font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:1px 4px}.mc-ev b{font-size:10px;color:#7A8A92}
-@media (min-width:700px){.mc{min-height:92px}.mc-ev i{height:auto}.mc-ev em{display:block}}
+.mc-ev{display:flex;flex-wrap:wrap;gap:0 2px;padding:0 2px}.mc-ev em{font-style:normal;font-size:0;line-height:1.2}.mc-ev em span{font-size:13px}.mc-ev b{display:none;font-size:10px;color:#3D4D55}.mc.has .mc-n{color:#1F2E35}
+@media (min-width:700px){.mc{min-height:96px}.mc-ev{flex-direction:column;gap:2px;padding:0 3px}.mc-ev em{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#1F2E35}.mc-ev em span{font-size:12px}.mc-ev b{display:block}}
 .year-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}.ymonth{background:#fff;border-radius:18px;padding:10px;box-shadow:0 1px 3px rgba(16,40,52,.06)}.ym-h{border:0;background:none;font:inherit;font-weight:800;font-size:16px;margin-bottom:6px;padding:0;color:var(--ink)}
 .mgrid.mini{gap:1px}.mgrid.mini .mc.empty{min-height:0;height:22px}.mc.mini{min-height:0;height:22px;padding:0;align-items:center;justify-content:center;font-size:11px;font-weight:600;background:none}.mc.mini.has{font-weight:800}.mc.mini.today{background:#E8463C!important;color:#fff;border-radius:50%}
 .who-pick{display:flex;flex-wrap:wrap;gap:8px}.who-pick label{margin:0}.who-pick input{position:absolute;opacity:0}.who-pick span{display:flex;align-items:center;gap:6px;background:#F1F4F6;border:2px solid transparent;border-radius:999px;padding:3px 12px 3px 3px;font-weight:700;color:#24343B}.who-pick input:checked+span{background:var(--fc);border-color:var(--fd)}
@@ -600,7 +600,7 @@ function colorOf(id) {
 }
 
 /* ===== Pastel people colours ===== */
-const PASTELS = { chris: '#CFE8D4', kerry: '#F7DCC6', ginnie: '#FAD0E2', fearne: '#DED4F6', sunny: '#FBE9A9' };
+const PASTELS = { chris: '#FBE8A0', kerry: '#DED4F6', ginnie: '#FAD0E2', fearne: '#CDE5F8', sunny: '#FDD3AE' };
 const PASTEL_FALLBACK = ['#CDE9F6', '#FDE2C8', '#D9F2E6', '#F3D9F7', '#E6E9F5'];
 function pastelOf(id) { const k = charKey(id); if (k && PASTELS[k]) return PASTELS[k]; const i = members.findIndex(m => m.id === id); return i >= 0 ? PASTEL_FALLBACK[i % PASTEL_FALLBACK.length] : '#E5ECEF'; }
 const deepOf = id => shade(pastelOf(id), -.45);
@@ -1575,7 +1575,8 @@ function monthHtml(y, mo, mini) {
   for (let dd = 1; dd <= daysIn; dd++) {
     const ds = ymd(new Date(y, mo, dd)), ev = calEvents(ds);
     if (mini) { cells += `<button class="mc mini${ds === today() ? ' today' : ''}${ev.length ? ' has' : ''}" ${ev.length ? `style="background:${evBg(ev[0].data.who)}"` : ''} data-act="calGoDay" data-x="${ds}">${dd}</button>`; continue; }
-    cells += `<button class="mc${ds === today() ? ' today' : ''}${ds === calSel ? ' sel' : ''}" data-act="calPick" data-x="${ds}"><span class="mc-n">${dd}</span><div class="mc-ev">${ev.slice(0, 3).map(e => `<i style="background:${evBg(e.data.who)}"><em>${evEmoji(e.data)} ${esc(e.data.title)}</em></i>`).join('')}${ev.length > 3 ? `<b>+${ev.length - 3}</b>` : ''}</div></button>`;
+    const who = [...new Set(ev.flatMap(e => whoIds(e.data.who)))].sort((a, b) => allWho().indexOf(a) - allWho().indexOf(b));
+    cells += `<button class="mc${ds === today() ? ' today' : ''}${ev.length ? ' has' : ''}" ${ev.length ? `style="background:${evBg(who.length === allWho().length ? 'all' : who)}"` : ''} data-act="calGoDay" data-x="${ds}"><span class="mc-n">${dd}</span><div class="mc-ev">${ev.slice(0, 3).map(e => `<em><span>${evEmoji(e.data)}</span> ${esc(e.data.title)}</em>`).join('')}${ev.length > 3 ? `<b>+${ev.length - 3} more</b>` : ''}</div></button>`;
   }
   return `<div class="mhead">${(mini ? 'MTWTFSS'.split('') : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']).map(d => `<div>${d}</div>`).join('')}</div><div class="mgrid${mini ? ' mini' : ''}">${cells}</div>`;
 }
@@ -1596,7 +1597,7 @@ V.calendar = () => {
   h += `<div id="calBody" class="cal-body">`;
   if (calMode === 'day') h += dayCol(calSel, true);
   else if (calMode === 'week') { const ws = calWeekStart(calSel); h += `<div class="week-grid">${[0, 1, 2, 3, 4, 5, 6].map(i => dayCol(addDays(ws, i))).join('')}</div>`; }
-  else if (calMode === 'month') h += `<div class="card" style="padding:10px">${monthHtml(y, mo)}</div>` + dayCol(calSel);
+  else if (calMode === 'month') h += `<div class="card" style="padding:10px">${monthHtml(y, mo)}</div>`;
   else h += `<div class="year-grid">${Array.from({ length: 12 }, (_, m) => `<div class="ymonth"><button class="ym-h" data-act="calGoMonth" data-x="${ymd(new Date(y, m, 1))}">${new Date(y, m, 1).toLocaleDateString('en-GB', { month: 'long' })}</button>${monthHtml(y, m, true)}</div>`).join('')}</div>`;
   h += `</div><button class="btn big" data-act="eventModalDay" data-x="${calSel}">${ic('add')} Add to the calendar</button>`;
   return h;
