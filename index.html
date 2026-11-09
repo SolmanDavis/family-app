@@ -109,6 +109,7 @@ p{margin:0 0 10px}
 .year-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}.ymonth{background:#fff;border-radius:18px;padding:10px;box-shadow:0 1px 3px rgba(16,40,52,.06)}.ym-h{border:0;background:none;font:inherit;font-weight:800;font-size:16px;margin-bottom:6px;padding:0;color:var(--ink)}
 .mgrid.mini{gap:1px}.mgrid.mini .mc.empty{min-height:0;height:22px}.mc.mini{min-height:0;height:22px;padding:0;align-items:center;justify-content:center;font-size:11px;font-weight:600;background:none}.mc.mini.has{font-weight:800}.mc.mini.today{background:#E8463C!important;color:#fff;border-radius:50%}
 .who-pick{display:flex;flex-wrap:wrap;gap:8px}.who-pick label{margin:0}.who-pick input{position:absolute;opacity:0}.who-pick span{display:flex;align-items:center;gap:6px;background:#F1F4F6;border:2px solid transparent;border-radius:999px;padding:3px 12px 3px 3px;font-weight:700;color:#24343B}.who-pick input:checked+span{background:var(--fc);border-color:var(--fd)}
+.linkbtn{border:0;background:none;color:#0E7490;font:inherit;font-weight:700;padding:0;text-decoration:underline;cursor:pointer}
 .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.btn.disabled{opacity:.45}
 .how{max-height:55vh;overflow:auto;margin:10px 0}.how-part{display:flex;gap:12px;padding:10px;border-radius:14px;transition:background .3s}.how-part.on{background:#E0F2FE}.how-e{font-size:28px;line-height:1}.how-part p{margin:4px 0 0;color:var(--muted);line-height:1.45}
 
@@ -1132,7 +1133,7 @@ function closeModal() { if (typeof speaking !== 'undefined' && speaking) { try {
 
 /* ===== Calendar helpers ===== */
 function eventsOn(d) {
-  return K('event').filter(e => { const x = e.data; if (x.status === 'declined') return false; if (x.date === d) return true; if (d < x.date) return false;
+  return K('event').filter(e => { const x = e.data; if (x.status === 'declined') return false; if (x.skip && x.skip.includes(d)) return false; if (x.date === d) return true; if (d < x.date) return false;
     if (x.repeat === 'yearly') return x.date.slice(5) === d.slice(5); if (x.repeat === true || x.repeat === 'weekly') return daysBetween(x.date, d) % 7 === 0; return false; })
     .sort((a, b) => (a.data.time || '99').localeCompare(b.data.time || '99'));
 }
@@ -1145,7 +1146,7 @@ function eventRow(e, d) {
   if (x.repeat === 'yearly' && x.type !== 'birthday') tags += ' <span class="pill">Every year</span>';
   if (x.status === 'pending') tags += ' <span class="pill warn">Waiting for approval</span>';
   if (x.approvedBy) tags += ` <span class="muted">Approved by ${esc(x.approvedBy)}</span>`;
-  const btns = parent ? (x.status === 'pending' ? `<button class="btn ok small" data-act="approveEvent" data-id="${e.id}">Approve</button><button class="btn danger small" data-act="declineEvent" data-id="${e.id}">No</button>` : `<button class="iconbtn sm" data-act="delEvent" data-id="${e.id}" aria-label="Delete">${ic('delete')}</button>`) : '';
+  const btns = parent ? (x.status === 'pending' ? `<button class="btn ok small" data-act="approveEvent" data-id="${e.id}">Approve</button><button class="btn danger small" data-act="declineEvent" data-id="${e.id}">No</button>` : `<button class="iconbtn sm" data-act="delEventAsk" data-id="${e.id}" data-x="${d || x.date}" aria-label="Delete">${ic('delete')}</button>`) : '';
   return `<li>${facesOf(x.who, 28)}<div class="grow tapx" data-act="eventDetail" data-id="${e.id}" data-x="${d}"><div><b>${esc(x.title)}</b>${tags}</div><div class="muted">${x.time ? evTime(x) + ' · ' : ''}${esc(whoLabel(x.who))}</div></div>${btns}</li>`;
 }
 
@@ -1641,6 +1642,7 @@ function dayDetailHtml(d) {
   h += `<button class="btn big mt" data-act="eventModalDay" data-x="${d}">${ic('add')} Add to this day</button>`;
   return h;
 }
+function skippedNote(e) { const sk = e.data.skip || []; if (!sk.length || !isKid && false) return ''; return `<div class="muted mt">Not on: ${sk.sort().map(d => `${new Date(d + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}${!isKid() ? ` <button class="linkbtn" data-act="unskip" data-id="${e.id}" data-x="${d}">put back</button>` : ''}`).join(', ')}</div>`; }
 function eventDetailHtml(e, d) {
   const x = e.data, parent = !isKid(), rep = x.repeat === 'yearly' ? 'Every year' : (x.repeat === true || x.repeat === 'weekly') ? 'Every week' : 'Does not repeat';
   const dt = new Date((d || x.date) + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -1654,7 +1656,8 @@ function eventDetailHtml(e, d) {
   if (x.notes) h += line('notes', `<span style="white-space:pre-wrap">${esc(x.notes)}</span>`);
   h += line('info', x.status === 'pending' ? `<span class="pill warn">Waiting for approval</span>` : x.approvedBy ? `Added by ${esc(nameOf(e.owner))} · approved by ${esc(x.approvedBy)}` : `Added by ${esc(nameOf(e.owner))}`);
   if (x.countdown) { const n = daysBetween(today(), nextOccurrence(e)); h += line('hourglass_top', n === 0 ? 'Today! 🎉' : `${n} ${n === 1 ? 'day' : 'days'} to go`); }
-  if (parent) h += `<div class="grid2 mt">${x.status === 'pending' ? `<button class="btn ok" data-act="approveEventD" data-id="${e.id}" data-x="${d || x.date}">${ic('check')} Approve</button>` : `<button class="btn sec" data-act="editEvent" data-id="${e.id}">${ic('edit')} Edit</button>`}<button class="btn danger" data-act="delEventD" data-id="${e.id}" data-x="${d || x.date}">${ic('delete')} Delete</button></div>`;
+  if (isRepeat(x)) h += skippedNote(e);
+  if (parent) h += `<div class="grid2 mt">${x.status === 'pending' ? `<button class="btn ok" data-act="approveEventD" data-id="${e.id}" data-x="${d || x.date}">${ic('check')} Approve</button>` : `<button class="btn sec" data-act="editEvent" data-id="${e.id}">${ic('edit')} Edit</button>`}<button class="btn danger" data-act="delEventAsk" data-id="${e.id}" data-x="${d || x.date}">${ic('delete')} Delete</button></div>`;
   return h;
 }
 
@@ -2053,6 +2056,15 @@ A.eventDetail = el => { const e = items.find(i => i.id === el.dataset.id); if (e
 A.eventModalDay = el => { calSel = el.dataset.x; openModal(eventModalHtml()); };
 A.editEvent = el => openModal(eventModalHtml(items.find(i => i.id === el.dataset.id)));
 A.approveEventD = async el => { await upd(el.dataset.id, { status: 'approved', approvedBy: me.name }, { silent: true }); openModal(dayDetailHtml(el.dataset.x)); pendingRender = true; };
+const isRepeat = x => x.repeat === true || x.repeat === 'weekly' || x.repeat === 'yearly';
+A.delEventAsk = el => {
+  const e = items.find(i => i.id === el.dataset.id); if (!e) return; const d = el.dataset.x, x = e.data;
+  if (!isRepeat(x)) return A.delEventD(el);
+  const nice = new Date(d + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+  openModal(`<h3>Delete "${esc(x.title)}"?</h3><p class="muted">This happens ${x.repeat === 'yearly' ? 'every year' : 'every week'}.</p><button class="btn big" data-act="skipEventDay" data-id="${e.id}" data-x="${d}">Just ${esc(nice)}</button><button class="btn big danger" data-act="delEventD" data-id="${e.id}" data-x="${d}">Every ${x.repeat === 'yearly' ? 'year' : 'week'}</button><button class="btn big sec" data-act="close">Cancel</button>`);
+};
+A.unskip = async el => { const e = items.find(i => i.id === el.dataset.id); if (!e) return; await upd(e.id, { skip: (e.data.skip || []).filter(x => x !== el.dataset.x) }, { silent: true }); openModal(eventDetailHtml(items.find(i => i.id === e.id), el.dataset.x)); pendingRender = true; };
+A.skipEventDay = async el => { const e = items.find(i => i.id === el.dataset.id); if (!e) return; const d = el.dataset.x; await upd(e.id, { skip: [...new Set([...(e.data.skip || []), d])] }, { silent: true }); openModal(dayDetailHtml(d)); pendingRender = true; toast('Removed for that day only'); };
 A.delEventD = async el => { await del(el.dataset.id, { silent: true }); openModal(dayDetailHtml(el.dataset.x)); pendingRender = true; toast('Deleted'); };
 A.choreModal = () => openModal(choreFormHtml());
 A.editChore = el => { const c = items.find(i => i.id === el.dataset.id); if (c) openModal(choreFormHtml(c)); };
