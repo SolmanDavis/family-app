@@ -116,6 +116,10 @@ p{margin:0 0 10px}
 @media (min-width:700px){.mc-tt{display:inline;overflow:hidden;text-overflow:ellipsis}}
 .cd-t .ech{vertical-align:-6px;margin-right:2px}
 .emoji-pick{display:flex;flex-wrap:wrap;gap:4px;max-height:132px;overflow:auto;padding:2px}.emoji-pick label{margin:0}.emoji-pick input{position:absolute;opacity:0}.emoji-pick span{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:#F1F4F6;font-size:22px;border:2px solid transparent}.emoji-pick span.auto{width:auto;padding:0 10px;font-size:13px;font-weight:800;color:#4B5B63}.emoji-pick input:checked+span{border-color:#2FA4C7;background:#E0F2FE}
+.scards{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px}.row .scards{margin-top:0;gap:5px}
+.scard{display:inline-block;width:26px;height:36px;border-radius:5px;border:2px dashed #CBD5E1;background:#fff;transform:rotate(-6deg)}.scard:nth-child(2){transform:rotate(2deg)}.scard:nth-child(3){transform:rotate(8deg)}
+.scard.on{border:2px solid rgba(0,0,0,.15);background:var(--sc);box-shadow:0 2px 6px rgba(0,0,0,.18)}.scard.sm{width:14px;height:19px;border-radius:3px;border-width:1.5px}
+.scard-msg{font-weight:700;font-size:14px;color:#334155;margin-left:4px}
 .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.btn.disabled{opacity:.45}
 .how{max-height:55vh;overflow:auto;margin:10px 0}.how-part{display:flex;gap:12px;padding:10px;border-radius:14px;transition:background .3s}.how-part.on{background:#E0F2FE}.how-e{font-size:28px;line-height:1}.how-part p{margin:4px 0 0;color:var(--muted);line-height:1.45}
 
@@ -194,7 +198,7 @@ label{display:block;font-size:13px;color:var(--muted);margin:12px 0 5px;font-wei
 .wx-stats b{font-size:16px}.wx-stats span{font-size:11px;opacity:.85}.wx-stats .ms{font-size:18px;vertical-align:0}
 .surf-word{margin-top:12px;background:rgba(255,255,255,.18);border-radius:12px;padding:8px 12px;font-size:14px}
 .kidrow{display:flex;align-items:center;gap:12px}
-.kid-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+.kid-actions{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:14px}
 .kid-actions button{border:0;background:#F1F6F8;border-radius:14px;padding:9px 2px;font:inherit;font-size:12px;font-weight:700;color:#36505C;display:flex;flex-direction:column;align-items:center;gap:3px}
 .kid-actions .ms{font-size:22px;vertical-align:0}
 .mini-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
@@ -1186,7 +1190,7 @@ function kidHome() {
   else h += `<div class="grid2" style="margin-bottom:12px"><button class="btn big dark" style="margin:0" data-act="music">${ic('headphones', 'fill')} My music</button><button class="btn big" style="margin:0" data-act="go" data-v="calm" data-p="wave">${ic('waves')} Calm down</button></div>`;
   const ci = K('checkin').find(c => c.data.member === me.id && c.data.date === today());
   if (!ci) h += `<div class="card">${secH('surfing', 'blue', 'Morning surf report')}<p class="muted">How's the sea inside you today?</p><div class="grid2">${['Glassy and calm','Small waves','Choppy','Stormy'].map((t, i) => `<button class="btn sec" data-act="checkin" data-x="${i}">${['😌','🙂','😕','😣'][i]} ${t}</button>`).join('')}</div></div>`;
-  h += chatCard() + votesCard() + (calmTracked(me) ? calmStreakCard(me.id) : '') + streakCard() + badgesCard(me.id) + grabCard() + savingCard(me.id) + weatherCard();
+  h += chatCard() + votesCard() + (calmTracked(me) ? calmStreakCard(me.id) : '') + (isKid() ? toldCard(me.id) : '') + streakCard() + badgesCard(me.id) + grabCard() + savingCard(me.id) + weatherCard();
   if (design() === 'ginny') { const n = unlockedCount(me.id, BIRDS.length); const b = BIRDS[(daysBetween('2026-01-01', today()) % n + n) % n]; h += `<div class="card"><div class="row">${birdSVG(b, false, 76)}<div class="grow"><div class="eyebrow-dark">Bird of the day</div><h3 style="margin:2px 0 4px">${b.name}</h3><div class="muted">${esc(b.fact)}</div></div></div></div>`; }
   h += goalCard() + todayCard() + latestNotice();
   return h;
@@ -1237,7 +1241,9 @@ function calmStreakCard(mid) {
   const c = calmStreak(mid), b = calmBest(mid), kid = isKid(), qd = kid ? calmQuestionDay() : null, pend = K('calmday').find(x => x.data.member === mid && x.data.status === 'pending');
   const k = chk(member(mid));
   let h = `<div class="card" style="background:linear-gradient(160deg,${k.bg},#FFFFFF)">${secH(design(member(mid)) === 'fern' ? 'record_voice_over' : 'sentiment_satisfied', design(member(mid)) === 'fern' ? 'purple' : 'teal', kid ? 'My ' + k.title : esc(nameOf(mid)) + "'s " + k.title)}<div class="row"><div class="grow"><div class="stat" style="color:${k.col}">${k.icon} ${c} <span style="font-size:16px">${c === 1 ? 'day' : 'days'}</span></div><div class="muted">Best ever: <b>${b} ${b === 1 ? 'day' : 'days'}</b>${b > 0 && c >= b ? ' · New record! 🏆' : ''}</div></div></div>`;
-  if (qd) h += calmAskHtml(qd);
+  h += cardsRow(mid, 'calm');
+  if (strikes(mid, today(), 'calm').length >= 3) h += `<div class="muted mt">Red card today, so today doesn't count.</div>`;
+  else if (qd) h += calmAskHtml(qd);
   else if (pend) h += `<div class="streak-warn" style="background:#E6F6F4;color:#0F766E">${pend.data.answer ? k.yesK : 'You said it was a tough day'}. Waiting for Mum or Dad to check.</div>`;
   else if (kid && !calmEntry(me.id, today())) h += `<div class="muted mt">At ${askLabel(me)} I'll ask how today went.</div>`;
   return h + `</div>`;
@@ -1282,12 +1288,14 @@ function parentHome() {
     const run = runningSession(k.id), cd = choresDoneToday(k.id), pct = cd.total ? Math.round(cd.done / cd.total * 100) : 0;
     h += `<div class="card"><div class="kidrow">${initialAvatar(k.id, 46)}<div class="grow"><h3 style="margin:0">${esc(k.name)}</h3><div class="muted">${(n => n + (n === 1 ? ' badge' : ' badges'))(earnedBadges(k.id).length)} · ${(n => n + ' ' + (design(k) === 'fern' ? 'car' : 'bird') + (n === 1 ? '' : 's'))(unlockedCount(k.id, (design(k) === 'fern' ? CARS : BIRDS).length))}</div></div><div style="text-align:right"><div class="stat" style="font-size:26px">${balance(k.id)}</div><div class="muted" style="font-size:12px">points</div></div></div>
       ${calmTracked(k) ? `<div class="row mt" style="background:${chk(k).bg};border-radius:14px;padding:10px 12px;color:${chk(k).col};font-weight:700">${chk(k).icon} ${chk(k).title[0].toUpperCase() + chk(k).title.slice(1)}: ${calmStreak(k.id)} ${calmStreak(k.id) === 1 ? 'day' : 'days'}<span class="grow"></span><span style="font-weight:600">Best ${calmBest(k.id)}</span></div>` : ''}
+      <div class="row mt" style="background:#EFF6FF;border-radius:14px;padding:10px 12px;color:#1D4ED8;font-weight:700">🫡 Doing as told: ${toldStreak(k.id)} ${toldStreak(k.id) === 1 ? 'day' : 'days'}<span class="grow"></span>${cardsRow(k.id, 'told', true)}</div>
+      ${calmTracked(k) && strikes(k.id, today(), 'calm').length ? `<div class="row mt" style="padding:0 12px;font-size:13px;color:${chk(k).col};font-weight:700">${chk(k).icon} cards today<span class="grow"></span>${cardsRow(k.id, 'calm', true)}</div>` : ''}
       <div class="mini-stats"><div><b>${cd.done}/${cd.total}</b><span>chores</span></div><div><b>${activeBan(k.id) ? '✕' : freeLeft(k.id).length + '/' + planFor(today()).length}</b><span>sessions left</span></div><div><b>${ledger(k.id).filter(i => i.data.cat === 'calm' && i.data.date === today()).length}</b><span>calm tools</span></div></div>
       <div class="bar mt"><i style="width:${pct}%"></i></div>
       ${activeBan(k.id) ? `<div class="mt">${banStamp(activeBan(k.id), false)}</div>` : ''}
       ${!run && pausedSession(k.id) ? `<div class="row mt" style="background:#F1F5F9;border-radius:14px;padding:10px 12px">${ic('pause_circle', 'fill')}<div class="grow"><b>iPad paused</b></div><div class="stat" style="font-size:22px;opacity:.6">${fmtLeft(pausedSession(k.id).data.remainSec)}</div></div>` : ''}
       ${run ? `<div class="row mt" style="background:#FFF6E5;border-radius:14px;padding:10px 12px">${ic('tablet_mac', 'fill')}<div class="grow"><b>On the iPad</b></div><div class="stat" data-end="${endOf(run)}" style="font-size:22px">--:--</div><button class="btn sec small" data-act="stopIpad" data-id="${run.id}">Stop</button></div>` : ''}
-      <div class="kid-actions"><button data-act="bonusModal" data-id="${k.id}">${ic('add_circle', 'fill')}Points</button><button data-act="removeModal" data-id="${k.id}">${ic('remove_circle')}Take away</button><button data-act="kindModal" data-id="${k.id}">${ic('favorite', 'fill')}Well done</button><button data-act="giveIpad" data-id="${k.id}">${ic('tablet_mac')}iPad</button></div>
+      <div class="kid-actions"><button data-act="bonusModal" data-id="${k.id}">${ic('add_circle', 'fill')}Points</button><button data-act="removeModal" data-id="${k.id}">${ic('remove_circle')}Take away</button><button data-act="kindModal" data-id="${k.id}">${ic('favorite', 'fill')}Well done</button><button data-act="giveIpad" data-id="${k.id}">${ic('tablet_mac')}iPad</button><button data-act="cardsModal" data-id="${k.id}"><span class="scard on sm" style="--sc:#FACC15;margin:2px 0 3px"></span>Cards</button></div>
       <button class="btn sec small mt" style="width:100%" data-act="go" data-v="kid" data-p="${k.id}">${ic('receipt_long')} Points history</button></div>`;
   });
   const dinner = mealOn(today());
@@ -1964,6 +1972,8 @@ function checkPopups() {
   if (checkBadges()) return;
   if (isKid() && calmTracked(me)) { const qd = calmQuestionDay(), key = 'familyapp-calmasked-' + me.id + '-' + qd; if (qd && !lsGet(key)) { lsSet(key, '1'); openModal(`<div class="center"><div style="font-size:54px">${chk(me).icon}</div><h2 style="margin:6px 0">How was ${qd === today() ? 'today' : 'yesterday'}, ${esc(me.name)}?</h2></div>${calmAskHtml(qd)}<button class="btn sec big mt" data-act="close">Ask me later</button>`); return; } }
   if (isKid()) {
+    const sk = K('strike').find(x => x.data.member === me.id && x.data.date === today() && x.data.seen === false);
+    if (sk) { const n = sk.data.n - 1, [, col, nm] = STRIKE_COLS[n]; openModal(`<div class="center"><div class="scard on" style="--sc:${col};width:70px;height:96px;border-radius:10px;margin:6px auto 14px"></div><h3>${nm} from ${esc(sk.data.by)}</h3><p style="font-size:18px;font-weight:700;margin-top:0">For ${esc(catName(me, sk.data.cat))}${sk.data.reason ? ': ' + esc(sk.data.reason) : ''}</p><p class="muted">${n === 0 ? 'That\'s your first card today. You can still keep your streak!' : n === 1 ? 'Careful! One more and it\'s a red card.' : 'That\'s a red card, so today doesn\'t count. Tomorrow is a fresh start.'}</p><button class="btn big" data-act="seenStrike" data-id="${sk.id}">OK</button></div>`); return; }
     const kw = K('kind').find(k => k.data.to === me.id && !k.data.seen);
     if (kw) { chime(); openModal(`<div class="center"><div style="font-size:54px">💬</div><h3>${esc(nameOf(kw.owner))} says…</h3><p style="font-size:22px;font-weight:700">${esc(kw.data.text)}</p><button class="btn big" data-act="seenKind" data-id="${kw.id}">Thanks!</button></div>`); }
   }
@@ -2675,6 +2685,51 @@ A.brushStop = () => { brushStop(); brush = null; go('home'); };
 A.brushDone = () => { closeModal(); brush = null; go('home'); };
 A.brushTick = async el => { closeModal(); brush = null; await tickChore(el.dataset.id); go('home'); };
 
+/* ===== Strike cards: blue, yellow, red ===== */
+const STRIKE_COLS = [['blue', '#2563EB', 'Blue card'], ['yellow', '#FACC15', 'Yellow card'], ['red', '#DC2626', 'Red card']];
+const TOLD_START = '2026-11-10';
+const strikes = (mid, d, cat) => K('strike').filter(x => x.data.member === mid && x.data.date === d && x.data.cat === cat).sort((a, b) => (a.data.at || '').localeCompare(b.data.at || ''));
+const toldOk = (mid, d) => strikes(mid, d, 'told').length < 3;
+function toldStreak(mid) { const start = TOLD_START; let d = today(), n = 0; while (d >= start && toldOk(mid, d)) { n++; d = addDays(d, -1); } return n; }
+function toldBest(mid) { let best = 0, run = 0; for (let d = TOLD_START; d <= today(); d = addDays(d, 1)) { run = toldOk(mid, d) ? run + 1 : 0; best = Math.max(best, run); } return best; }
+const catName = (m, cat) => cat === 'told' ? "doing as I'm told" : design(m) === 'fern' ? 'talking nicely' : 'no tantrums';
+function cardsRow(mid, cat, small) {
+  const n = strikes(mid, today(), cat).length;
+  const cards = STRIKE_COLS.map(([k, col, nm], i) => `<span class="scard ${i < n ? 'on' : ''}${small ? ' sm' : ''}" style="--sc:${col}" title="${nm}"></span>`).join('');
+  const msg = small ? '' : `<span class="scard-msg">${['No cards today. Keep it up! 👍', 'Blue card. Careful now!', 'Yellow card! One more and it\'s a red card.', 'Red card. The streak starts again tomorrow.'][n]}</span>`;
+  return `<div class="scards">${cards}${msg}</div>`;
+}
+function toldCard(mid) {
+  const c = toldStreak(mid), b = toldBest(mid), kid = isKid();
+  return `<div class="card" style="background:linear-gradient(160deg,#EFF6FF,#FFFFFF)">${secH('front_hand', 'blue', kid ? "My doing as I'm told streak" : esc(nameOf(mid)) + "'s doing as told streak")}<div class="row"><div class="grow"><div class="stat" style="color:#1D4ED8">🫡 ${c} <span style="font-size:16px">${c === 1 ? 'day' : 'days'}</span></div><div class="muted">Best ever: <b>${b} ${b === 1 ? 'day' : 'days'}</b></div></div></div>${cardsRow(mid, 'told')}<p class="muted" style="margin:8px 0 0;font-size:13px">3 cards in a day (blue, yellow, red) ends the streak.</p></div>`;
+}
+function cardsModalHtml(mid) {
+  const m = member(mid), cats = ['told', ...(calmTracked(m) ? ['calm'] : [])];
+  return `<div class="row"><div class="grow"><div class="eyebrow-dark">Cards for</div><h3 style="margin:2px 0 0">${esc(nameOf(mid))}</h3></div><button class="iconbtn sm" data-act="close" aria-label="Close">${ic('close')}</button></div>
+  <label>Reason (optional)</label><input id="strikeWhy" placeholder="e.g. Not coming off the iPad">
+  ${cats.map(cat => { const n = strikes(mid, today(), cat).length; const nm = cat === 'told' ? 'Doing as told' : design(m) === 'fern' ? 'Talking nicely' : 'No tantrums'; return `<div class="card" style="box-shadow:none;background:#F7F9FA;margin-top:12px"><h3 style="margin:0 0 8px">${nm}</h3>${cardsRow(mid, cat)}<div class="grid2 mt">${n < 3 ? `<button class="btn" style="background:${STRIKE_COLS[n][1]};color:${n === 1 ? '#3F2E00' : '#fff'}" data-act="giveStrike" data-kid="${mid}" data-x="${cat}">Give ${STRIKE_COLS[n][2].toLowerCase()}</button>` : '<div class="muted" style="align-self:center">Red card given today</div>'}${n ? `<button class="btn sec" data-act="undoStrike" data-kid="${mid}" data-x="${cat}">Take one back</button>` : ''}</div></div>`; }).join('')}
+  <p class="muted">Cards reset every morning. A red card ends that streak for the day.</p>`;
+}
+A.seenStrike = async el => { closeModal(); await upd(el.dataset.id, { seen: true }, { silent: true }); };
+A.cardsModal = el => openModal(cardsModalHtml(el.dataset.id));
+A.giveStrike = async el => {
+  const mid = el.dataset.kid, cat = el.dataset.x, n = strikes(mid, today(), cat).length; if (n >= 3) return;
+  const why = ($('#strikeWhy') || {}).value?.trim() || '';
+  await add('strike', { member: mid, date: today(), cat, n: n + 1, reason: why, by: me.name, at: new Date().toISOString(), seen: false }, me.id, { silent: true });
+  if (cat === 'calm' && n + 1 === 3) {
+    const ex = calmEntry(mid, today());
+    if (ex) await upd(ex.id, { status: 'approved', answer: false, approvedBy: me.name, redCard: true }, { silent: true });
+    else await add('calmday', { member: mid, date: today(), answer: false, status: 'approved', approvedBy: me.name, redCard: true }, me.id, { silent: true });
+  }
+  toast(`${STRIKE_COLS[n][2]} given to ${nameOf(mid)}`); openModal(cardsModalHtml(mid)); pendingRender = true;
+};
+A.undoStrike = async el => {
+  const mid = el.dataset.kid, cat = el.dataset.x, list = strikes(mid, today(), cat); if (!list.length) return;
+  const last = list[list.length - 1]; await del(last.id, { silent: true });
+  if (cat === 'calm' && list.length === 3) { const ex = calmEntry(mid, today()); if (ex && ex.data.redCard) await del(ex.id, { silent: true }); }
+  toast('Card taken back'); openModal(cardsModalHtml(mid)); pendingRender = true;
+};
+
 /* ===== How it works (read aloud to the girls) ===== */
 function howItWorksParts(m) {
   const P = settings().points, fern = design(m) === 'fern', per = P.buyPerMinute || 2, name = m.name;
@@ -2688,6 +2743,7 @@ function howItWorksParts(m) {
   parts.push(['🐶', 'More ways to earn', `Feeding Sunny is ${P.sunnyFeed} points, letting him out is ${P.sunnyOut}, and taking him for a walk is ${P.sunnyWalk}. Homework done on time is ${P.homeworkOnTime}. Sister challenges are ${P.challenge} points each, the morning surf report is ${P.checkin}, and Mum and Dad can give you bonus points for being brilliant.`]);
   parts.push(['🛒', 'Spending points', `You can buy extra iPad time once your sessions are used up. It costs ${per} points a minute, so 15 extra minutes is ${15 * per} points, and Mum or Dad have to say yes. You can also spend points in the rewards shop, on treats you can save up for.`]);
   parts.push([fern ? '🏎️' : '🐦', 'Collecting', `Every ${settings().unlockEvery} points you earn unlocks a new ${fern ? 'race car' : 'bird'}, and everyone's points help the family get to the ${settings().goal.name.toLowerCase()}. Spending points never takes these away.`]);
+  parts.push(['🟨', 'Blue, yellow and red cards', `You have a doing as you're told streak. ${fern ? 'Your talking nicely streak' : 'Your no-tantrum streak'} has cards too. If you don't do as you're told, Mum or Dad can give you a card. The first is a blue card, the second is a yellow card, and the third is a red card. A red card means that day doesn't count and your streak starts again. Cards reset every morning, so tomorrow is a fresh start.`]);
   parts.push(['⚠️', 'Losing points and iPad time', `If you tick a chore you didn't really do, you lose double the points. Mum and Dad can take points away, take away an iPad session, or remove the iPad for a few days. If that happens, you'll see a big red sign telling you which day you get it back.`]);
   parts.push(['🏄', "That's it!", `Do your jobs, be kind, and enjoy your iPad time. Good luck, ${name}!`]);
   return parts;
