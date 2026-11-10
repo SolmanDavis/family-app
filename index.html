@@ -1304,15 +1304,16 @@ function latestNotice() {
 }
 
 function waitingItems() {
-  const pi = K('ipad').filter(s => s.data.status === 'pending'), pe = K('event').filter(e => e.data.status === 'pending'), pm = K('meal').filter(m => m.data.status === 'pending'), pc = K('challenge').filter(c => c.data.claimed && !c.data.done), pr = K('redeem').filter(r => r.data.status === 'pending'), pcd = K('calmday').filter(c => c.data.status === 'pending');
+  const pi = K('ipad').filter(s => s.data.status === 'pending'), pe = K('event').filter(e => e.data.status === 'pending'), pm = K('meal').filter(m => m.data.status === 'pending'), pc = K('challenge').filter(c => c.data.claimed && !c.data.done), pr = K('redeem').filter(r => r.data.status === 'pending'), pcd = K('calmday').filter(c => c.data.status === 'pending'), ptd = K('toldday').filter(c => c.data.status === 'pending');
   let h = '';
     pcd.forEach(c => h += `<li>${initialAvatar(c.data.member, 34)}<div class="grow">${c.data.answer ? `<b>${esc(nameOf(c.data.member))}</b> says she <b>${chk(member(c.data.member)).yesP}</b> ${c.data.date === today() ? 'today' : 'yesterday'} 😊` : `<b>${esc(nameOf(c.data.member))}</b> says ${c.data.date === today() ? 'today' : 'yesterday'} was a tough day`}<div class="muted">${chk(member(c.data.member)).icon} Streak: ${calmStreak(c.data.member)} · best ${calmBest(c.data.member)}</div></div>${c.data.answer ? `<button class="btn ok small" data-act="approveCalm" data-id="${c.id}">Agree</button><button class="btn danger small" data-act="rejectCalm" data-id="${c.id}">Not quite</button>` : `<button class="btn sec small" data-act="rejectCalm" data-id="${c.id}">OK</button>`}</li>`);
+    ptd.forEach(c => h += `<li>${initialAvatar(c.data.member, 34)}<div class="grow">${c.data.answer ? `<b>${esc(nameOf(c.data.member))}</b> says she <b>did as she was told</b> ${c.data.date === today() ? 'today' : 'yesterday'} 🫡` : `<b>${esc(nameOf(c.data.member))}</b> says ${c.data.date === today() ? 'today' : 'yesterday'} was a tough day`}<div class="muted">🫡 Streak: ${toldStreak(c.data.member)} · best ${toldBest(c.data.member)} · cards today: ${strikes(c.data.member, c.data.date, 'told').length}</div></div>${c.data.answer ? `<button class="btn ok small" data-act="approveTold" data-id="${c.id}">Agree</button><button class="btn danger small" data-act="rejectTold" data-id="${c.id}">Not quite</button>` : `<button class="btn sec small" data-act="rejectTold" data-id="${c.id}">OK</button>`}</li>`);
     pi.forEach(s => h += `<li>${initialAvatar(s.data.member, 34)}<div class="grow"><b>${esc(nameOf(s.data.member))}</b> ${kindOf(s) === 'bought' ? `wants to buy ${s.data.minutes} min of iPad time` : `wants to start a ${s.data.minutes} min iPad session`}<div class="muted">${kindOf(s) === 'bought' ? `Costs ${buyCost(s.data.minutes)} points · she has ${balance(s.data.member)}` : `${freeLeft(s.data.member).length} sessions left today`}</div></div><button class="btn ok small" data-act="approveIpad" data-id="${s.id}">Yes</button><button class="btn danger small" data-act="declineIpad" data-id="${s.id}">No</button></li>`);
     pr.forEach(r => h += `<li>${initialAvatar(r.data.member, 34)}<div class="grow"><b>${esc(nameOf(r.data.member))}</b> wants ${esc(r.data.name)}<div class="muted">${r.data.cost} points</div></div><button class="btn ok small" data-act="approveRedeem" data-id="${r.id}">Yes</button><button class="btn danger small" data-act="declineRedeem" data-id="${r.id}">No</button></li>`);
     pe.forEach(e => h += `<li>${initialAvatar(e.owner, 34)}<div class="grow"><b>${esc(nameOf(e.owner))}</b> added "${esc(e.data.title)}"<div class="muted">${dayLabel(e.data.date)}${e.data.time ? ' at ' + esc(e.data.time) : ''}</div></div><button class="btn ok small" data-act="approveEvent" data-id="${e.id}">Yes</button><button class="btn danger small" data-act="declineEvent" data-id="${e.id}">No</button></li>`);
     pm.forEach(m => h += `<li>${initialAvatar(m.owner, 34)}<div class="grow"><b>${esc(nameOf(m.owner))}</b> suggests ${esc(recipeName(m.data.recipe))}<div class="muted">${dayLabel(m.data.date)}</div></div><button class="btn ok small" data-act="approveMeal" data-id="${m.id}">Yes</button><button class="btn danger small" data-act="delMeal" data-id="${m.id}">No</button></li>`);
     pc.forEach(c => h += `<li><span class="chip c-green">${ic('handshake', 'fill')}</span><div class="grow">The girls say they did <b>${esc(c.data.text)}</b></div><button class="btn ok small" data-act="doneChallenge" data-id="${c.id}">Confirm</button></li>`);
-  return { n: pi.length + pe.length + pm.length + pc.length + pr.length + pcd.length, html: h };
+  return { n: pi.length + pe.length + pm.length + pc.length + pr.length + pcd.length + ptd.length, html: h };
 }
 function parentHome() {
   let h = pingCard() + familyCard() + weatherCard() + countdownRow() + chatCard() + votesCard();
@@ -2114,6 +2115,7 @@ function go(v, p = null) { if (view === 'brush' && v !== 'brush') { brushStop();
 function checkPopups() {
   if ($('#modal').innerHTML || !me) return;
   if (checkBadges()) return;
+  if (isKid() && calmTracked(me)) { const qd = toldQuestionDay(), key = 'familyapp-toldasked-' + me.id + '-' + qd; if (qd && !lsGet(key) && (calmEntry(me.id, qd) || !calmQuestionDay())) { lsSet(key, '1'); openModal(`<div class="center"><div style="font-size:54px">🫡</div><h2 style="margin:6px 0">One more, ${esc(me.name)}!</h2></div>${toldAskHtml(qd)}<button class="btn sec big mt" data-act="close">Ask me later</button>`); return; } }
   if (isKid() && calmTracked(me)) { const qd = calmQuestionDay(), key = 'familyapp-calmasked-' + me.id + '-' + qd; if (qd && !lsGet(key)) { lsSet(key, '1'); openModal(`<div class="center"><div style="font-size:54px">${chk(me).icon}</div><h2 style="margin:6px 0">How was ${qd === today() ? 'today' : 'yesterday'}, ${esc(me.name)}?</h2></div>${calmAskHtml(qd)}<button class="btn sec big mt" data-act="close">Ask me later</button>`); return; } }
   if (isKid()) {
     const sk = K('strike').find(x => x.data.member === me.id && x.data.date === today() && x.data.seen === false);
@@ -2150,6 +2152,14 @@ A.calmAnswer = async el => {
   await add('calmday', { member: me.id, date: d, answer: yes, status: 'pending' }, me.id);
   toast(yes ? 'Brilliant! Sent to Mum and Dad to check 😊' : "Thanks for being honest. Tomorrow's a fresh start 💛"); if (yes) celebrate();
 };
+A.toldAnswer = async el => {
+  const d = el.dataset.d, yes = el.dataset.x === '1'; closeModal();
+  if (toldEntry(me.id, d)) return toast('Already answered');
+  await add('toldday', { member: me.id, date: d, answer: yes, status: 'pending' }, me.id);
+  toast(yes ? 'Brilliant! Sent to Mum and Dad to check 🫡' : "Thanks for being honest. Tomorrow's a fresh start 💛"); if (yes) celebrate();
+};
+A.approveTold = async el => { const c = items.find(i => i.id === el.dataset.id); await upd(c.id, { status: 'approved', approvedBy: me.name }, { silent: true }); render(); toast(`${nameOf(c.data.member)}'s doing as told streak is now ${toldStreak(c.data.member)} 🫡`); };
+A.rejectTold = async el => { const c = items.find(i => i.id === el.dataset.id); await upd(c.id, { status: 'approved', answer: false, approvedBy: me.name }); toast('Noted. Streak starts again tomorrow.'); };
 A.approveCalm = async el => { const c = items.find(i => i.id === el.dataset.id); await upd(c.id, { status: 'approved', approvedBy: me.name }, { silent: true }); await award(c.data.member, settings().points.calmDayBonus, chk(member(c.data.member)).reason, 'calmday'); render(); toast(`${nameOf(c.data.member)}'s streak is now ${calmStreak(c.data.member)} ${chk(member(c.data.member)).icon}`); };
 A.rejectCalm = async el => { const c = items.find(i => i.id === el.dataset.id); await upd(c.id, { status: 'approved', answer: false, approvedBy: me.name }); toast('Noted. Streak starts again tomorrow.'); };
 function mealPickerHtml(d) {
@@ -2835,8 +2845,12 @@ const STRIKE_COLS = [['blue', '#2563EB', 'Blue card'], ['yellow', '#FACC15', 'Ye
 const TOLD_START = '2026-11-10';
 const strikes = (mid, d, cat) => K('strike').filter(x => x.data.member === mid && x.data.date === d && x.data.cat === cat).sort((a, b) => (a.data.at || '').localeCompare(b.data.at || ''));
 const toldOk = (mid, d) => strikes(mid, d, 'told').length < 3;
-function toldStreak(mid) { const start = TOLD_START; let d = today(), n = 0; while (d >= start && toldOk(mid, d)) { n++; d = addDays(d, -1); } return n; }
-function toldBest(mid) { let best = 0, run = 0; for (let d = TOLD_START; d <= today(); d = addDays(d, 1)) { run = toldOk(mid, d) ? run + 1 : 0; best = Math.max(best, run); } return best; }
+const toldEntry = (mid, d) => K('toldday').find(c => c.data.member === mid && c.data.date === d);
+const toldYes = (mid, d) => { const e = toldEntry(mid, d); return !!e && e.data.status === 'approved' && e.data.answer && toldOk(mid, d); };
+function toldQuestionDay() { const n = new Date(), h = n.getHours(); if (!toldOk(me.id, today())) return null; if (h * 60 + n.getMinutes() >= askAt(me) && !toldEntry(me.id, today())) return today(); const y = addDays(today(), -1); if (h < 12 && y >= TOLD_START && !toldEntry(me.id, y) && toldOk(me.id, y)) return y; return null; }
+function toldAskHtml(d) { return `<p style="font-weight:700;margin:6px 0 10px">Did you do as you were told ${d === today() ? 'today' : 'yesterday'}?</p><div class="grid2"><button class="btn" style="background:linear-gradient(180deg,#3B82F6,#1D4ED8)" data-act="toldAnswer" data-x="1" data-d="${d}">🫡 Yes, I did it!</button><button class="btn sec" data-act="toldAnswer" data-x="0" data-d="${d}">😕 Not today</button></div><p class="muted mt" style="margin-bottom:0">Be honest. Mum or Dad will check.</p>`; }
+function toldStreak(mid) { let d = toldYes(mid, today()) ? today() : addDays(today(), -1), n = 0; while (d >= TOLD_START && toldYes(mid, d)) { n++; d = addDays(d, -1); } return n; }
+function toldBest(mid) { let best = 0, run = 0; for (let d = TOLD_START; d <= today(); d = addDays(d, 1)) { if (toldYes(mid, d)) run++; else if (d !== today()) run = 0; best = Math.max(best, run); } return best; }
 const catName = (m, cat) => cat === 'told' ? "doing as I'm told" : design(m) === 'fern' ? 'talking nicely' : 'no tantrums';
 function cardsRow(mid, cat, small) {
   const n = strikes(mid, today(), cat).length;
@@ -2846,7 +2860,7 @@ function cardsRow(mid, cat, small) {
 }
 function toldCard(mid) {
   const c = toldStreak(mid), b = toldBest(mid), kid = isKid();
-  return `<div class="card" style="background:linear-gradient(160deg,#EFF6FF,#FFFFFF)">${secH('front_hand', 'blue', kid ? "My doing as I'm told streak" : esc(nameOf(mid)) + "'s doing as told streak")}<div class="row"><div class="grow"><div class="stat" style="color:#1D4ED8">🫡 ${c} <span style="font-size:16px">${c === 1 ? 'day' : 'days'}</span></div><div class="muted">Best ever: <b>${b} ${b === 1 ? 'day' : 'days'}</b></div></div></div>${cardsRow(mid, 'told')}<p class="muted" style="margin:8px 0 0;font-size:13px">3 cards in a day (blue, yellow, red) ends the streak.</p></div>`;
+  return `<div class="card" style="background:linear-gradient(160deg,#EFF6FF,#FFFFFF)">${secH('front_hand', 'blue', kid ? "My doing as I'm told streak" : esc(nameOf(mid)) + "'s doing as told streak")}<div class="row"><div class="grow"><div class="stat" style="color:#1D4ED8">🫡 ${c} <span style="font-size:16px">${c === 1 ? 'day' : 'days'}</span></div><div class="muted">Best ever: <b>${b} ${b === 1 ? 'day' : 'days'}</b></div></div></div>${cardsRow(mid, 'told')}${(() => { if (!kid) return ''; const qd = toldQuestionDay(), te = toldEntry(mid, today()); if (!toldOk(mid, today())) return `<div class="muted mt">Red card today, so today doesn't count.</div>`; if (qd) return toldAskHtml(qd); if (te && te.data.status === 'pending') return `<div class="streak-warn" style="background:#EFF6FF;color:#1D4ED8">${te.data.answer ? 'You said you did as you were told' : 'You said it was a tough day'}. Waiting for Mum or Dad to check.</div>`; if (!te) return `<div class="muted mt">At ${askLabel(me)} I'll ask if you did as you were told.</div>`; return ''; })()}<p class="muted" style="margin:8px 0 0;font-size:13px">3 cards in a day (blue, yellow, red) ends the streak.</p></div>`;
 }
 function cardsModalHtml(mid) {
   const m = member(mid), cats = ['told', ...(calmTracked(m) ? ['calm'] : [])];
@@ -2861,6 +2875,7 @@ A.giveStrike = async el => {
   const mid = el.dataset.kid, cat = el.dataset.x, n = strikes(mid, today(), cat).length; if (n >= 3) return;
   const why = ($('#strikeWhy') || {}).value?.trim() || '';
   await add('strike', { member: mid, date: today(), cat, n: n + 1, reason: why, by: me.name, at: new Date().toISOString(), seen: false }, me.id, { silent: true });
+  if (cat === 'told' && n + 1 === 3) { const ex = toldEntry(mid, today()); if (ex) await upd(ex.id, { status: 'approved', answer: false, approvedBy: me.name, redCard: true }, { silent: true }); }
   if (cat === 'calm' && n + 1 === 3) {
     const ex = calmEntry(mid, today());
     if (ex) await upd(ex.id, { status: 'approved', answer: false, approvedBy: me.name, redCard: true }, { silent: true });
@@ -2944,7 +2959,7 @@ function howItWorksParts(m) {
   parts.push(['🐶', 'More ways to earn', `Feeding Sunny is ${P.sunnyFeed} points, letting him out is ${P.sunnyOut}, and taking him for a walk is ${P.sunnyWalk}. Homework done on time is ${P.homeworkOnTime}. Sister challenges are ${P.challenge} points each, the morning surf report is ${P.checkin}, and Mum and Dad can give you bonus points for being brilliant.`]);
   parts.push(['🛒', 'Spending points', `You can buy extra iPad time once your sessions are used up. It costs ${per} points a minute, so 15 extra minutes is ${15 * per} points, and Mum or Dad have to say yes. You can also spend points in the rewards shop, on treats you can save up for.`]);
   parts.push([fern ? '🏎️' : '🐦', 'Collecting', `Every ${settings().unlockEvery} points you earn unlocks a new ${fern ? 'race car' : 'bird'}, and everyone's points help the family get to the ${settings().goal.name.toLowerCase()}. Spending points never takes these away.`]);
-  parts.push(['🟨', 'Blue, yellow and red cards', `You have a doing as you're told streak. ${fern ? 'Your talking nicely streak' : 'Your no-tantrum streak'} has cards too. If you don't do as you're told, Mum or Dad can give you a card. The first is a blue card, the second is a yellow card, and the third is a red card. A red card means that day doesn't count and your streak starts again. Cards reset every morning, so tomorrow is a fresh start.`]);
+  parts.push(['🟨', 'Blue, yellow and red cards', `You have a doing as you're told streak. Every evening I'll ask if you did as you were told, and if Mum or Dad agree, your streak grows. ${fern ? 'Your talking nicely streak' : 'Your no-tantrum streak'} has cards too. If you don't do as you're told, Mum or Dad can give you a card. The first is a blue card, the second is a yellow card, and the third is a red card. A red card means that day doesn't count and your streak starts again. Cards reset every morning, so tomorrow is a fresh start.`]);
   parts.push(['⚠️', 'Losing points and iPad time', `If you tick a chore you didn't really do, you lose double the points. Mum and Dad can take points away, take away an iPad session, or remove the iPad for a few days. If that happens, you'll see a big red sign telling you which day you get it back.`]);
   parts.push(['🏄', "That's it!", `Do your jobs, be kind, and enjoy your iPad time. Good luck, ${name}!`]);
   return parts;
