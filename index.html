@@ -143,6 +143,9 @@ p{margin:0 0 10px}
   body:not(.fern) .pet-side .pill{font-size:10px;padding:2px 7px}
   body:not(.fern) .pet-side .muted{font-size:12px}
 }
+#swingG{transform-box:view-box;transform-origin:125px 38px}#swingG.swinging{animation:swingSvg 1.5s ease-in-out infinite alternate}
+.scene .pet.swinging{animation:swingSvg 1.5s ease-in-out infinite alternate}
+@keyframes swingSvg{from{transform:rotate(-17deg)}to{transform:rotate(17deg)}}
 .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.btn.disabled{opacity:.45}
 .how{max-height:55vh;overflow:auto;margin:10px 0}.how-part{display:flex;gap:12px;padding:10px;border-radius:14px;transition:background .3s}.how-part.on{background:#E0F2FE}.how-e{font-size:28px;line-height:1}.how-part p{margin:4px 0 0;color:var(--muted);line-height:1.45}
 
@@ -958,7 +961,7 @@ function cageScene(dec = []) {
       <line x1="226" y1="110" x2="226" y2="134" stroke="#c8a24a" stroke-width="1.4"/><circle cx="226" cy="139" r="6" fill="#e8c55a"/><circle cx="224" cy="137" r="2" fill="#fff4c0"/>
       <path d="M108,124 C102,140 104,156 110,160 C116,156 118,140 112,124 Z" fill="#fbf7ee" stroke="#e2dbc8"/>
       ${has('millet') ? `<line x1="168" y1="44" x2="168" y2="56" stroke="#a9b2b7" stroke-width="1.2"/>${Array.from({ length: 6 }, (_, i) => `<ellipse cx="${168 + (i % 2 ? 3 : -3)}" cy="${60 + i * 4.5}" rx="4.5" ry="3" fill="${i % 3 ? '#E9C46A' : '#D4A84B'}"/>`).join('')}<line x1="168" y1="84" x2="170" y2="92" stroke="#B88A3E" stroke-width="1.2"/>` : ''}
-      ${has('swing') ? `<path d="M110,50 L110,128 M140,50 L140,128" stroke="#8B6239" stroke-width="1.6"/><path d="M110,50 L125,40 L140,50" fill="none" stroke="#8B6239" stroke-width="1.6"/><circle cx="125" cy="38" r="3" fill="none" stroke="#a9b2b7" stroke-width="1.6"/><rect x="104" y="126" width="42" height="7" rx="3.5" fill="url(#woodG)"/>${['#F472B6','#60A5FA','#FDE047','#4ADE80'].map((c, i) => `<circle cx="110" cy="${72 + i * 12}" r="3" fill="${c}"/><circle cx="140" cy="${72 + i * 12}" r="3" fill="${c}"/>`).join('')}` : ''}
+      ${has('swing') ? `<circle id="swingTop" cx="125" cy="38" r="3" fill="none" stroke="#a9b2b7" stroke-width="1.6"/><g id="swingG"><path d="M110,50 L110,128 M140,50 L140,128" stroke="#8B6239" stroke-width="1.6"/><path d="M110,50 L125,40 L140,50" fill="none" stroke="#8B6239" stroke-width="1.6"/><rect id="swingSeat" x="104" y="126" width="42" height="7" rx="3.5" fill="url(#woodG)"/>${['#F472B6','#60A5FA','#FDE047','#4ADE80'].map((c, i) => `<circle cx="110" cy="${72 + i * 12}" r="3" fill="${c}"/><circle cx="140" cy="${72 + i * 12}" r="3" fill="${c}"/>`).join('')}</g>` : ''}
       ${has('mirror') ? `<ellipse cx="246" cy="198" rx="10" ry="14" fill="#E2E8F0" stroke="#D97706" stroke-width="3"/><ellipse cx="246" cy="198" rx="7" ry="11" fill="#BAE6FD"/><path d="M242,191 L246,188 M240,198 L248,189" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".9"/>` : ''}
       ${has('toy') ? `<g><line x1="238" y1="40" x2="238" y2="58" stroke="#8B6239" stroke-width="2"/><circle cx="238" cy="40" r="4" fill="none" stroke="#9aa3a8" stroke-width="2"/>${['#EF4444','#F59E0B','#FDE047','#22C55E','#3B82F6','#A855F7','#EC4899'].map((c, i) => `<circle cx="${238 + (i % 2 ? 2 : -2)}" cy="${63 + i * 9.5}" r="5.6" fill="${c}" stroke="rgba(0,0,0,.18)" stroke-width=".8"/><circle cx="${236 + (i % 2 ? 2 : -2)}" cy="${61 + i * 9.5}" r="1.6" fill="#fff" opacity=".7"/>`).join('')}<path d="M231,130 Q238,118 245,130 L247,136 L229,136 Z" fill="#F5B301" stroke="#B7791F" stroke-width="1"/><circle cx="238" cy="138" r="2.4" fill="#B7791F"/></g>` : ''}
       ${has('ladder') ? `<path d="M110,238 L146,176 M124,240 L160,178" stroke="#B88A3E" stroke-width="3" stroke-linecap="round"/>${[0, 1, 2, 3, 4].map(i => `<line x1="${113 + i * 7.5}" y1="${232 - i * 13}" x2="${127 + i * 7.5}" y2="${234 - i * 13}" stroke="#8B6239" stroke-width="2.5" stroke-linecap="round"/>`).join('')}` : ''}
@@ -1403,7 +1406,7 @@ V.pet = () => {
   const ring = show ? learned.map((t, i) => { const [x, y] = ringPos(i, learned.length); return `<button class="trick-btn" style="left:${x}%;top:${y}%;animation-delay:${i * 40}ms" data-act="showTrick" data-x="${esc(t)}" aria-label="${esc(t)}" title="${esc(t)}">${trickInfo(t)[1]}</button>`; }).join('') : '';
   const acts = d === 'fern'
     ? [['mist','💦 Mist tank'],['fruit','🍑 Feed fruit'],['flies','🪰 Let flies in'],['climb','🌿 Climb branch'],['hand','✋ Sit on my hand'],['trick','⭐ Practise trick']]
-    : [['water','💧 Fresh water'],['worms','🪱 Worms'],[p.out ? 'cage' : 'out', p.out ? '🏠 Back in cage' : '🕊️ Let her out'],['whistle','🎵 Whistle a tune'],['trick','⭐ Practise trick']];
+    : [['water','💧 Fresh water'],['worms','🪱 Worms'],[p.out ? 'cage' : 'out', p.out ? '🏠 Back in cage' : '🕊️ Let her out'],...(earned(me.id) >= CAGE_DECOR.find(t => t.k === 'swing').at ? [['swing','🪢 Swing']] : []),['whistle','🎵 Whistle a tune'],['trick','⭐ Practise trick']];
   const hint = learned.length ? (show ? `Tap a trick around the edge to watch ${pet.name} do it.` : 'Trick buttons hidden.') : `Learn a trick and it will appear around the edge.`;
   let h = `<div class="pet-wrap"><div class="pet-main"><div class="pet-top"><div class="card" style="padding:12px 12px 10px"><div class="sec-h" style="margin-bottom:8px"><span class="chip c-${d === 'fern' ? 'green' : 'blue'}">${ic(d === 'fern' ? 'eco' : 'flutter_dash', 'fill')}</span><h3>${pet.name}</h3>${learned.length ? `<button class="btn sec small" data-act="toggleTricks">${ic(show ? 'visibility_off' : 'visibility')} ${show ? 'Hide tricks' : 'Show tricks'}</button>` : ''}</div>
     <div class="stage">${scene}${ring}</div><div class="pet-acts">${acts.map(([a2, t]) => `<button class="btn sec" data-act="pet" data-x="${a2}">${t}</button>`).join('')}</div></div></div></div><div class="pet-side"><div class="card"><div class="stage-hint" style="margin-top:0">${hint}<br>Tap ${pet.name} to say hi, stroke her for a cuddle, or tap anywhere to send her there.</div>
@@ -1455,11 +1458,36 @@ function mountPetExtras() {
       else if (r < .7 && !scene.querySelector('.fly')) { const W = scene.clientWidth, H = scene.clientHeight; pet.style.transform = Math.random() < .5 ? 'scaleX(-1)' : 'none'; pet.style.left = (10 + Math.random() * (W - 110)) + 'px'; pet.style.top = (60 + Math.random() * (H - 150)) + 'px'; }
       else { pet.classList.remove('a-nod'); void pet.offsetWidth; pet.classList.add('a-nod'); setTimeout(() => pet.classList.remove('a-nod'), 1300); }
     } else {
+      if (r < .18 && $('#swingSeat') && cocoSwing()) return;
       const c = r < .4 ? 'a-tilt' : r < .7 ? 'a-nod' : 'flap';
       pet.classList.remove(c); void pet.offsetWidth; pet.classList.add(c); setTimeout(() => pet.classList.remove(c), 2000);
       if (r > .8) { petSound(); bubble(scene, pet.offsetLeft + 30, pet.offsetTop - 14, ['Chirp!', 'Tweet!', 'Pretty bird!'][Math.floor(Math.random() * 3)]); }
     }
   }, 1500);
+}
+let swinging = null;
+function cocoSwing(secs = 9) {
+  const scene = $('#scene'), pet = $('#petEl'), seat = $('#swingSeat'), top = $('#swingTop'), sw = $('#swingG');
+  if (!scene || !pet || !seat || !top || swinging || petBusy) return false;
+  petBusy = true;
+  const sr = scene.getBoundingClientRect(), s = seat.getBoundingClientRect(), t = top.getBoundingClientRect();
+  const seatX = s.left + s.width / 2 - sr.left, seatY = s.top - sr.top, pivX = t.left + t.width / 2 - sr.left, pivY = t.top + t.height / 2 - sr.top;
+  const left = seatX - 35, topPx = seatY - 74;
+  pet.style.transform = 'none'; pet.style.left = left + 'px'; pet.style.top = topPx + 'px';
+  bubble(scene, Math.max(6, left), Math.max(6, topPx - 18), 'Swing time! 🪢'); petSound();
+  swinging = setTimeout(() => {
+    pet.style.transition = 'none'; pet.style.transformOrigin = `${pivX - left}px ${pivY - topPx}px`;
+    pet.classList.add('swinging'); sw.classList.add('swinging');
+    const chirps = setInterval(() => { if (Math.random() < .5) petSound(); }, 2200);
+    setTimeout(() => bubble(scene, Math.max(6, left), Math.max(6, topPx - 18), ['Wheee! 🎶', 'Higher! 😄', 'Look at me!'][Math.floor(Math.random() * 3)]), 900);
+    swinging = setTimeout(() => {
+      clearInterval(chirps); pet.classList.remove('swinging'); sw.classList.remove('swinging');
+      pet.style.transformOrigin = '35px 77px'; void pet.offsetWidth; pet.style.transition = '';
+      swinging = null; petBusy = false;
+      petSave({ playAt: new Date().toISOString(), counts: bump('swing') });
+    }, secs * 1000);
+  }, 1100);
+  return true;
 }
 function petReact(scene, pet) {
   if (petBusy) return; petBusy = true; setTimeout(() => { petBusy = false; }, 1300);
@@ -1484,7 +1512,7 @@ function stopPet() { clearInterval(petLoop); petLoop = null; clearInterval(petId
 function fitCage() { const sc = $('#scene'), sv = sc && sc.querySelector('.cage-svg'); if (!sv) return; const w = Math.max(360, 330 * sc.clientWidth / Math.max(1, sc.clientHeight)); sv.setAttribute('viewBox', `${(360 - w) / 2} 0 ${w} 330`); }
 addEventListener('resize', () => { if (view === 'pet') fitCage(); });
 function mountPet() {
-  stopPet(); if (view !== 'pet') return;
+  stopPet(); if (swinging) { clearTimeout(swinging); swinging = null; petBusy = false; } if (view !== 'pet') return;
   fitCage();
   updatePetStats();
   const scene = $('#scene'), pet = $('#petEl'); if (!scene || !pet) return;
@@ -1583,6 +1611,7 @@ async function petAction(a) {
   if (a === 'flies') { for (let i = 0; i < 4; i++) { const f = document.createElement('div'); f.className = 'fly'; f.textContent = '🪰'; f.dataset.act = 'catchFly'; f.style.left = Math.random() * (W - 40) + 'px'; f.style.top = Math.random() * (H - 110) + 'px'; scene.appendChild(f); } bubble(scene, W / 2, 30, 'Tap a fly!'); return; }
   if (a === 'whistle') { whistleTune(); ['🎵','🎶','🎵'].forEach((n, i) => setTimeout(() => { const e = document.createElement('div'); e.className = 'note'; e.textContent = n; e.style.left = (pet.offsetLeft + 50 + i * 12) + 'px'; e.style.top = (pet.offsetTop) + 'px'; scene.appendChild(e); setTimeout(() => e.remove(), 1700); }, i * 400)); return petSave({ playAt: now, counts: bump('play') }); }
   if (a === 'worms') { if (p.out) { for (let i = 0; i < 3; i++) { const w = document.createElement('div'); w.className = 'worm'; w.style.left = (40 + Math.random() * (W - 100)) + 'px'; scene.appendChild(w); } bubble(scene, W / 2, H - 120, 'Worms on the floor!'); } else { bubble(scene, W / 2 + 40, 190, 'Worms in her dish!'); setTimeout(() => cocoPeckDish(scene, pet), 600); return petSave({ foodAt: now, counts: bump('feed') }); } return; }
+  if (a === 'swing') { if (!cocoSwing()) toast('Coco is busy, try again in a moment'); return; }
   if (a === 'out' || a === 'cage') { await petSave({ out: a === 'out' }); render(); setTimeout(petSound, 300); if (a === 'out') setTimeout(petSound, 1500); return; }
   if (a === 'trick') {
     const tr = { ...(p.tricks || {}) }, name = pd.tricks.find(t => (tr[t] || 0) < 100);
