@@ -120,6 +120,21 @@ p{margin:0 0 10px}
 .scard{display:inline-block;width:26px;height:36px;border-radius:5px;border:2px dashed #CBD5E1;background:#fff;transform:rotate(-6deg)}.scard:nth-child(2){transform:rotate(2deg)}.scard:nth-child(3){transform:rotate(8deg)}
 .scard.on{border:2px solid rgba(0,0,0,.15);background:var(--sc);box-shadow:0 2px 6px rgba(0,0,0,.18)}.scard.sm{width:14px;height:19px;border-radius:3px;border-width:1.5px}
 .scard-msg{font-weight:700;font-size:14px;color:#334155;margin-left:4px}
+.visitor{position:fixed;right:10px;bottom:calc(96px + env(safe-area-inset-bottom));z-index:60;display:flex;flex-direction:column;align-items:flex-end;animation:visitIn .7s cubic-bezier(.2,1.4,.4,1) both;cursor:pointer}
+.visitor.bye{animation:visitOut .6s ease-in forwards}.visitor-pet{animation:bBob .55s ease-in-out infinite alternate;filter:drop-shadow(0 6px 10px rgba(0,0,0,.18))}
+.visitor-say{background:#fff;border-radius:16px 16px 4px 16px;padding:9px 13px;font-weight:800;font-size:15px;max-width:220px;box-shadow:0 4px 14px rgba(0,0,0,.15);margin-bottom:4px;animation:stepPop .5s .4s both}
+@keyframes visitIn{from{transform:translateX(160px) rotate(10deg);opacity:0}to{transform:none;opacity:1}}@keyframes visitOut{to{transform:translateX(170px);opacity:0}}
+.pet-acts{display:flex;gap:8px;overflow-x:auto;margin:10px -2px 0;padding:0 2px 2px;scrollbar-width:none}.pet-acts::-webkit-scrollbar{display:none}.pet-acts .btn{flex:none;margin:0;white-space:nowrap;padding:10px 14px;font-size:14px;width:auto}
+.pet-side{display:flex;flex-direction:column}
+@media (min-width:900px) and (orientation:landscape){
+  .pet-wrap{display:grid;grid-template-columns:auto minmax(320px,1fr);gap:16px;align-items:start}
+  .pet-main .pet-top{position:static;margin:0;padding:0;background:none}.pet-main .card{margin-bottom:0}
+  .pet-main .scene{height:calc(100vh - var(--hdr, 70px) - 250px - env(safe-area-inset-bottom));min-height:380px;width:auto;aspect-ratio:360/330;max-width:62vw}
+  .pet-acts{flex-wrap:wrap;overflow:visible;justify-content:center;width:0;min-width:100%}.pet-acts .btn{padding:9px 12px;font-size:13px}
+  .pet-side{max-height:calc(100vh - var(--hdr, 70px) - 120px - env(safe-area-inset-bottom));overflow:auto;border-radius:20px;padding-right:2px}
+  .pet-side .pet-decor{order:-1}
+  .pet-side .list li{padding:8px 4px}
+}
 .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.btn.disabled{opacity:.45}
 .how{max-height:55vh;overflow:auto;margin:10px 0}.how-part{display:flex;gap:12px;padding:10px;border-radius:14px;transition:background .3s}.how-part.on{background:#E0F2FE}.how-e{font-size:28px;line-height:1}.how-part p{margin:4px 0 0;color:var(--muted);line-height:1.45}
 
@@ -1382,14 +1397,15 @@ V.pet = () => {
     ? [['mist','💦 Mist tank'],['fruit','🍑 Feed fruit'],['flies','🪰 Let flies in'],['climb','🌿 Climb branch'],['hand','✋ Sit on my hand'],['trick','⭐ Practise trick']]
     : [['water','💧 Fresh water'],['worms','🪱 Worms'],[p.out ? 'cage' : 'out', p.out ? '🏠 Back in cage' : '🕊️ Let her out'],['whistle','🎵 Whistle a tune'],['trick','⭐ Practise trick']];
   const hint = learned.length ? (show ? `Tap a trick around the edge to watch ${pet.name} do it.` : 'Trick buttons hidden.') : `Learn a trick and it will appear around the edge.`;
-  let h = `<div class="pet-top"><div class="card" style="padding:12px 12px 10px"><div class="sec-h" style="margin-bottom:8px"><span class="chip c-${d === 'fern' ? 'green' : 'blue'}">${ic(d === 'fern' ? 'eco' : 'flutter_dash', 'fill')}</span><h3>${pet.name}</h3>${learned.length ? `<button class="btn sec small" data-act="toggleTricks">${ic(show ? 'visibility_off' : 'visibility')} ${show ? 'Hide tricks' : 'Show tricks'}</button>` : ''}</div>
-    <div class="stage">${scene}${ring}</div></div></div><div class="card"><div class="stage-hint" style="margin-top:0">${hint}<br>Tap ${pet.name} to say hi, stroke her for a cuddle, or tap anywhere to send her there.</div>
+  let h = `<div class="pet-wrap"><div class="pet-main"><div class="pet-top"><div class="card" style="padding:12px 12px 10px"><div class="sec-h" style="margin-bottom:8px"><span class="chip c-${d === 'fern' ? 'green' : 'blue'}">${ic(d === 'fern' ? 'eco' : 'flutter_dash', 'fill')}</span><h3>${pet.name}</h3>${learned.length ? `<button class="btn sec small" data-act="toggleTricks">${ic(show ? 'visibility_off' : 'visibility')} ${show ? 'Hide tricks' : 'Show tricks'}</button>` : ''}</div>
+    <div class="stage">${scene}${ring}</div><div class="pet-acts">${acts.map(([a2, t]) => `<button class="btn sec" data-act="pet" data-x="${a2}">${t}</button>`).join('')}</div></div></div></div><div class="pet-side"><div class="card"><div class="stage-hint" style="margin-top:0">${hint}<br>Tap ${pet.name} to say hi, stroke her for a cuddle, or tap anywhere to send her there.</div>
     <div class="friend" id="petFriend">💞 Friendship level ${f.level}<div class="bar"><i style="width:${f.pct}%"></i></div></div>
-    <div class="stats" id="petStats"></div><div class="grid2">${acts.map(([a2, t]) => `<button class="btn sec" data-act="pet" data-x="${a2}">${t}</button>`).join('')}</div></div>`;
+    <div class="stats" id="petStats"></div></div>`;
   h += `<div class="card">${secH('school', 'blue', cur ? 'Learning: ' + esc(cur) : 'All 30 tricks learned! ⭐', `<span class="pill">${learned.length} / ${pet.tricks.length}</span>`)}${cur ? `<div class="bar"><i id="trickBar" style="width:${prog}%"></i></div><div class="muted mt">Each practise helps. At first ${pet.name} might wobble, but she gets better every time.</div><button class="btn big mt" data-act="pet" data-x="trick">⭐ Practise "${esc(cur)}"</button>` : ''}</div>`;
   h += `<div class="card">${secH('auto_awesome', 'amber', `${pet.name}'s tricks bank`)}<div class="muted">Gold tricks are learned: tap one to watch it.</div><div class="tgrid">${pet.tricks.map(t => { const v = tr[t] || 0, info = trickInfo(t); return v >= 100 ? `<button class="tchip got" data-act="showTrick" data-x="${esc(t)}"><span class="te">${info[1]}</span>${esc(t)}</button>` : t === cur ? `<div class="tchip now"><span class="te">${info[1]}</span>${esc(t)} · ${v}%</div>` : `<div class="tchip lock"><span class="te">🔒</span>${esc(t)}</div>`; }).join('')}</div></div>`;
-  if (d === 'ginny') h += `<div class="card">${secH('chair', 'purple', 'Cage decorations', `<span class="pill">${CAGE_DECOR.filter(t => earned(me.id) >= t.at).length} of ${CAGE_DECOR.length}</span>`)}<div class="muted" style="margin-bottom:6px">Earn points to unlock new things for Coco's cage. They appear in her room straight away.</div><ul class="list">${CAGE_DECOR.map(t => `<li><span style="font-size:24px">${t.e}</span><div class="grow">${t.name}</div>${earned(me.id) >= t.at ? '<span class="pill ok">Unlocked</span>' : `<span class="pill">🔒 ${t.at} pts</span>`}</li>`).join('')}</ul></div>`;
-  if (d === 'fern') h += `<div class="card">${secH('yard', 'green', 'Tank decorations')}<ul class="list">${TANK_DECOR.map(t => `<li><span style="font-size:24px">${t.e}</span><div class="grow">${t.name}</div>${earned(me.id) >= t.at ? '<span class="pill ok">Unlocked</span>' : `<span class="pill">${t.at} pts</span>`}</li>`).join('')}</ul></div>`;
+  if (d === 'ginny') h += `<div class="card pet-decor">${secH('chair', 'purple', 'Cage decorations', `<span class="pill">${CAGE_DECOR.filter(t => earned(me.id) >= t.at).length} of ${CAGE_DECOR.length}</span>`)}<div class="muted" style="margin-bottom:6px">Earn points to unlock new things for Coco's cage. They appear in her room straight away.</div><ul class="list">${CAGE_DECOR.map(t => `<li><span style="font-size:24px">${t.e}</span><div class="grow">${t.name}</div>${earned(me.id) >= t.at ? '<span class="pill ok">Unlocked</span>' : `<span class="pill">🔒 ${t.at} pts</span>`}</li>`).join('')}</ul></div>`;
+  if (d === 'fern') h += `<div class="card pet-decor">${secH('yard', 'green', 'Tank decorations')}<ul class="list">${TANK_DECOR.map(t => `<li><span style="font-size:24px">${t.e}</span><div class="grow">${t.name}</div>${earned(me.id) >= t.at ? '<span class="pill ok">Unlocked</span>' : `<span class="pill">${t.at} pts</span>`}</li>`).join('')}</ul></div>`;
+  h += `</div></div>`;
   return h;
 };
 let petIdleT = null;
@@ -1501,7 +1517,7 @@ function bubble(scene, x, y, t) { const b = document.createElement('div'); b.cla
 const trickInfo = n => (TRICKS[design()] || []).find(t => t[0] === n) || [n, '⭐', 'wobble', ''];
 const FXSET = { notes: ['🎵','🎶'], hearts: ['❤️','💕','💖'], stars: ['⭐','✨','🌟'], zzz: ['💤','z','Z'], sparkle: ['✨','💫'], drops: ['💦','💧'], question: ['❓','❔'], bell: ['🔔'], cricket: ['🏏','🔴'], waves: ['🌊'], party: ['🎉','🎊','⭐','✨','🎈'], sun: ['☀️','😎'], smile: ['😊','💛'], netball: ['🏐','🥅'], eyes: ['👀','✨'], dots: ['…'] };
 function emit(scene, x, y, list, n = 5, spread = 70) { for (let i = 0; i < n; i++) setTimeout(() => { const e = document.createElement('div'); e.className = 'note'; e.textContent = list[i % list.length]; e.style.left = (x + (Math.random() - .5) * spread) + 'px'; e.style.top = (y + (Math.random() - .5) * 20) + 'px'; scene.appendChild(e); setTimeout(() => e.remove(), 1700); }, i * 200); }
-function petSound() { if (design() === 'fern') { tone(1400, 0, .04, 'square', .04); tone(1100, .07, .04, 'square', .04); } else { tone(2300, 0, .06, 'sine', .1); tone(2800, .08, .07, 'sine', .1); tone(2400, .17, .06, 'sine', .08); } }
+function petSound() { if (design() === 'fern') SND.gecko(); else cocoSound(); }
 function flickTongue(scene, pet) {
   const flip = /scaleX\(-1\)/.test(pet.style.transform), mx = pet.offsetLeft + (flip ? 4.4 : 91.6), my = pet.offsetTop + 28;
   const t = document.createElement('div'); t.className = 'tongue'; t.style.left = mx + 'px'; t.style.top = (my - 2.5) + 'px'; t.style.transform = `rotate(${flip ? 180 : 0}deg)`; scene.appendChild(t);
@@ -1547,13 +1563,16 @@ async function petAction(a) {
   const W = scene.clientWidth, H = scene.clientHeight, now = new Date().toISOString(), p = petItem()?.data || {};
   const pd = PETS[design()];
   if (a === 'water' || a === 'mist') { for (let i = 0; i < 14; i++) { const d = document.createElement('div'); d.className = 'drop'; d.style.left = Math.random() * W + 'px'; d.style.animationDelay = Math.random() * .6 + 's'; scene.appendChild(d); setTimeout(() => d.remove(), 1800); } bubble(scene, W / 2, 40, a === 'water' ? 'Fresh water!' : 'Lovely and damp!'); return petSave({ waterAt: now, counts: bump('water') }); }
+  if (['fruit', 'worms', 'flies', 'seed', 'food', 'feed', 'crickets', 'mealworms'].includes(a)) { petSound(); setTimeout(petSound, 1400); }
+  if (['water', 'mist', 'hand', 'climb'].includes(a)) setTimeout(petSound, 500);
+  if (a === 'whistle') setTimeout(petSound, 1900);
   if (a === 'fruit') { $('#dish').textContent = '🍑'; pet.style.left = (W - 120) + 'px'; pet.style.top = (H - 110) + 'px'; setTimeout(() => { bubble(scene, W - 100, H - 130, 'Mmm!'); const d = $('#dish'); if (d) d.textContent = '🥣'; }, 1100); return petSave({ foodAt: now, counts: bump('feed') }); }
   if (a === 'climb') { pet.style.transform = 'rotate(-28deg)'; pet.style.left = (W * .6) + 'px'; pet.style.top = '110px'; return petSave({ playAt: now, counts: bump('play') }); }
   if (a === 'hand') { let h = scene.querySelector('.hand'); if (!h) { h = document.createElement('div'); h.className = 'hand'; h.style.cssText = 'position:absolute;bottom:-10px;left:50%;margin-left:-45px;font-size:90px;z-index:2'; h.textContent = '✋'; scene.appendChild(h); } pet.style.transform = 'none'; pet.style.left = (W / 2 - 48) + 'px'; pet.style.top = (H - 150) + 'px'; setTimeout(() => bubble(scene, W / 2, H - 170, '♥'), 1000); setTimeout(() => h.remove(), 4000); return petSave({ playAt: now, counts: bump('play') }); }
   if (a === 'flies') { for (let i = 0; i < 4; i++) { const f = document.createElement('div'); f.className = 'fly'; f.textContent = '🪰'; f.dataset.act = 'catchFly'; f.style.left = Math.random() * (W - 40) + 'px'; f.style.top = Math.random() * (H - 110) + 'px'; scene.appendChild(f); } bubble(scene, W / 2, 30, 'Tap a fly!'); return; }
   if (a === 'whistle') { whistleTune(); ['🎵','🎶','🎵'].forEach((n, i) => setTimeout(() => { const e = document.createElement('div'); e.className = 'note'; e.textContent = n; e.style.left = (pet.offsetLeft + 50 + i * 12) + 'px'; e.style.top = (pet.offsetTop) + 'px'; scene.appendChild(e); setTimeout(() => e.remove(), 1700); }, i * 400)); return petSave({ playAt: now, counts: bump('play') }); }
   if (a === 'worms') { if (p.out) { for (let i = 0; i < 3; i++) { const w = document.createElement('div'); w.className = 'worm'; w.style.left = (40 + Math.random() * (W - 100)) + 'px'; scene.appendChild(w); } bubble(scene, W / 2, H - 120, 'Worms on the floor!'); } else { bubble(scene, W / 2 + 40, 190, 'Worms in her dish!'); setTimeout(() => cocoPeckDish(scene, pet), 600); return petSave({ foodAt: now, counts: bump('feed') }); } return; }
-  if (a === 'out' || a === 'cage') { await petSave({ out: a === 'out' }); render(); return; }
+  if (a === 'out' || a === 'cage') { await petSave({ out: a === 'out' }); render(); setTimeout(petSound, 300); if (a === 'out') setTimeout(petSound, 1500); return; }
   if (a === 'trick') {
     const tr = { ...(p.tricks || {}) }, name = pd.tricks.find(t => (tr[t] || 0) < 100);
     if (!name) return toast('All 30 tricks learned! ⭐');
@@ -1572,7 +1591,7 @@ V.collection = () => {
   const fern = design() === 'fern', list = fern ? CARS : BIRDS, n = unlockedCount(me.id, list.length), every = settings().unlockEvery, e = earned(me.id);
   const next = n < list.length ? n * every : null;
   let h = `<div class="card"><h3>${fern ? 'My race cars' : 'My birds'}: ${n} of ${list.length}</h3>${next ? `<div class="bar"><i style="width:${Math.min(100, (e - (n - 1) * every) / every * 100)}%"></i></div><div class="muted mt">${next - e} more points to unlock the next one</div>` : '<p>You\'ve collected them all! 🏆</p>'}</div><div class="collect">`;
-  list.forEach((x, i) => { const locked = i >= n; h += `<div class="it ${locked ? 'locked' : ''}">${fern ? carSVG(x, locked) : birdSVG(x, locked)}<div>${locked ? '🔒 ' + (i * every) + ' pts' : esc(x.name)}${i === list.length - 1 ? ' ⭐' : ''}</div></div>`; });
+  list.forEach((x, i) => { const locked = i >= n; h += `<div class="it ${locked ? 'locked' : ''}" ${!fern && !locked ? `data-act="birdSing" data-x="${i}" style="cursor:pointer"` : ''}>${fern ? carSVG(x, locked) : birdSVG(x, locked)}<div>${locked ? '🔒 ' + (i * every) + ' pts' : esc(x.name)}${i === list.length - 1 ? ' ⭐' : ''}</div></div>`; });
   h += `</div><div class="card mt"><h3>Dress up my surfer</h3><ul class="list">${ACCESSORIES.map(a => { const un = e >= a.at, on = !!(prefs(me.id).acc || {})[a.key]; return `<li><div class="grow">${a.name}</div>${un ? `<button class="btn ${on ? 'ok' : 'sec'} small" data-act="acc" data-x="${a.key}">${on ? 'Wearing' : 'Wear'}</button>` : `<span class="pill">🔒 ${a.at} pts</span>`}</li>`; }).join('')}</ul></div>`;
   return h;
 };
@@ -1945,8 +1964,10 @@ function render() {
   const hd = document.querySelector('header.top'); if (hd) document.documentElement.style.setProperty('--hdr', hd.offsetHeight + 'px');
   if (view === 'pet') { mountPet(); mountPetExtras(); }
   maybeStartBrush();
+  if (!visitTimer) scheduleVisit(true);
   if (view === 'calm') mountCalm();
   document.body.classList.remove('wide');
+  if (view === 'pet') document.body.classList.add('wide');
   if (view === 'calendar') mountCalendar();
   if (view === 'chat') mountChat();
   updateChatBadge();
@@ -2212,6 +2233,7 @@ A.sendKind = async el => { const t = el.dataset.x || $('#kText').value.trim(); i
 A.seenKind = async el => { $('#modal').innerHTML = ''; await upd(el.dataset.id, { seen: true }, { silent: true }); celebrate(); closeModal(); };
 A.sunnyLog = async el => {
   const a = el.dataset.x, P = settings().points, pts = { feed: P.sunnyFeed, out: P.sunnyOut, walk: P.sunnyWalk, treat: 0 }[a];
+  SND.woof(); if (a !== 'treat') setTimeout(SND.woof, 900);
   await add('sunnylog', { action: a, date: today(), time: new Date().toTimeString().slice(0, 5) }, me.id, { silent: true });
   if (isKid() && pts) { await award(me.id, pts, { feed: 'Fed Sunny', out: 'Let Sunny out', walk: 'Walked Sunny' }[a], 'sunny'); toast(`+${pts} points. Sunny says woof!`); }
   render();
@@ -2729,6 +2751,59 @@ A.undoStrike = async el => {
   if (cat === 'calm' && list.length === 3) { const ex = calmEntry(mid, today()); if (ex && ex.data.redCard) await del(ex.id, { silent: true }); }
   toast('Card taken back'); openModal(cardsModalHtml(mid)); pendingRender = true;
 };
+
+/* ===== Animal sounds ===== */
+function sweep(f1, f2, t0, d, type = 'sine', vol = .2) { const a = audio(); if (!a) return; const o = a.createOscillator(), g = a.createGain(), t = a.currentTime + t0; o.type = type; o.frequency.setValueAtTime(f1, t); o.frequency.exponentialRampToValueAtTime(f2, t + d); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + Math.min(.03, d / 3)); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g).connect(a.destination); o.start(t); o.stop(t + d + .02); }
+function noiseBurst(t0, d, freq, vol = .3) { const a = audio(); if (!a) return; const n = Math.floor(a.sampleRate * d), buf = a.createBuffer(1, n, a.sampleRate), ch = buf.getChannelData(0); for (let i = 0; i < n; i++) ch[i] = (Math.random() * 2 - 1) * (1 - i / n); const src = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain(), t = a.currentTime + t0; src.buffer = buf; f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = 1.2; g.gain.value = vol; src.connect(f).connect(g).connect(a.destination); src.start(t); }
+const SND = {
+  tweet: () => { for (let i = 0; i < 3; i++) sweep(2600 + Math.random() * 600, 3700 + Math.random() * 500, i * .14, .09, 'sine', .25); },
+  trill: () => { for (let i = 0; i < 10; i++) sweep(i % 2 ? 3300 : 2700, i % 2 ? 2900 : 3400, i * .055, .05, 'sine', .2); sweep(3000, 4300, .6, .16, 'sine', .22); },
+  whistle: () => { sweep(1300, 2700, 0, .26, 'sine', .28); sweep(2700, 1100, .3, .34, 'sine', .28); sweep(1800, 2600, .8, .1, 'sine', .25); sweep(2600, 2200, .92, .12, 'sine', .25); },
+  chirrup: () => { sweep(1800, 2700, 0, .1, 'sine', .25); sweep(2700, 2000, .11, .1, 'sine', .25); sweep(2000, 3100, .25, .14, 'sine', .25); },
+  coo: () => { [0, .5].forEach(t => { sweep(420, 520, t, .18, 'sine', .35); sweep(520, 380, t + .18, .26, 'sine', .35); }); },
+  hoot: () => { sweep(480, 430, 0, .35, 'sine', .4); sweep(470, 420, .55, .55, 'sine', .4); },
+  squawk: () => { sweep(950, 520, 0, .25, 'sawtooth', .13); sweep(1000, 540, .3, .3, 'sawtooth', .13); },
+  knock: () => { for (let i = 0; i < 9; i++) noiseBurst(i * .065, .03, 1800, .45); },
+  croak: () => { sweep(280, 210, 0, .32, 'sawtooth', .13); sweep(260, 200, .42, .3, 'sawtooth', .11); },
+  screech: () => { sweep(2300, 1500, 0, .5, 'sawtooth', .09); },
+  honk: () => { sweep(520, 430, 0, .22, 'square', .08); sweep(540, 440, .28, .22, 'square', .08); },
+  gecko: () => { for (let i = 0; i < 3; i++) noiseBurst(i * .08, .025, 3500, .4); sweep(1500, 2000, .32, .08, 'triangle', .2); sweep(1800, 1400, .44, .08, 'triangle', .16); },
+  woof: () => { [0, .38].forEach(t => { noiseBurst(t, .13, 650, .6); sweep(330, 150, t, .17, 'sawtooth', .2); }); }
+};
+const BIRD_SND = { 'Robin': 'trill', 'Blue tit': 'tweet', 'Goldfinch': 'trill', 'Wren': 'trill', 'Kingfisher': 'tweet', 'Barn owl': 'hoot', 'Puffin': 'croak', 'Woodpecker': 'knock', 'Flamingo': 'honk', 'Toucan': 'croak', 'Cockatoo': 'squawk', 'Golden eagle': 'screech', 'Pigeon': 'coo', 'Cockatiel': 'whistle' };
+const birdSound = b => (SND[BIRD_SND[b.name]] || SND.tweet)();
+const cocoSound = () => [SND.whistle, SND.chirrup, SND.tweet][Math.floor(Math.random() * 3)]();
+A.birdSing = el => { const b = BIRDS[Number(el.dataset.x)]; if (!b) return; birdSound(b); const w = el.querySelector('svg'); if (w) { w.classList.remove('a-hop'); void w.offsetWidth; w.classList.add('a-hop'); } toast(`${b.name}: ${{ hoot: 'Twit twoo!', coo: 'Coo coo!', knock: 'Rat-a-tat-tat!', squawk: 'SQUAWK!', honk: 'Honk honk!', croak: 'Croak!', screech: 'Screeee!' }[BIRD_SND[b.name]] || 'Tweet tweet!'}`); };
+
+/* ===== Pets popping in to say hello ===== */
+let visitTimer = null;
+function scheduleVisit(first) { clearTimeout(visitTimer); visitTimer = null; if (!me || !isKid() || !calmTracked(me) || prefs(me.id).petVisits === false) return; visitTimer = setTimeout(petVisit, first ? 35000 + Math.random() * 45000 : 120000 + Math.random() * 180000); }
+function visitLines(who) {
+  const n = me.name, h = new Date().getHours(), cd = choresDoneToday(me.id), left = cd.total - cd.done, L = [];
+  if (who === 'sunny') return ['Woof! Walk time?', `Woof woof! Hi ${n}!`, 'Got any treats? 🦴', 'Can we play ball? 🎾', 'Woof! Let me out?'];
+  if (left > 0) L.push(`${left} ${left === 1 ? 'chore' : 'chores'} left! You can do it!`, 'Have you done your jobs today?');
+  else L.push('All your chores are done! Yay! 🎉');
+  if (h < 10) L.push(`Good morning ${n}! ☀️`); else if (h >= 19) L.push(design() === 'ginny' ? 'Teeth time soon! 🪥' : `Night night soon, ${n}! 🌙`); 
+  L.push(`Hi ${n}! I missed you!`, "You're my favourite! 💛", 'Come and play with me!', "I'm a bit hungry… 👀", 'Did you have a good day?');
+  return L;
+}
+function petVisit() {
+  scheduleVisit();
+  if (document.hidden || $('#modal').innerHTML || ['pet', 'brush', 'calm', 'feel', 'breathe'].includes(view) || $('.visitor')) return;
+  const fern = design() === 'fern', r = Math.random();
+  let who, svg, snd, go2;
+  if (r < .15) { who = 'sunny'; svg = sunnySVG('full', 120); snd = SND.woof; go2 = 'sunny'; }
+  else if (fern) { who = 'pumpkin'; svg = geckoSVG(120); snd = SND.gecko; go2 = 'pet'; }
+  else if (r < .4 && unlockedCount(me.id, BIRDS.length) > 1) { const b = BIRDS[Math.floor(Math.random() * unlockedCount(me.id, BIRDS.length))]; who = b.name; svg = birdSVG(b, false, 96); snd = () => birdSound(b); go2 = 'collection'; }
+  else { who = 'coco'; svg = cocoSVG(96); snd = cocoSound; go2 = 'pet'; }
+  const lines = visitLines(who), line = lines[Math.floor(Math.random() * lines.length)];
+  const v = document.createElement('div'); v.className = 'visitor'; v.dataset.act = 'go'; v.dataset.v = go2;
+  v.innerHTML = `<div class="visitor-say">${esc(line)}</div><div class="visitor-pet">${svg}</div>`;
+  document.body.appendChild(v);
+  setTimeout(() => { snd(); }, 600); setTimeout(() => { if (Math.random() < .5) snd(); }, 2600);
+  setTimeout(() => { v.classList.add('bye'); setTimeout(() => v.remove(), 700); }, 7000);
+}
+A.togglePetVisits = () => { const on = prefs(me.id).petVisits !== false; setPrefs({ petVisits: !on }); toast(on ? 'Pet visits turned off' : 'Pet visits turned on'); closeModal(); setTimeout(() => scheduleVisit(true), 50); };
 
 /* ===== How it works (read aloud to the girls) ===== */
 function howItWorksParts(m) {
