@@ -137,15 +137,17 @@ p{margin:0 0 10px}
 }
 .cage-scene{background:linear-gradient(#fff6e6 0%,#f3e2c6 78.8%,#c99d6b 78.8%,#a87b4c 100%)}
 @media (min-width:900px) and (orientation:landscape){
-  body:not(.fern) .pet-wrap{grid-template-columns:1fr 240px}
-  body:not(.fern) .pet-main .scene{width:100%;aspect-ratio:auto;max-width:none;height:calc(100vh - var(--hdr, 70px) - 205px - env(safe-area-inset-bottom))}
-  body:not(.fern) .pet-side .list li{gap:8px;padding:6px 2px;font-size:14px}
-  body:not(.fern) .pet-side .pill{font-size:10px;padding:2px 7px}
-  body:not(.fern) .pet-side .muted{font-size:12px}
+  .pet-wrap{grid-template-columns:1fr 240px!important}
+  .pet-main .scene{width:100%!important;aspect-ratio:auto!important;max-width:none!important;height:calc(100vh - var(--hdr, 70px) - 205px - env(safe-area-inset-bottom))}
+  body.fern .pet-main .scene{height:calc(100vh - var(--hdr, 70px) - 250px - env(safe-area-inset-bottom))!important}
+  .pet-side .list li{gap:8px;padding:6px 2px;font-size:14px}
+  .pet-side .pill{font-size:10px;padding:2px 7px}
+  .pet-side .muted{font-size:12px}
 }
 #swingG{transform-box:view-box;transform-origin:125px 38px}#swingG.swinging{animation:swingSvg 1.5s ease-in-out infinite alternate}
 .scene .pet.swinging{animation:swingSvg 1.5s ease-in-out infinite alternate}
 @keyframes swingSvg{from{transform:rotate(-17deg)}to{transform:rotate(17deg)}}
+.scene .pet.basking{filter:drop-shadow(0 0 10px rgba(255,181,71,.9))}.scene .pet.hiding{opacity:.25;transform:translateY(14px) scale(.85)!important}
 .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.btn.disabled{opacity:.45}
 .how{max-height:55vh;overflow:auto;margin:10px 0}.how-part{display:flex;gap:12px;padding:10px;border-radius:14px;transition:background .3s}.how-part.on{background:#E0F2FE}.how-e{font-size:28px;line-height:1}.how-part p{margin:4px 0 0;color:var(--muted);line-height:1.45}
 
@@ -971,18 +973,20 @@ function cageScene(dec = []) {
       <path d="M220,236 C220,228 248,228 248,236 Z" fill="#c99d6b"/>${[224,229,234,239,244,227,236,241].map((x, i) => `<ellipse cx="${x}" cy="${229 + (i > 4 ? -2 : 0)}" rx="2" ry="1.3" fill="${i % 2 ? '#e8d29a' : '#b88a4e'}"/>`).join('')}
     </g></svg><div class="pet" id="petEl" style="left:calc(50% - 35px);top:90px">${cocoSVG(70)}</div></div>`;
 }
-function tankScene(decor) {
-  return `<div class="scene" id="scene" style="border:5px solid #1c1c1c"><svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 360 330" preserveAspectRatio="xMidYMid slice"><defs>
+const TANK_SPOTS = { Plant: [34, 316, '🌿'], Rock: [104, 320, '🪨'], Log: [176, 318, '🪵'], Mushroom: [244, 314, '🍄'], Flowers: [62, 300, '🌸'] };
+function tankScene(names = []) {
+  const decor = names.filter(n => TANK_SPOTS[n]).map(n => { const [x, y, e] = TANK_SPOTS[n]; return `<text id="tdec-${n}" x="${x}" y="${y}" font-size="${n === 'Log' ? 40 : n === 'Rock' ? 38 : 32}" text-anchor="middle">${e}</text>`; }).join('');
+  return `<div class="scene" id="scene" style="border:5px solid #1c1c1c"><svg class="scene-svg" style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 360 330" preserveAspectRatio="xMidYMax meet"><defs>
     <linearGradient id="corkG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a5434"/><stop offset="1" stop-color="#5a3b22"/></linearGradient>
     <linearGradient id="soilG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6b4a2e"/><stop offset="1" stop-color="#3e2a19"/></linearGradient>
     <linearGradient id="barkG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a87a50"/><stop offset="1" stop-color="#5c3d22"/></linearGradient>
-    <linearGradient id="glassG" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset=".2" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
-    <rect width="360" height="330" fill="url(#corkG)"/>${Array.from({length: 40}, (_, i) => `<ellipse cx="${(i * 47) % 360}" cy="${(i * 83) % 280}" rx="${6 + i % 5 * 3}" ry="${3 + i % 3}" fill="#4a3019" opacity=".35"/>`).join('')}
+    <radialGradient id="lampG"><stop offset="0" stop-color="#FFB547" stop-opacity=".55"/><stop offset="1" stop-color="#FFB547" stop-opacity="0"/></radialGradient><linearGradient id="glassG" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset=".2" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
+    <rect x="-600" y="-600" width="1560" height="930" fill="#7a5434"/><rect x="-600" width="1560" height="330" fill="url(#corkG)"/>${Array.from({length: 140}, (_, i) => `<ellipse cx="${(i * 47) % 1560 - 600}" cy="${(i * 83) % 280}" rx="${6 + i % 5 * 3}" ry="${3 + i % 3}" fill="#4a3019" opacity=".35"/>`).join('')}
     <g fill="#3f8f45"><path d="M300,280 C290,230 300,190 320,170 C318,200 316,240 314,280 Z"/><path d="M318,280 C320,240 336,210 356,200 C350,230 338,260 330,280 Z" fill="#4fa555"/><ellipse cx="306" cy="200" rx="14" ry="8" transform="rotate(-50 306 200)" fill="#5cb85f"/><ellipse cx="334" cy="220" rx="13" ry="7" transform="rotate(-30 334 220)"/><ellipse cx="24" cy="236" rx="16" ry="8" transform="rotate(30 24 236)" fill="#5cb85f"/><ellipse cx="40" cy="214" rx="14" ry="7" transform="rotate(-20 40 214)"/></g>
-    <path d="M0,286 C70,276 120,292 200,282 C260,276 310,290 360,280 L360,330 L0,330 Z" fill="url(#soilG)"/>${Array.from({length: 18}, (_, i) => `<ellipse cx="${10 + i * 20}" cy="${300 + (i % 3) * 8}" rx="4" ry="2.4" fill="#8a6a4a" opacity=".7"/>`).join('')}
+    <rect x="-600" y="284" width="1560" height="46" fill="url(#soilG)"/><path d="M0,286 C70,276 120,292 200,282 C260,276 310,290 360,280 L360,330 L0,330 Z" fill="url(#soilG)"/>${Array.from({length: 18}, (_, i) => `<ellipse cx="${10 + i * 20}" cy="${300 + (i % 3) * 8}" rx="4" ry="2.4" fill="#8a6a4a" opacity=".7"/>`).join('')}
     <path d="M-10,250 C70,220 150,190 230,150 C270,130 320,100 370,70" stroke="url(#barkG)" stroke-width="16" fill="none" stroke-linecap="round"/><path d="M60,226 C100,212 150,190 200,166 M240,140 C280,120 320,96 350,80" stroke="#4a301a" stroke-width="1.4" fill="none" opacity=".6"/><path d="M180,174 C176,160 186,150 194,148" stroke="url(#barkG)" stroke-width="7" fill="none" stroke-linecap="round"/>
-    <rect width="360" height="330" fill="url(#glassG)"/><path d="M20,0 L60,0 L10,330 L-30,330 Z" fill="#fff" opacity=".06"/><rect x="0" y="0" width="360" height="8" fill="#1c1c1c"/></svg>
-    <div id="decor" style="position:absolute;bottom:22px;left:10px;font-size:32px;letter-spacing:6px;z-index:2">${decor}</div><div id="dish" style="position:absolute;bottom:30px;right:22px;font-size:26px;z-index:2">🥣</div><div class="pet" id="petEl" style="left:40%;top:150px">${geckoSVG(96)}</div></div>`;
+    ${decor}<rect x="-600" width="1560" height="330" fill="url(#glassG)" opacity=".6"/><path d="M20,0 L60,0 L10,330 L-30,330 Z" fill="#fff" opacity=".06"/><g id="heatLamp" opacity="0"><ellipse cx="104" cy="250" rx="120" ry="140" fill="url(#lampG)"/></g></svg>
+    <div id="dish" style="position:absolute;bottom:30px;right:22px;font-size:26px;z-index:2">🥣</div><div class="pet" id="petEl" style="left:40%;top:150px">${geckoSVG(96)}</div></div>`;
 }
 
 /* ===== Family characters ===== */
@@ -1402,10 +1406,10 @@ V.pet = () => {
   const d = design(), pet = PETS[d], p = petItem()?.data || {}, tr = p.tricks || {};
   const learned = pet.tricks.filter(t => (tr[t] || 0) >= 100), cur = pet.tricks.find(t => (tr[t] || 0) < 100), prog = cur ? (tr[cur] || 0) : 100;
   const show = prefs(me.id).showTricks !== false, f = friendship(p);
-  const scene = d === 'fern' ? tankScene(TANK_DECOR.filter(t => earned(me.id) >= t.at).map(t => t.e).join('')) : cageScene(CAGE_DECOR.filter(t => earned(me.id) >= t.at).map(t => t.k));
+  const scene = d === 'fern' ? tankScene(TANK_DECOR.filter(t => earned(me.id) >= t.at).map(t => t.name)) : cageScene(CAGE_DECOR.filter(t => earned(me.id) >= t.at).map(t => t.k));
   const ring = show ? learned.map((t, i) => { const [x, y] = ringPos(i, learned.length); return `<button class="trick-btn" style="left:${x}%;top:${y}%;animation-delay:${i * 40}ms" data-act="showTrick" data-x="${esc(t)}" aria-label="${esc(t)}" title="${esc(t)}">${trickInfo(t)[1]}</button>`; }).join('') : '';
   const acts = d === 'fern'
-    ? [['mist','💦 Mist tank'],['fruit','🍑 Feed fruit'],['flies','🪰 Let flies in'],['climb','🌿 Climb branch'],['hand','✋ Sit on my hand'],['trick','⭐ Practise trick']]
+    ? [['mist','💦 Mist tank'],['fruit','🍑 Feed fruit'],['flies','🪰 Let flies in'],['climb','🌿 Climb branch'],...TANK_DECOR.filter(t => earned(me.id) >= t.at && TANK_FUN[t.name] && TANK_FUN[t.name][0]).map(t => ['go' + t.name, TANK_FUN[t.name][0]]),['hand','✋ Sit on my hand'],['trick','⭐ Practise trick']]
     : [['water','💧 Fresh water'],['worms','🪱 Worms'],[p.out ? 'cage' : 'out', p.out ? '🏠 Back in cage' : '🕊️ Let her out'],...(earned(me.id) >= CAGE_DECOR.find(t => t.k === 'swing').at ? [['swing','🪢 Swing']] : []),['whistle','🎵 Whistle a tune'],['trick','⭐ Practise trick']];
   const hint = learned.length ? (show ? `Tap a trick around the edge to watch ${pet.name} do it.` : 'Trick buttons hidden.') : `Learn a trick and it will appear around the edge.`;
   let h = `<div class="pet-wrap"><div class="pet-main"><div class="pet-top"><div class="card" style="padding:12px 12px 10px"><div class="sec-h" style="margin-bottom:8px"><span class="chip c-${d === 'fern' ? 'green' : 'blue'}">${ic(d === 'fern' ? 'eco' : 'flutter_dash', 'fill')}</span><h3>${pet.name}</h3>${learned.length ? `<button class="btn sec small" data-act="toggleTricks">${ic(show ? 'visibility_off' : 'visibility')} ${show ? 'Hide tricks' : 'Show tricks'}</button>` : ''}</div>
@@ -1454,6 +1458,8 @@ function mountPetExtras() {
     if (tick % 4 !== 0) return;
     const r = Math.random();
     if (fern) {
+      const have = TANK_DECOR.filter(t => earned(me.id) >= t.at).map(t => t.name);
+      if (r < .2 && have.length && pumpkinVisit(have[Math.floor(Math.random() * have.length)])) return;
       if (r < .4) flickTongue(scene, pet);
       else if (r < .7 && !scene.querySelector('.fly')) { const W = scene.clientWidth, H = scene.clientHeight; pet.style.transform = Math.random() < .5 ? 'scaleX(-1)' : 'none'; pet.style.left = (10 + Math.random() * (W - 110)) + 'px'; pet.style.top = (60 + Math.random() * (H - 150)) + 'px'; }
       else { pet.classList.remove('a-nod'); void pet.offsetWidth; pet.classList.add('a-nod'); setTimeout(() => pet.classList.remove('a-nod'), 1300); }
@@ -1464,6 +1470,29 @@ function mountPetExtras() {
       if (r > .8) { petSound(); bubble(scene, pet.offsetLeft + 30, pet.offsetTop - 14, ['Chirp!', 'Tweet!', 'Pretty bird!'][Math.floor(Math.random() * 3)]); }
     }
   }, 1500);
+}
+const TANK_FUN = { Rock: ['🪨 Bask on rock', 'Toasty! ☀️'], Log: ['🪵 Hide in log', 'Peekaboo! 🙈'], Mushroom: ['🍄 Climb mushroom', 'King of the mushroom! 👑'], Plant: ['', 'Mmm, leafy 🌿'], Flowers: ['', 'Pretty! 🌸'] };
+function pumpkinVisit(name, secs = 7) {
+  const scene = $('#scene'), pet = $('#petEl'), el = $('#tdec-' + name);
+  if (!scene || !pet || !el || petBusy) return false;
+  petBusy = true;
+  const sr = scene.getBoundingClientRect(), r = el.getBoundingClientRect();
+  const cx = r.left + r.width / 2 - sr.left, top = r.top - sr.top;
+  const left = cx - 48, pTop = name === 'Log' ? top + r.height * .25 - 30 : top - 40;
+  pet.style.transform = cx < pet.offsetLeft + 48 ? 'scaleX(-1)' : 'none';
+  pet.style.left = left + 'px'; pet.style.top = Math.max(10, pTop) + 'px';
+  SND.gecko();
+  setTimeout(() => {
+    const say = TANK_FUN[name][1];
+    if (name === 'Rock') { const l = $('#heatLamp'); if (l) { l.style.transition = 'opacity 1s'; l.setAttribute('opacity', '1'); } pet.classList.add('basking'); emit(scene, cx, top - 30, ['☀️', '✨'], 4, 30); }
+    if (name === 'Log') { pet.classList.add('hiding'); setTimeout(() => { pet.classList.remove('hiding'); bubble(scene, Math.max(6, left), Math.max(6, pTop - 18), 'Boo! 😄'); SND.gecko(); }, secs * 600); }
+    if (name === 'Mushroom') { pet.classList.add('a-hop'); setTimeout(() => pet.classList.remove('a-hop'), 1300); }
+    if (name === 'Plant' || name === 'Flowers') flickTongue(scene, pet);
+    if (name === 'Flowers') emit(scene, cx, top, ['💕', '🌸'], 4, 24);
+    bubble(scene, Math.max(6, left), Math.max(6, pTop - 18), say);
+    setTimeout(() => { pet.classList.remove('basking', 'hiding'); const l = $('#heatLamp'); if (l) l.setAttribute('opacity', '0'); petBusy = false; petSave({ playAt: new Date().toISOString(), counts: bump('explore') }); }, secs * 1000);
+  }, 1100);
+  return true;
 }
 let swinging = null;
 function cocoSwing(secs = 9) {
@@ -1509,7 +1538,7 @@ function updatePetStats() {
 }
 let petLoop = null, petState = {}, petBusy = false;
 function stopPet() { clearInterval(petLoop); petLoop = null; clearInterval(petIdleT); petIdleT = null; petBusy = false; }
-function fitCage() { const sc = $('#scene'), sv = sc && sc.querySelector('.cage-svg'); if (!sv) return; const w = Math.max(360, 330 * sc.clientWidth / Math.max(1, sc.clientHeight)); sv.setAttribute('viewBox', `${(360 - w) / 2} 0 ${w} 330`); }
+function fitCage() { const sc = $('#scene'), sv = sc && sc.querySelector('.cage-svg, .scene-svg'); if (!sv) return; const W = sc.clientWidth, H = Math.max(1, sc.clientHeight), w = Math.max(360, 330 * W / H), h = Math.max(330, 360 * H / Math.max(1, W)); sv.setAttribute('viewBox', `${(360 - w) / 2} ${330 - h} ${w} ${h}`); }
 addEventListener('resize', () => { if (view === 'pet') fitCage(); });
 function mountPet() {
   stopPet(); if (swinging) { clearTimeout(swinging); swinging = null; petBusy = false; } if (view !== 'pet') return;
@@ -1611,6 +1640,7 @@ async function petAction(a) {
   if (a === 'flies') { for (let i = 0; i < 4; i++) { const f = document.createElement('div'); f.className = 'fly'; f.textContent = '🪰'; f.dataset.act = 'catchFly'; f.style.left = Math.random() * (W - 40) + 'px'; f.style.top = Math.random() * (H - 110) + 'px'; scene.appendChild(f); } bubble(scene, W / 2, 30, 'Tap a fly!'); return; }
   if (a === 'whistle') { whistleTune(); ['🎵','🎶','🎵'].forEach((n, i) => setTimeout(() => { const e = document.createElement('div'); e.className = 'note'; e.textContent = n; e.style.left = (pet.offsetLeft + 50 + i * 12) + 'px'; e.style.top = (pet.offsetTop) + 'px'; scene.appendChild(e); setTimeout(() => e.remove(), 1700); }, i * 400)); return petSave({ playAt: now, counts: bump('play') }); }
   if (a === 'worms') { if (p.out) { for (let i = 0; i < 3; i++) { const w = document.createElement('div'); w.className = 'worm'; w.style.left = (40 + Math.random() * (W - 100)) + 'px'; scene.appendChild(w); } bubble(scene, W / 2, H - 120, 'Worms on the floor!'); } else { bubble(scene, W / 2 + 40, 190, 'Worms in her dish!'); setTimeout(() => cocoPeckDish(scene, pet), 600); return petSave({ foodAt: now, counts: bump('feed') }); } return; }
+  if (a.startsWith('go') && TANK_FUN[a.slice(2)]) { if (!pumpkinVisit(a.slice(2))) toast('Pumpkin is busy, try again in a moment'); return; }
   if (a === 'swing') { if (!cocoSwing()) toast('Coco is busy, try again in a moment'); return; }
   if (a === 'out' || a === 'cage') { await petSave({ out: a === 'out' }); render(); setTimeout(petSound, 300); if (a === 'out') setTimeout(petSound, 1500); return; }
   if (a === 'trick') {
