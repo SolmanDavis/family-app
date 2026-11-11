@@ -691,6 +691,12 @@ const freeLeft = mid => slotStatus(mid).filter(x => !x.st).map(x => x.m);
 const removedToday = mid => freeUsed(mid).filter(s => s.data.status === 'removed').length;
 const buyCost = m => m * (settings().points.buyPerMinute || 2);
 function activeBan(mid) { return K('ipadban').filter(b => b.data.member === mid && !b.data.lifted && today() < b.data.until).sort((a, b) => b.data.until.localeCompare(a.data.until))[0] || null; }
+function activeFreeze(mid) { return K('freeze').filter(f => f.data.member === mid && !f.data.lifted).sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''))[0] || null; }
+const frozenMe = () => !!(me && isKid() && activeFreeze(me.id));
+function frozenScreen() {
+  const f = activeFreeze(me.id), since = new Date(f.data.at || f.created_at).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+  return `<main style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px"><div class="card center" style="max-width:420px;width:100%;background:#EFF8FF;border:3px solid #7CC4F5"><div style="font-size:72px;line-height:1">🧊</div><h2 style="margin:10px 0 4px;color:#0C4A6E">Your account is frozen</h2><p style="font-size:18px;font-weight:700;margin:6px 0">${esc(me.name)}, you can't use the app at the moment.</p>${f.data.reason ? `<p style="font-size:17px;margin:8px 0;background:#fff;border-radius:14px;padding:10px 12px">${esc(f.data.reason)}</p>` : ''}<p class="muted">Frozen by ${esc(f.data.byName || 'Mum or Dad')} on ${esc(since)}. It will open again when Mum or Dad unfreezes it.</p><button class="btn sec mt" data-act="signOut">Sign out</button></div></main>`;
+}
 const backDay = b => new Date(b.data.until + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
 function banStamp(b, big = true) {
   return `<div class="ban ${big ? '' : 'small'}"><div class="ban-stamp">iPad removed</div><div class="ban-back">Back on <b>${esc(backDay(b))}</b></div>${b.data.reason ? `<div class="ban-why">${esc(b.data.reason)}</div>` : ''}<div class="ban-by">Removed by ${esc(b.data.byName || 'Mum or Dad')}</div></div>`;
@@ -1179,7 +1185,7 @@ function celebrate(force) {
 }
 
 /* ===== Modal ===== */
-function openModal(html) { $('#modal').innerHTML = `<div class="overlay" data-act="closeBg"><div class="sheet">${html}</div></div>`; }
+function openModal(html) { if (frozenMe()) return; $('#modal').innerHTML = `<div class="overlay" data-act="closeBg"><div class="sheet">${html}</div></div>`; }
 function closeModal() { if (typeof speaking !== 'undefined' && speaking) { try { speechSynthesis.cancel(); } catch (e) {} speaking = false; } $('#modal').innerHTML = ''; if (pendingRender) { pendingRender = false; render(); } else checkPopups(); }
 
 /* ===== Calendar helpers ===== */
@@ -1322,7 +1328,7 @@ function parentHome() {
   h += streakCard();
   kids().forEach(k => {
     const run = runningSession(k.id), cd = choresDoneToday(k.id), pct = cd.total ? Math.round(cd.done / cd.total * 100) : 0;
-    h += `<div class="card"><div class="kidrow">${initialAvatar(k.id, 46)}<div class="grow"><h3 style="margin:0">${esc(k.name)}</h3><div class="muted">${(n => n + (n === 1 ? ' badge' : ' badges'))(earnedBadges(k.id).length)} · ${(n => n + ' ' + (design(k) === 'fern' ? 'car' : 'bird') + (n === 1 ? '' : 's'))(unlockedCount(k.id, (design(k) === 'fern' ? CARS : BIRDS).length))}</div></div><div style="text-align:right"><div class="stat" style="font-size:26px">${balance(k.id)}</div><div class="muted" style="font-size:12px">points</div></div></div>
+    h += `<div class="card"${activeFreeze(k.id) ? ' style="outline:3px solid #7CC4F5"' : ''}>${activeFreeze(k.id) ? freezeStamp(activeFreeze(k.id)) : ''}<div class="kidrow">${initialAvatar(k.id, 46)}<div class="grow"><h3 style="margin:0">${esc(k.name)}</h3><div class="muted">${(n => n + (n === 1 ? ' badge' : ' badges'))(earnedBadges(k.id).length)} · ${(n => n + ' ' + (design(k) === 'fern' ? 'car' : 'bird') + (n === 1 ? '' : 's'))(unlockedCount(k.id, (design(k) === 'fern' ? CARS : BIRDS).length))}</div></div><div style="text-align:right"><div class="stat" style="font-size:26px">${balance(k.id)}</div><div class="muted" style="font-size:12px">points</div></div></div>
       ${calmTracked(k) ? `<div class="row mt" style="background:${chk(k).bg};border-radius:14px;padding:10px 12px;color:${chk(k).col};font-weight:700">${chk(k).icon} ${chk(k).title[0].toUpperCase() + chk(k).title.slice(1)}: ${calmStreak(k.id)} ${calmStreak(k.id) === 1 ? 'day' : 'days'}<span class="grow"></span><span style="font-weight:600">Best ${calmBest(k.id)}</span></div>` : ''}
       <div class="row mt" style="background:#EFF6FF;border-radius:14px;padding:10px 12px;color:#1D4ED8;font-weight:700">🫡 Doing as told: ${toldStreak(k.id)} ${toldStreak(k.id) === 1 ? 'day' : 'days'}<span class="grow"></span>${cardsRow(k.id, 'told', true)}</div>
       ${calmTracked(k) && strikes(k.id, today(), 'calm').length ? `<div class="row mt" style="padding:0 12px;font-size:13px;color:${chk(k).col};font-weight:700">${chk(k).icon} cards today<span class="grow"></span>${cardsRow(k.id, 'calm', true)}</div>` : ''}
@@ -1332,7 +1338,7 @@ function parentHome() {
       ${!run && pausedSession(k.id) ? `<div class="row mt" style="background:#F1F5F9;border-radius:14px;padding:10px 12px">${ic('pause_circle', 'fill')}<div class="grow"><b>iPad paused</b></div><div class="stat" style="font-size:22px;opacity:.6">${fmtLeft(pausedSession(k.id).data.remainSec)}</div></div>` : ''}
       ${run ? `<div class="row mt" style="background:#FFF6E5;border-radius:14px;padding:10px 12px">${ic('tablet_mac', 'fill')}<div class="grow"><b>On the iPad</b></div><div class="stat" data-end="${endOf(run)}" style="font-size:22px">--:--</div><button class="btn sec small" data-act="stopIpad" data-id="${run.id}">Stop</button></div>` : ''}
       <div class="kid-actions"><button data-act="bonusModal" data-id="${k.id}">${ic('add_circle', 'fill')}Points</button><button data-act="removeModal" data-id="${k.id}">${ic('remove_circle')}Take away</button><button data-act="kindModal" data-id="${k.id}">${ic('favorite', 'fill')}Well done</button><button data-act="giveIpad" data-id="${k.id}">${ic('tablet_mac')}iPad</button><button data-act="cardsModal" data-id="${k.id}"><span class="scard on sm" style="--sc:#FACC15;margin:2px 0 3px"></span>Cards</button></div>
-      <button class="btn sec small mt" style="width:100%" data-act="go" data-v="kid" data-p="${k.id}">${ic('receipt_long')} Points history</button></div>`;
+      <div class="grid2 mt"><button class="btn sec small" data-act="go" data-v="kid" data-p="${k.id}">${ic('receipt_long')} Points history</button>${activeFreeze(k.id) ? `<button class="btn ok small" data-act="unfreezeKid" data-id="${activeFreeze(k.id).id}">${ic('lock_open')} Unfreeze</button>` : `<button class="btn sec small" data-act="freezeModal" data-id="${k.id}">${ic('ac_unit')} Freeze account</button>`}</div></div>`;
   });
   const dinner = mealOn(today());
   h += `<div class="card tap" data-act="go" data-v="meals">${secH('dinner_dining', 'orange', "Tonight's dinner", ic('chevron_right', 'chev'))}<p style="margin:0;font-weight:700">${dinner ? esc(recipeName(dinner.data.recipe)) : '<span class="muted">Nothing planned yet</span>'}</p></div>`;
@@ -2082,6 +2088,14 @@ function render() {
   const same = lastView === view + ':' + param, y = window.scrollY;
   document.body.className = isKid() ? 'kid ' + design() : 'parent';
   document.body.style.backgroundImage = isKid() && design() === 'fern' ? courtBg() : '';
+  if (frozenMe()) {
+    if (view === 'brush') { brushStop(); brush = null; }
+    view = 'home'; param = null; lastView = 'frozen';
+    if ($('#modal').innerHTML) $('#modal').innerHTML = '';
+    document.body.classList.remove('wide');
+    $('#app').innerHTML = frozenScreen();
+    return;
+  }
   $('#app').innerHTML = header() + `<main>${(V[view] || V.home)()}</main>` + tabs();
   lastView = view + ':' + param;
   if (same) window.scrollTo(0, y); else window.scrollTo(0, 0);
@@ -2102,6 +2116,7 @@ function render() {
 function maybeStartBrush() { if (view === 'brush' && $('#brushTime') && (!brush || brush.done === undefined)) brushStart(); }
 function softRender() {
   const a = document.activeElement;
+  if (frozenMe() || lastView === 'frozen') return render();
   checkNewMessages();
   if (!isKid()) { const d = $('#tasksDot'), n = waitingItems().n; if (d) { d.textContent = n > 9 ? '9+' : n; d.hidden = !n; } }
   if (view === 'chat' && !$('#modal').innerHTML) { const inp = $('#chatInput'), val = inp ? inp.value : '', foc = a === inp; render(); const i2 = $('#chatInput'); if (i2) { i2.value = val; if (foc) i2.focus(); } return; }
@@ -2113,7 +2128,7 @@ function go(v, p = null) { if (view === 'brush' && v !== 'brush') { brushStop();
 
 /* ===== Popups, timers and alarms ===== */
 function checkPopups() {
-  if ($('#modal').innerHTML || !me) return;
+  if ($('#modal').innerHTML || !me || frozenMe()) return;
   if (checkBadges()) return;
   if (isKid() && calmTracked(me)) { const qd = toldQuestionDay(), key = 'familyapp-toldasked-' + me.id + '-' + qd; if (qd && !lsGet(key) && (calmEntry(me.id, qd) || !calmQuestionDay())) { lsSet(key, '1'); openModal(`<div class="center"><div style="font-size:54px">🫡</div><h2 style="margin:6px 0">One more, ${esc(me.name)}!</h2></div>${toldAskHtml(qd)}<button class="btn sec big mt" data-act="close">Ask me later</button>`); return; } }
   if (isKid() && calmTracked(me)) { const qd = calmQuestionDay(), key = 'familyapp-calmasked-' + me.id + '-' + qd; if (qd && !lsGet(key)) { lsSet(key, '1'); openModal(`<div class="center"><div style="font-size:54px">${chk(me).icon}</div><h2 style="margin:6px 0">How was ${qd === today() ? 'today' : 'yesterday'}, ${esc(me.name)}?</h2></div>${calmAskHtml(qd)}<button class="btn sec big mt" data-act="close">Ask me later</button>`); return; } }
@@ -2331,6 +2346,20 @@ A.banIpad = async el => {
   await add('ipadban', { member: mid, from: today(), until: addDays(today(), n), days: n, reason: why, byName: me.name }, me.id, { silent: true });
   render(); toast(`iPad removed for ${n} ${n === 1 ? 'day' : 'days'}`);
 };
+function freezeStamp(f) {
+  return `<div style="background:#EFF8FF;color:#0C4A6E;border-radius:14px;padding:10px 12px;margin-bottom:12px;font-weight:700">🧊 Account frozen<div style="font-weight:600;font-size:13px;margin-top:2px">By ${esc(f.data.byName || 'Mum or Dad')}, ${esc(new Date(f.data.at || f.created_at).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }))}${f.data.reason ? ': ' + esc(f.data.reason) : ''}</div></div>`;
+}
+A.freezeModal = el => { const mid = el.dataset.id; openModal(`<div class="row"><div class="grow"><div class="eyebrow-dark">Freeze account</div><h3 style="margin:2px 0 0">🧊 ${esc(nameOf(mid))}</h3></div><button class="iconbtn sm" data-act="close" aria-label="Close">${ic('close')}</button></div><p>${esc(nameOf(mid))} will be locked out of the whole app and see a "Your account is frozen" screen until you or ${parents().filter(p => p.id !== me.id).map(p => esc(p.name)).join(' or ') || 'another parent'} unfreezes it. Her points, pet and everything else are kept safe.</p><label>Reason (optional, she'll see this)</label><input id="freezeWhy" placeholder="e.g. Until we've talked about today"><button class="btn big danger mt" data-act="freezeKid" data-kid="${mid}">${ic('ac_unit')} Freeze ${esc(nameOf(mid))}'s account</button><button class="btn big sec mt" data-act="close">Cancel</button>`); };
+A.freezeKid = async el => {
+  const mid = el.dataset.kid, why = ($('#freezeWhy') || {}).value?.trim() || '';
+  closeModal();
+  if (activeFreeze(mid)) return render();
+  const run = runningSession(mid);
+  if (run) { alarmed.add(run.id); await upd(run.id, { status: 'paused', remainSec: Math.max(0, Math.round((endOf(run) - Date.now()) / 1000)), pausedAt: new Date().toISOString() }, { silent: true }); }
+  await add('freeze', { member: mid, at: new Date().toISOString(), reason: why, byName: me.name }, me.id, { silent: true });
+  render(); toast(`${nameOf(mid)}'s account is frozen`);
+};
+A.unfreezeKid = async el => { const f = items.find(i => i.id === el.dataset.id); if (!f) return; await upd(f.id, { lifted: true, liftedBy: me.name, liftedAt: new Date().toISOString() }, { silent: true }); render(); toast(`${nameOf(f.data.member)}'s account is unfrozen`); };
 A.liftBan = async el => { closeModal(); await upd(el.dataset.id, { lifted: true, liftedBy: me.name }, { silent: true }); render(); toast('iPad given back'); };
 A.declineIpad = el => upd(el.dataset.id, { status: 'declined', approvedBy: me.name });
 A.pauseIpad = async el => {
