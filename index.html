@@ -477,6 +477,25 @@ a{color:var(--deep)}
 .adv .adv-dolphin{animation:advDolph 4s ease-in-out infinite}@keyframes advDolph{0%,60%,100%{transform:translateY(40px);opacity:0}70%{opacity:1}80%{transform:translateY(-60px) rotate(-20deg);opacity:1}90%{transform:translateY(0) rotate(20deg);opacity:1}}
 .adv .adv-ffly{animation:advFly 1.6s ease-in-out infinite alternate}@keyframes advFly{from{opacity:.1}to{opacity:1}}
 .adv .adv-beam{animation:advBeam 5s ease-in-out infinite alternate}@keyframes advBeam{to{opacity:.32}}
+
+.scene .guest.basking{filter:drop-shadow(0 0 10px rgba(255,181,71,.9))}
+.place-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:10px}
+.place-pick{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:12px;border-radius:16px;border:2px solid transparent;background:var(--soft,#f1f5f9);font:inherit;text-align:left;cursor:pointer;color:inherit}.place-pick .pe{font-size:34px}.place-pick small{opacity:.75}.place-pick.on{border-color:#2f9e44}
+body.fern .place-pick,body.fern .friend-pick,body.fern .race-pick{background:#1f1f1f;color:#eee}
+.race-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}.race-pick{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px;border-radius:14px;border:2px solid transparent;background:var(--soft,#f1f5f9);font:inherit;font-weight:700;cursor:pointer;color:inherit}.race-pick:hover{border-color:#ffd43b}
+.place-scene .pl-tumble{animation:plTumble 11s linear infinite}@keyframes plTumble{from{transform:translate(-80px,290px) rotate(0)}to{transform:translate(460px,290px) rotate(1080deg)}}
+.place-scene .pl-stream{animation:plDash 2s linear infinite}@keyframes plDash{to{stroke-dashoffset:-64}}
+.place-scene .pl-leaf{animation:plLeaf 10s linear infinite}@keyframes plLeaf{from{transform:translate(0,-20px) rotate(0)}to{transform:translate(60px,330px) rotate(540deg)}}
+.place-scene .pl-fall path{animation:plDash .8s linear infinite}
+.place-scene .pl-vine{transform-box:fill-box;transform-origin:50% 0;animation:plVine 4s ease-in-out infinite alternate}@keyframes plVine{from{transform:rotate(-4deg)}to{transform:rotate(4deg)}}
+.place-scene .pl-bfly{animation:plBfly 8s ease-in-out infinite alternate}@keyframes plBfly{to{transform:translate(120px,40px)}}
+.place-scene .pl-waves{animation:plWave 3s linear infinite}@keyframes plWave{to{transform:translateX(-60px)}}
+.place-scene .pl-flag{transform-box:fill-box;transform-origin:0 50%;animation:plFlag 1s ease-in-out infinite alternate}@keyframes plFlag{to{transform:skewY(6deg) scaleX(.9)}}
+.race{position:fixed;inset:0;z-index:9000;background:#4caf50;touch-action:none;user-select:none;-webkit-user-select:none;overflow:hidden}.race canvas{position:absolute;inset:0}
+.race-hud{position:absolute;left:14px;top:calc(12px + env(safe-area-inset-top));display:flex;gap:8px}.race-hud span{background:rgba(255,255,255,.9);border-radius:16px;padding:6px 12px;font-weight:800;font-size:17px;box-shadow:0 4px 12px rgba(0,0,0,.18)}
+.race-lights{position:absolute;left:50%;top:26%;transform:translateX(-50%);display:flex;gap:10px;background:#111;padding:12px 16px;border-radius:16px;transition:opacity .4s}.race-lights i{width:30px;height:30px;border-radius:50%;background:#3a1010;display:block}.race-lights i.on{background:#ff2b2b;box-shadow:0 0 18px #ff2b2b}.race-lights.go{opacity:0}
+.race-msg{position:absolute;left:50%;top:38%;transform:translateX(-50%);font-size:clamp(28px,6vw,52px);font-weight:900;color:#fff;text-shadow:0 3px 14px rgba(0,0,0,.45);opacity:0;pointer-events:none;white-space:nowrap}.race-msg.show{animation:advBan 2.2s ease-out}
+.race-btn{position:absolute;bottom:calc(22px + env(safe-area-inset-bottom));width:84px;height:84px;border-radius:50%;border:0;background:rgba(255,255,255,.82);font-size:34px;font-weight:900;box-shadow:0 6px 18px rgba(0,0,0,.25);touch-action:none}.race-btn.l{left:20px}.race-btn.r{right:20px}.race-btn:active{background:#ffd43b}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -612,6 +631,16 @@ const PETS = {
   fern:  { name: 'Pumpkin', tricks: TRICKS.fern.map(t => t[0]) }
 };
 const CAGE_DECOR = [ { k:'millet', e:'🌾', name:'Millet spray', at:50 }, { k:'swing', e:'🪢', name:'Wooden swing', at:150 }, { k:'mirror', e:'🪞', name:'Mirror', at:250 }, { k:'toy', e:'📿', name:'Bead toy', at:350 }, { k:'ladder', e:'🪜', name:'Ladder', at:450 }, { k:'rug', e:'🟪', name:'Comfy rug', at:550 }, { k:'plant', e:'🪴', name:'Pot plant', at:650 }, { k:'bath', e:'🛁', name:'Bird bath', at:800 }, { k:'lights', e:'✨', name:'Fairy lights', at:1000 } ];
+const REPTILES = [
+  { name: 'Bearded dragon', kind: 'dragon', a: '#d9a35a', b: '#c58a3e', spot: '#9c6a2e', belly: '#f0d8a8', seed: 3, say: ['Look at my beard! 🧔', 'Toasty! ☀️'] },
+  { name: 'Chameleon', kind: 'chameleon', a: '#4cae50', b: '#a6d84a', belly: '#c8ef9a', seed: 5, say: ['Can you see me? 👀', 'I can change colour! 🌈'] },
+  { name: 'Tortoise', kind: 'tortoise', a: '#8a6a40', b: '#b7914f', belly: '#d9c08a', seed: 8, say: ['Slow and steady 🐢', 'No rush! 😌'] },
+  { name: 'Iguana', kind: 'iguana', a: '#58a65a', b: '#3d7c3f', belly: '#a8d8a0', seed: 9, say: ['Spiky and proud! 🦖', 'Hello there!'] },
+  { name: 'Corn snake', kind: 'snake', a: '#ec7a3c', b: '#c3402a', belly: '#f7e2c8', seed: 2, say: ['Hissss! 🐍', 'Sssso nice to meet you!'] },
+  { name: 'Crested gecko', kind: 'gecko', a: '#c98848', b: '#c98848', spot: '#8a5326', belly: '#ecd2a6', seed: 21, say: ['I can climb glass! 🧗', 'Fruit please! 🍑'] },
+  { name: 'Blue-tongued skink', kind: 'skink', a: '#a39478', b: '#6b5a40', belly: '#e0d6c0', seed: 4, say: ['Want to see my tongue? 👅', 'Blep!'] },
+  { name: 'Baby crocodile', kind: 'croc', a: '#5e7d3c', b: '#46612c', belly: '#c9d39a', seed: 6, say: ['Snap snap! 🐊', 'I am a friendly croc 😁'] }
+];
 const TANK_DECOR = [ { e:'🌿', name:'Plant', at:50 }, { e:'🪨', name:'Rock', at:150 }, { e:'🪵', name:'Log', at:250 }, { e:'🍄', name:'Mushroom', at:400 }, { e:'🌸', name:'Flowers', at:600 } ];
 
 /* ===== Data stores: demo (this device only) or Supabase (all devices) ===== */
@@ -862,7 +891,7 @@ const B3D = (() => {
       const cp = [], cn = [], ci = [], seg = 20;
       for (let j = 0; j <= seg; j++) { const f = j / seg * Math.PI * 2, c = Math.cos(f), s = Math.sin(f), l = Math.SQRT2; cp.push(0, c, s, 1, 0, 0); cn.push(1 / l, c / l, s / l, 1 / l, c / l, s / l); }
       for (let j = 0; j < seg; j++) { const a = j * 2; ci.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
-      geo.c = mk(cp, cn, ci);
+      geo.c = mk(cp, cn, ci); moreGeo();
       gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL);
       return ok = true;
     } catch (e) { return ok = false; }
@@ -987,6 +1016,178 @@ const B3D = (() => {
   }
   function perch(w) { return [ell(0, -3.3, 0, w, 3.3, 3.3, '#8a6240', { c2: '#5a3c22', dir: [0, -1, 0], ed: [0, .8], tx: 1.5, sp: .08 }), ell(-w * .55, -3.3, 0, 2, 3.4, 3.4, '#c79a68', { tx: 0 })]; }
 
+  // ---- extra shapes: box and cylinder (along z) ----
+  function moreGeo() {
+    if (geo.b) return;
+    const bp = [], bn = [], bi = [];
+    [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]].forEach(n => {
+      const [a, b] = n[0] ? [[0, 1, 0], [0, 0, 1]] : n[1] ? [[1, 0, 0], [0, 0, 1]] : [[1, 0, 0], [0, 1, 0]], o = bp.length / 3;
+      [[-1, -1], [1, -1], [1, 1], [-1, 1]].forEach(([u, v]) => { bp.push(n[0] + a[0] * u + b[0] * v, n[1] + a[1] * u + b[1] * v, n[2] + a[2] * u + b[2] * v); bn.push(...n); });
+      bi.push(o, o + 1, o + 2, o, o + 2, o + 3);
+    });
+    geo.b = mk(bp, bn, bi);
+    const yp = [], yn = [], yi = [], sg = 24;
+    for (let j = 0; j <= sg; j++) { const f = j / sg * Math.PI * 2, c = Math.cos(f), s = Math.sin(f); yp.push(c, s, -1, c, s, 1); yn.push(c, s, 0, c, s, 0); }
+    for (let j = 0; j < sg; j++) { const a = j * 2; yi.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
+    [1, -1].forEach(zs => { const o = yp.length / 3; yp.push(0, 0, zs); yn.push(0, 0, zs); for (let j = 0; j <= sg; j++) { const f = j / sg * Math.PI * 2; yp.push(Math.cos(f), Math.sin(f), zs); yn.push(0, 0, zs); } for (let j = 0; j < sg; j++) yi.push(o, o + 1 + j, o + 2 + j); });
+    geo.y = mk(yp, yn, yi);
+  }
+  // an ellipsoid stretched between two points
+  function seg(a, b, r, c, o = {}) {
+    const dx = b[0] - a[0], dy = b[1] - a[1], dz = b[2] - a[2], len = Math.hypot(dx, dy, dz) || .01;
+    return part(C(T((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2), RY(Math.atan2(-dz, dx)), RZ(Math.atan2(dy, Math.hypot(dx, dz))), S(len / 2 + r * .35, r * (o.ry || 1), r)), c, o);
+  }
+  // seeded random so spots stay put
+  const srand = seed => () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+
+  /* ===== Reptiles ===== */
+  function reptile(R, st) {
+    const P = [], k = R.kind, L = st.locked, g = c => L ? '#c9d0d4' : c;
+    const A = g(R.a), B = g(R.b), Bel = g(R.belly || shade(R.a, .35)), sp = g(R.spot || shade(R.a, -.55));
+    const t = st.t, mv = st.moving ? 1 : 0, ph = t * 9;
+    const sway = Math.sin(t * (mv ? 9 : 1.4)) * (mv ? 7 : 4);
+    const tall = k === 'chameleon' ? 1.45 : k === 'tortoise' ? 1 : k === 'dragon' ? .8 : 1, wide = k === 'dragon' ? 1.35 : k === 'chameleon' ? .6 : 1;
+    const by = k === 'snake' ? 4.5 : k === 'chameleon' ? 22 : k === 'tortoise' ? 13 : k === 'croc' ? 9 : 11;
+    const rnd = srand(R.seed || 7);
+    if (k === 'snake') {
+      const n = 22; let prev = null;
+      for (let i = 0; i < n; i++) {
+        const u = i / (n - 1), x = 34 - u * 80 + Math.sin(u * Math.PI * 3 + t * (mv ? 6 : 1)) * 6, z = Math.cos(u * Math.PI * 3 + t * (mv ? 6 : 1)) * 16 * (0.3 + u * .7), r = 4.6 * (i < 2 ? .9 : 1 - Math.max(0, u - .6) * 1.8);
+        const lift = u < .25 ? Math.cos(u / .25 * Math.PI / 2) * 13 : 0, pt = [x, by + lift, z];
+        if (prev) P.push(seg(prev, pt, Math.max(1.2, r), i % 4 < 2 ? A : B, { c2: Bel, dir: [0, -1, 0], ed: [.2, .6], tx: .6, sp: .3, sh: 30 }));
+        prev = pt;
+      }
+      const hd = [40, by + 14, 4 + Math.sin(t) * 3];
+      P.push(ell(hd[0], hd[1], hd[2], 8, 4.2, 5.6, A, { c2: Bel, dir: [0, -1, 0], ed: [.2, .6], sp: .3, sh: 30 }));
+      [1, -1].forEach(s => { P.push(ell(hd[0] + 3, hd[1] + 2, hd[2] + s * 3.8, 1.5, 1.5, 1.2, '#111', { sp: 1, sh: 70, tx: 0, rm: 0 })); });
+      if (st.tongue && !L) [1, -1].forEach(s => P.push(part(C(T(hd[0] + 7, hd[1] - .5, hd[2]), RY(s * 14 * D), S(9, .7, .7)), '#d6334a', { g: 'c', tx: 0 })));
+      return P;
+    }
+    // body
+    if (k === 'tortoise') {
+      P.push(ell(0, by, 0, 22, 15, 18, A, { c2: shade(R.a, -.4), dir: [0, -1, 0], ed: [.1, .5], tx: 2.2, sp: .2, sh: 20 }));
+      const rr = srand(3); for (let i = 0; i < 9; i++) { const a = rr() * Math.PI * 2, e = .35 + rr() * .5; P.push(ell(Math.cos(a) * 15 * e, by + 12 - e * 6, Math.sin(a) * 12 * e + 4, 5, 2, 4.5, B, { tx: 0, sp: .25 })); }
+      P.push(ell(0, by - 7, 0, 21, 2.2, 17, shade(R.a, -.45), { tx: 0 }));
+    } else {
+      const segs = k === 'croc' || k === 'iguana' ? [[-20, 11, 9.5], [-6, 13, 10.5], [8, 12, 9.5]] : k === 'skink' ? [[-18, 11, 8], [-4, 11.5, 8.5], [10, 11, 8]] : [[-14, 12, 8.5], [-2, 13, 9.5], [10, 11.5, 8.5]];
+      segs.forEach(([x, rx, rz], i) => P.push(ell(x, by + (k === 'chameleon' ? (i === 1 ? 2 : 0) : 0), Math.sin(t * (mv ? 9 : 1) + i) * (mv ? 1.5 : 0), rx, 7.6 * tall, rz * wide, A, { c2: Bel, dir: [0, -1, 0], ed: [.15, .65], tx: k === 'croc' ? 2 : 1.2, sp: k === 'skink' ? .35 : .18, sh: k === 'skink' ? 40 : 20 })));
+      if (k === 'chameleon') P.push(ell(0, by + 9, 0, 16, 2.5, 3, B, { tx: 0 }));
+      // spots, spikes and stripes
+      if (k === 'gecko' || k === 'dragon') for (let i = 0; i < 18; i++) { const x = -24 + rnd() * 40, a = (rnd() - .5) * 2.2; P.push(ell(x, by + Math.cos(a) * 7.6 * tall * .95, Math.sin(a) * 9 * wide * .95, 2 + rnd() * 1.4, .8, 1.8 + rnd(), sp, { tx: 0, sp: .1 })); }
+      if (k === 'dragon') for (let i = 0; i < 7; i++) [1, -1].forEach(s => P.push(part(C(T(-20 + i * 6, by + 2, s * 11.5), RX(s * -70 * D), S(1.6, 3.4, 1.6)), B, { g: 'c', tx: 0 })));
+      if (k === 'iguana' || k === 'croc') for (let i = 0; i < 9; i++) P.push(k === 'iguana' ? part(C(T(-26 + i * 5.5, by + 7.2, 0), RZ(95 * D), S(5 - Math.abs(i - 4) * .5, 1.2, 1)), B, { g: 'c', tx: 0 }) : ell(-26 + i * 5.5, by + 7, (i % 2 ? 2.5 : -2.5), 2.2, 1.6, 2, B, { tx: 0 }));
+      if (k === 'skink') for (let i = 0; i < 5; i++) P.push(ell(-22 + i * 9, by + 1, 0, 2.2, 7.9, 8.6, B, { tx: 0, sp: .35, sh: 40 }));
+    }
+    // tail
+    let prev = k === 'tortoise' ? [-20, by - 4, 0] : [-24, by, 0];
+    const tn = k === 'tortoise' ? 2 : k === 'croc' || k === 'iguana' ? 11 : 8, tl = k === 'tortoise' ? 7 : k === 'croc' || k === 'iguana' ? 54 : k === 'chameleon' ? 30 : 34;
+    for (let i = 1; i <= tn; i++) {
+      const u = i / tn; let pt;
+      if (k === 'chameleon') { const a = u * Math.PI * 1.6; pt = [-24 - Math.sin(a) * 14, by - (1 - Math.cos(a)) * 12, Math.sin(t * 1.4) * 2]; }
+      else pt = [prev[0] - tl / tn, Math.max(2.5, by - u * (by - 4)), Math.sin(u * 2.4 + t * (mv ? 9 : 1.4)) * sway * u];
+      const r = k === 'gecko' ? 7 * (1 - u * .55) * (u < .5 ? 1.05 : 1) : (k === 'tortoise' ? 3 : 6.5) * (1 - u * .82);
+      P.push(seg(prev, pt, Math.max(1, r), k === 'gecko' ? (i % 2 ? A : sp) : k === 'iguana' || k === 'skink' ? (i % 2 ? A : B) : A, { c2: Bel, dir: [0, -1, 0], ed: [.2, .7], tx: .8, sp: .18, ry: k === 'croc' ? 1.2 : 1 }));
+      prev = pt;
+    }
+    // legs (diagonal walking gait)
+    const legLen = k === 'chameleon' ? 22 : k === 'tortoise' ? 10 : k === 'skink' || k === 'croc' ? 9 : 12, legR = k === 'tortoise' ? 4 : k === 'chameleon' ? 2 : 2.6;
+    [[12, 1, 0], [12, -1, 1], [-16, 1, 1], [-16, -1, 0]].forEach(([x, s, pr]) => {
+      const sw = mv ? Math.sin(ph + pr * Math.PI) : 0, lift = mv ? Math.max(0, Math.cos(ph + pr * Math.PI)) * 3 : 0;
+      const hip = [x, by - 2, s * 7 * wide], knee = [x + sw * 3, by - legLen * .35 + lift, s * (7 * wide + legLen * .55)], foot = [x + 3 + sw * 6, 1 + lift, s * (7 * wide + legLen * .7)];
+      P.push(seg(hip, knee, legR, A, { tx: .5 })); P.push(seg(knee, foot, legR * .85, A, { tx: .5 }));
+      if (k !== 'tortoise') [-30, 0, 30].forEach(a => P.push(seg(foot, [foot[0] + Math.cos(a * D) * 4, .8, foot[2] + Math.sin(a * D) * 4 * s], 1, k === 'gecko' ? shade(R.a, .25) : A, { tx: 0 })));
+    });
+    // head
+    const hx = k === 'tortoise' ? 26 : k === 'croc' ? 22 : 20, hy = by + (k === 'chameleon' ? 4 : k === 'tortoise' ? -1 : 1);
+    const H = C(T(hx, hy, 0), RY((st.hy || 0) * D), RZ((st.hz || 0) * D));
+    const hp = (x, y, z, rx, ry, rz, c, o = {}) => part(C(H, T(x, y, z), o.r || I(), S(rx, ry, rz)), c, o);
+    if (k === 'tortoise') { P.push(seg([18, by - 3, 0], [hx, hy, 0], 4, Bel, { tx: 0 })); P.push(hp(3, 1, 0, 7, 5.5, 5.5, B, { c2: Bel, dir: [0, -1, 0], ed: [.2, .6] })); }
+    else if (k === 'croc') { P.push(hp(4, 0, 0, 10, 6, 7.5, A, { c2: Bel, dir: [0, -1, 0], ed: [.2, .6], tx: 1 })); P.push(hp(18, -1.5, 0, 13, 3.4, 5, A, { c2: Bel, dir: [0, -1, 0], ed: [.1, .5] })); for (let i = 0; i < 6; i++) [1, -1].forEach(s => P.push(hp(10 + i * 3.6, -3.4, s * 4.4, .7, 1.6, .7, '#fff', { g: 'c', r: RZ(-90 * D), tx: 0, sp: .2 }))); }
+    else {
+      const hl = k === 'iguana' ? 11 : k === 'dragon' ? 10 : k === 'skink' ? 10 : 10;
+      P.push(hp(2, 0, 0, hl, 6.4 * (k === 'chameleon' ? 1.3 : 1), 7.4 * (k === 'dragon' ? 1.25 : k === 'chameleon' ? .75 : 1), k === 'chameleon' ? A : B === A ? A : (k === 'gecko' ? A : A), { c2: Bel, dir: [0, -1, 0], ed: [.2, .65], tx: .6, sp: k === 'skink' ? .35 : .18 }));
+      P.push(hp(9, -1, 0, 5.5, 4, 5, A, { c2: Bel, dir: [0, -1, 0], ed: [.1, .6], tx: .3 }));
+      if (k === 'chameleon') P.push(hp(-4, 7, 0, 3, 8, 2.4, B, { g: 'c', r: RZ(115 * D), tx: 0 }));
+      if (k === 'dragon') for (let i = 0; i < 7; i++) P.push(part(C(H, T(4 - i * .4, -4.5, 0), RX((i - 3) * 22 * D), RZ(-90 * D), S(3.6, 1.3, 1.3)), shade(R.a, -.3), { g: 'c', tx: 0 }));
+      if (k === 'iguana') P.push(hp(4, -6, 0, 5, 4, 1.2, B, { tx: 0 }));
+      if (k === 'gecko') for (let i = 0; i < 5; i++) P.push(hp(-4 + rnd() * 8, 5 + rnd(), (rnd() - .5) * 7, 1.4, .6, 1.2, sp, { tx: 0 }));
+    }
+    // eyes
+    const ey = k === 'croc' ? 6 : k === 'tortoise' ? 2.5 : 2.4, ex = k === 'croc' ? 4 : k === 'tortoise' ? 6 : 5, ez = k === 'chameleon' ? 5.5 : k === 'tortoise' ? 4.6 : k === 'croc' ? 4.5 : 6.4;
+    const ec = k === 'gecko' ? '#d4a94a' : k === 'chameleon' ? shade(R.a, .1) : k === 'croc' ? '#c9b23a' : '#2a1a10', er = k === 'chameleon' ? 3.6 : k === 'gecko' ? 3.2 : 2.4;
+    [1, -1].forEach(s => {
+      P.push(hp(ex, ey, s * ez, er, er * (st.blink ? .12 : 1), er, L ? '#9aa3a8' : ec, { tx: 0, sp: .9, sh: 60, rm: 0 }));
+      if (!L && !st.blink) {
+        if (k === 'gecko' || k === 'croc') P.push(hp(ex + er * .55, ey, s * (ez + er * .5), .55, er * .8, .5, '#111', { tx: 0, sp: .6, sh: 60, rm: 0 }));
+        else P.push(hp(ex + er * .5, ey + .2, s * (ez + er * .6), er * .45, er * .45, er * .45, '#111', { tx: 0, sp: .6, sh: 60, rm: 0 }));
+        P.push(hp(ex + er * .3, ey + er * .5, s * (ez + er * .8), .6, .6, .6, '#fff', { tx: 0, sp: 0, rm: 0 }));
+      }
+    });
+    if (st.tongue && !L && (k === 'gecko' || k === 'skink' || k === 'iguana' || k === 'dragon')) P.push(part(C(H, T(13, -2, 0), S(k === 'skink' ? 6 : 4, 1.6, 2.6)), k === 'skink' ? '#3b6fe0' : '#ff7fa3', { tx: 0, sp: .3 }));
+    return P;
+  }
+
+  /* ===== Race cars ===== */
+  function car(c, st) {
+    const L = st.locked, a = L ? '#cfd6da' : c.a, b = L ? '#b9c2c7' : c.b, P = [], spin = st.spin || 0;
+    const box = (x, y, z, sx, sy, sz, col, o = {}) => part(C(T(x, y, z), o.r || I(), S(sx, sy, sz)), col, { g: 'b', tx: 0, ...o });
+    const wheel = (x, z, r, w) => {
+      P.push(part(C(T(x, r, z), RZ(-spin), S(r, r, w)), '#1a1a1a', { g: 'y', tx: 0, sp: .25, sh: 14 }));
+      P.push(part(C(T(x, r, z + Math.sign(z) * (w + .1)), RZ(-spin), S(r * .62, r * .62, .3)), L ? '#aab' : '#c8cdd2', { g: 'y', tx: 0, sp: .8, sh: 50 }));
+      if (!L) { P.push(part(C(T(x, r, z + Math.sign(z) * (w + .2)), RZ(-spin), S(r * .8, r * .8, .15)), '#f2c318', { g: 'y', tx: 0, sp: .2 })); P.push(part(C(T(x, r, z + Math.sign(z) * (w + .45)), RZ(-spin), S(r * .55, r * .55, .2)), '#bfc5cb', { g: 'y', tx: 0, sp: .9, sh: 60 })); }
+      for (let i = 0; i < 5; i++) P.push(part(C(T(x, r, z + Math.sign(z) * (w + .5)), RZ(-spin + i * 72 * D), T(r * .28, 0, 0), S(r * .28, .9, .3)), '#6c737a', { g: 'b', tx: 0, sp: .5 }));
+    };
+    wheel(-62, 20, 15, 8); wheel(-62, -20, 15, 8); wheel(58, 18, 12.5, 6.5); wheel(58, -18, 12.5, 6.5);
+    P.push(box(0, 8, 0, 70, 1.6, 14, '#1d1d1d', { sp: .1 }));
+    P.push(ell(-8, 16, 0, 62, 9, 12.5, a, { c2: shade(a, -.45), dir: [0, -1, 0], ed: [.1, .7], tx: 0, sp: .55, sh: 60, rm: .3 }));
+    P.push(part(C(T(38, 14.5, 0), S(58, 5.6, 7.5)), a, { g: 'c', c2: shade(a, -.4), dir: [0, -1, 0], ed: [.1, .6], tx: 0, sp: .55, sh: 60 }));
+    [1, -1].forEach(s => P.push(ell(-14, 14.5, s * 13, 30, 7, 6.5, b, { c2: shade(b, -.4), dir: [0, -1, 0], ed: [.1, .7], tx: 0, sp: .55, sh: 60 })));
+    P.push(ell(-36, 22, 0, 30, 9, 8.5, a, { c2: shade(a, .3), dir: [0, 1, 0], ed: [.5, 1], tx: 0, sp: .6, sh: 60, rm: .3 }));
+    P.push(ell(-12, 29, 0, 7, 5, 5, b, { tx: 0, sp: .5, sh: 50 }));
+    P.push(ell(6, 24.5, 0, 13, 3, 7.5, '#141414', { tx: 0 }));
+    P.push(ell(4, 30, 0, 6.6, 6.6, 6.6, L ? '#aab' : '#f2c318', { tx: 0, sp: .8, sh: 70 }));
+    P.push(ell(8.5, 31, 0, 3, 2.2, 5.4, '#1d2b33', { tx: 0, sp: 1, sh: 90 }));
+    P.push(seg([-6, 30, 0], [14, 33, 0], 1.1, '#2a2a2a', { tx: 0 }));
+    // wings
+    P.push(box(-78, 36, 0, 9, 1.6, 23, b, { sp: .5, sh: 50 })); P.push(box(-79, 32, 0, 8, 1.2, 22, a, { sp: .5 }));
+    [1, -1].forEach(s => P.push(box(-78, 30, s * 23.5, 10, 9, .9, a, { sp: .5 })));
+    P.push(box(-74, 26, 0, 2, 7, 1.2, '#2a2a2a'));
+    P.push(box(90, 6.5, 0, 8, 1.3, 25, b, { sp: .5, sh: 50 })); [1, -1].forEach(s => P.push(box(90, 9, s * 25.5, 9, 4.5, .8, a, { sp: .5 })));
+    return P;
+  }
+
+  function glDraw(parts, W, H, root, pw, ph, fixedRoot) {
+    moreGeo();
+    gl.viewport(0, 0, pw, ph); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    const n = -300, f = 300, P = [2 / W, 0, 0, 0, 0, 2 / H, 0, 0, 0, 0, -2 / (f - n), 0, -1, -1, -(f + n) / (f - n), 1];
+    gl.uniformMatrix4fv(U.P, false, P);
+    let cur = null;
+    for (const p of parts) {
+      const g2 = geo[p.g];
+      if (g2 !== cur) { cur = g2; gl.bindBuffer(gl.ARRAY_BUFFER, g2.pb); gl.enableVertexAttribArray(U.p); gl.vertexAttribPointer(U.p, 3, gl.FLOAT, false, 0, 0); gl.bindBuffer(gl.ARRAY_BUFFER, g2.nb); gl.enableVertexAttribArray(U.n); gl.vertexAttribPointer(U.n, 3, gl.FLOAT, false, 0, 0); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, g2.ib); }
+      const M = p.fixed ? mul(fixedRoot || root, p.m) : mul(root, p.m);
+      gl.uniformMatrix4fv(U.M, false, M); gl.uniformMatrix3fv(U.N, false, nmat(M));
+      gl.uniform3fv(U.c1, p.c1); gl.uniform3fv(U.c2, p.c2); gl.uniform3fv(U.dir, p.dir); gl.uniform2fv(U.ed, p.ed);
+      gl.uniform1f(U.sh, p.sh); gl.uniform1f(U.sp, p.sp); gl.uniform1f(U.tx, p.tx); gl.uniform1f(U.rm, p.rm);
+      gl.drawElements(gl.TRIANGLES, g2.cnt, gl.UNSIGNED_SHORT, 0);
+    }
+  }
+  const proj = (root, W, H, pw, ph, x, y, z) => { const m = root; const X = m[0] * x + m[4] * y + m[8] * z + m[12], Y = m[1] * x + m[5] * y + m[9] * z + m[13]; return [X / W * pw, (1 - Y / H) * ph]; };
+  function numBadge(ctx, x, y, r, c, locked) {
+    const n = locked ? '?' : c.n, nc = locked ? '#9aa' : (c.nc.toLowerCase() === '#ffffff' ? (c.a.toLowerCase() === '#ffffff' ? '#111' : c.a) : c.nc);
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fillStyle = locked ? '#e3e8eb' : '#fff'; ctx.fill(); ctx.lineWidth = Math.max(1, r * .1); ctx.strokeStyle = 'rgba(0,0,0,.25)'; ctx.stroke();
+    ctx.fillStyle = nc; ctx.font = `900 ${Math.round(r * (String(n).length > 1 ? 1.15 : 1.35))}px Arial Black, Arial, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(String(n), x, y + r * .06);
+  }
+  /* draw a race car from above into a 2D canvas (used by the race game) */
+  function carTop(ctx, ci, x, y, size, heading, spin) {
+    if (!init()) return false;
+    const c = CARS[ci], pw = Math.min(SZ, Math.round(size * Math.min(2, devicePixelRatio || 1))), W = 220;
+    const root = C(T(110, 110, 0), RX(64 * D), RY(-heading), S(1), T(0, -16, 0));
+    glDraw(car(c, { spin }), W, W, root, pw, pw);
+    ctx.drawImage(cv, 0, SZ - pw, pw, pw, x - size / 2, y - size / 2, size, size);
+    const [nx, ny] = proj(root, W, W, size, size, -36, 31, 0); numBadge(ctx, x - size / 2 + nx, y - size / 2 + ny, size * .045, c, false);
+    return true;
+  }
   function draw(ctx, parts, W, H, k, fx, fy, yaw, pitch, px) {
     gl.viewport(0, 0, px[0], px[1]); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     const n = -300, f = 300, P = [2 / W, 0, 0, 0, 0, 2 / H, 0, 0, 0, 0, -2 / (f - n), 0, -1, -1, -(f + n) / (f - n), 1];
@@ -1009,7 +1210,11 @@ const B3D = (() => {
   // ---- per-canvas animation ----
   const COCO = { coco: true, name: 'Coco', body: '#9c9c9c', head: '#a8a8a8', belly: '#b9b9b9', wing: '#8d8d8d', beak: '#b8a49a' };
   function spec(c) { if (c.dataset.b === 'coco') return COCO; return (typeof BIRDS !== 'undefined' && BIRDS[Number(c.dataset.b)]) || COCO; }
+  const PUMPKIN = { name: 'Pumpkin', kind: 'gecko', a: '#e3ac62', b: '#e3ac62', spot: '#5b3a22', belly: '#f7e4c2', seed: 11 };
   function frame(c, now) {
+    const key = c.dataset.b;
+    if (key === 'pumpkin' || key.startsWith('r:')) return frameRep(c, now, key === 'pumpkin' ? PUMPKIN : (typeof REPTILES !== 'undefined' && REPTILES[Number(key.slice(2))]) || PUMPKIN);
+    if (key.startsWith('c:')) return frameCar(c, now, CARS[Number(key.slice(2))] || CARS[0]);
     const st = c._st || (c._st = { ph: Math.random() * 100, yawT: 0, yaw: 0, hy: 0, hz: 0 });
     const t = now / 1000 + st.ph, coco = c.dataset.b === 'coco', b = spec(c), locked = c.dataset.l === '1';
     const host = c.closest('.flying, .pet, .guest') || c.parentElement;
@@ -1030,6 +1235,26 @@ const B3D = (() => {
     const pitch = { m: C(T(0, by, 0), RZ(pit), S(1, breathe, 1), T(0, -by, 0)) };
     const k = Number(c.dataset.k) * (b.shape === 'flamingo' ? .66 : b.shape === 'owl' ? .92 : 1), fx = Number(c.dataset.fx), fy = Number(c.dataset.fy);
     draw(c._ctx || (c._ctx = c.getContext('2d')), parts, W, H, k, fx, fy, (fly ? -12 : -28 + st.yaw) * D, pitch, [c.width, c.height]);
+  }
+  function frameRep(c, now, R) {
+    const st = c._st || (c._st = { ph: Math.random() * 100, yaw: 0, hy: 0 }), t = now / 1000 + st.ph, locked = c.dataset.l === '1';
+    const host = c.closest('.pet, .guest') || c.parentElement, moving = !!(host && host.classList.contains('moving'));
+    const cyc = t % 8, look = locked ? 0 : cyc < 2.5 ? 0 : cyc < 4 ? 28 : cyc < 5 ? -18 : 0;
+    st.hy += (look - st.hy) * .06; const turn = locked || moving ? 0 : (t % 15 < 6 ? 0 : t % 15 < 10 ? 18 : -8); st.yaw += (turn - st.yaw) * .03;
+    const pose = { t, locked, moving, blink: !locked && t % 5.1 < .14, tongue: !locked && (t % 4.6 < .3 || (host && host.classList.contains('licking'))), hy: st.hy, hz: Math.sin(t * 1.3) * 3 };
+    const parts = reptile(R, pose), W = Number(c.dataset.w), H = Number(c.dataset.h), k = Number(c.dataset.k) * (R.kind === 'croc' || R.kind === 'iguana' ? .78 : R.kind === 'snake' ? .95 : R.kind === 'chameleon' ? .85 : 1);
+    const breathe = 1 + Math.sin(t * 2.4) * .015;
+    const root = C(T(Number(c.dataset.fx), Number(c.dataset.fy), 0), S(k), RY(((R.kind === 'snake' ? -10 : -22) + st.yaw) * D), S(1, breathe, 1));
+    glDraw(parts, W, H, root, c.width, c.height);
+    const ctx = c._ctx || (c._ctx = c.getContext('2d')); ctx.clearRect(0, 0, c.width, c.height); ctx.drawImage(cv, 0, SZ - c.height, c.width, c.height, 0, 0, c.width, c.height);
+  }
+  function frameCar(c, now, car0) {
+    const st = c._st || (c._st = { ph: Math.random() * 100 }), t = now / 1000 + st.ph, locked = c.dataset.l === '1', zoom = !!c.closest('.zoomer');
+    const parts = car(car0, { locked, spin: zoom ? t * 30 : 0 }), W = Number(c.dataset.w), H = Number(c.dataset.h);
+    const root = C(T(Number(c.dataset.fx), Number(c.dataset.fy) + (zoom ? Math.sin(t * 40) * .4 : 0), 0), S(Number(c.dataset.k)), RY((locked ? -14 : -14 + Math.sin(t * .5) * 8) * D));
+    glDraw(parts, W, H, root, c.width, c.height);
+    const ctx = c._ctx || (c._ctx = c.getContext('2d')); ctx.clearRect(0, 0, c.width, c.height); ctx.drawImage(cv, 0, SZ - c.height, c.width, c.height, 0, 0, c.width, c.height);
+    const [nx, ny] = proj(root, W, H, c.width, c.height, -34, 21, 11); numBadge(ctx, nx, ny, c.width * .042, car0, locked);
   }
   let running = false;
   function loop(now) {
@@ -1053,7 +1278,7 @@ const B3D = (() => {
     setTimeout(kick, 0);
     return `<canvas class="b3d critter" data-b="${key}" data-l="${o.locked ? 1 : 0}" data-np="${o.noPerch ? 1 : 0}" data-w="${vw}" data-h="${vh}" data-k="${o.k || 1}" data-fx="${o.fx}" data-fy="${o.fy}" width="${pw}" height="${ph}" style="width:${w}px;height:${h}px;display:block"></canvas>`;
   }
-  return { html, kick, init };
+  return { html, kick, init, carTop };
 })();
 function cocoSVG(w = 70) { return B3D.html('coco', w, { vw: 100, vh: 120, fx: 50, fy: 13, k: 1.25, noPerch: true }) || cocoSVG2D(w); }
 function cocoSVG2D(w = 70) {
@@ -1195,6 +1420,10 @@ function birdSVG2D(b, locked, w = 96, noPerch) {
   return s + `</g></g></svg>`;
 }
 function carSVG(c, locked, w = 150) {
+  const i = CARS.indexOf(c), h3 = i >= 0 && B3D.html('c:' + i, w, { vw: 204, vh: 72, fx: 104, fy: 3, k: .95, locked, noPerch: true });
+  return h3 || carSVG2D(c, locked, w);
+}
+function carSVG2D(c, locked, w = 150) {
   const id = gid('c'), a = locked ? '#cfd6da' : c.a, b = locked ? '#b9c2c7' : c.b, n = locked ? '?' : c.n, nc = locked ? '#9aa' : c.nc;
   const body = locked ? a : `url(#${id}a)`, acc = locked ? b : `url(#${id}s)`;
   const numCol = locked ? '#9aa' : (nc.toLowerCase() === '#ffffff' ? (a.toLowerCase() === '#ffffff' ? '#111' : a) : nc);
@@ -1225,7 +1454,9 @@ function carSVG(c, locked, w = 150) {
     <circle cx="70" cy="36" r="8" fill="${locked ? '#e3e8eb' : '#ffffff'}"/>${locked ? '' : '<circle cx="70" cy="36" r="8" fill="none" stroke="#000" stroke-width=".6" opacity=".2"/>'}
     <text x="70" y="40" text-anchor="middle" font-size="${String(n).length > 1 ? 9.5 : 11}" font-weight="900" fill="${numCol}" font-family="Arial Black,Arial,sans-serif">${n}</text></svg>`;
 }
-function geckoSVG(w = 96) {
+function geckoSVG(w = 96) { return B3D.html('pumpkin', w, { vw: 130, vh: 74, fx: 70, fy: 3, k: 1.15, noPerch: true }) || geckoSVG2D(w); }
+function repSVG(i, w = 96, locked) { return B3D.html('r:' + i, w, { vw: 130, vh: 74, fx: 70, fy: 3, k: 1.15, noPerch: true, locked }) || geckoSVG2D(w); }
+function geckoSVG2D(w = 96) {
   const id = gid('ge');
   const leg = (cls, hip, knee, foot, back) => `<g class="gleg ${cls}" style="transform-origin:${hip[0]}px ${hip[1]}px"><path d="M${hip[0]},${hip[1]} Q${knee[0]},${knee[1]} ${foot[0]},${foot[1]}" fill="none" stroke="${back ? `url(#${id}lb)` : `url(#${id}l)`}" stroke-width="${back ? 5 : 5.6}" stroke-linecap="round"/><g fill="${back ? '#c79a6a' : '#e2bd92'}">${[-40, 0, 40].map(a => { const r = (a + (foot[0] > hip[0] ? 0 : 180)) * Math.PI / 180, fx = foot[0] + Math.cos(r) * 3.4, fy = foot[1] + Math.sin(r) * 3.4 * .6 + 1; return `<line x1="${foot[0]}" y1="${foot[1]}" x2="${fx.toFixed(1)}" y2="${fy.toFixed(1)}" stroke="${back ? '#b8875a' : '#d4ab7d'}" stroke-width="1.6" stroke-linecap="round"/><circle cx="${fx.toFixed(1)}" cy="${fy.toFixed(1)}" r="1.6"/>`; }).join('')}</g></g>`;
   return `<svg class="critter gecko3d" viewBox="0 0 130 74" width="${w}" overflow="visible"><defs>
@@ -1862,11 +2093,12 @@ V.pet = () => {
   const d = design(), pet = PETS[d], p = petItem()?.data || {}, tr = p.tricks || {};
   const learned = pet.tricks.filter(t => (tr[t] || 0) >= 100), cur = pet.tricks.find(t => (tr[t] || 0) < 100), prog = cur ? (tr[cur] || 0) : 100;
   const show = prefs(me.id).showTricks !== false, f = friendship(p);
-  const garden = d === 'ginny' && p.where === 'garden';
-  const scene = d === 'fern' ? tankScene(TANK_DECOR.filter(t => earned(me.id) >= t.at).map(t => t.name)) : garden ? gardenScene() : cageScene(CAGE_DECOR.filter(t => earned(me.id) >= t.at).map(t => t.k));
+  const garden = d === 'ginny' && p.where === 'garden', place = d === 'fern' && PLACES[p.where];
+  const scene = d === 'fern' ? place ? placeScene(p.where) : tankScene(TANK_DECOR.filter(t => earned(me.id) >= t.at).map(t => t.name)) : garden ? gardenScene() : cageScene(CAGE_DECOR.filter(t => earned(me.id) >= t.at).map(t => t.k));
   const ring = show ? learned.map((t, i) => { const [x, y] = ringPos(i, learned.length); return `<button class="trick-btn" style="left:${x}%;top:${y}%;animation-delay:${i * 40}ms" data-act="showTrick" data-x="${esc(t)}" aria-label="${esc(t)}" title="${esc(t)}">${trickInfo(t)[1]}</button>`; }).join('') : '';
   const acts = d === 'fern'
-    ? [['mist','💦 Mist tank'],['fruit','🍑 Feed fruit'],['flies','🪰 Let flies in'],['climb','🌿 Climb branch'],...TANK_DECOR.filter(t => earned(me.id) >= t.at && TANK_FUN[t.name] && TANK_FUN[t.name][0]).map(t => ['go' + t.name, TANK_FUN[t.name][0]]),['hand','✋ Sit on my hand'],['trick','⭐ Practise trick']]
+    ? place ? [['explore','🗺️ Go somewhere else'],place.act,['flies','🪰 Catch bugs'],['friends','🦎 Invite friends'],['race','🏁 Race your cars'],['trick','⭐ Practise trick']]
+    : [['mist','💦 Mist tank'],['fruit','🍑 Feed fruit'],['flies','🪰 Let flies in'],['climb','🌿 Climb branch'],...TANK_DECOR.filter(t => earned(me.id) >= t.at && TANK_FUN[t.name] && TANK_FUN[t.name][0]).map(t => ['go' + t.name, TANK_FUN[t.name][0]]),['hand','✋ Sit on my hand'],['explore','🗺️ Go exploring'],['friends','🦎 Invite friends'],['race','🏁 Race your cars'],['trick','⭐ Practise trick']]
     : garden ? [['inside','🏠 Go back inside'],['worms','🪱 Worms'],['friends','🐦 Invite friends'],['adventure','🪽 Fly to the forest & beach'],['whistle','🎵 Whistle a tune'],['trick','⭐ Practise trick']]
     : [['water','💧 Fresh water'],['worms','🪱 Worms'],[p.out ? 'cage' : 'out', p.out ? '🏠 Back in cage' : '🕊️ Let her out'],['garden','🌳 Out in the garden'],['friends','🐦 Invite friends'],['adventure','🪽 Big adventure'],...(earned(me.id) >= CAGE_DECOR.find(t => t.k === 'swing').at ? [['swing','🪢 Swing']] : []),['whistle','🎵 Whistle a tune'],['trick','⭐ Practise trick']];
   const hint = learned.length ? (show ? `Tap a trick around the edge to watch ${pet.name} do it.` : 'Trick buttons hidden.') : `Learn a trick and it will appear around the edge.`;
@@ -1895,6 +2127,7 @@ function mountPetExtras() {
   scene.addEventListener('pointerup', e => {
     const was = down; down = null;
     const fb = e.target.closest('.pal');
+    if (fb && fb.dataset.ri !== undefined) { const R = REPTILES[fb.dataset.ri]; SND.gecko(); fb.classList.add('licking'); setTimeout(() => fb.classList.remove('licking'), 600); bubble(scene, Math.max(6, Math.min(scene.clientWidth - 150, fb.offsetLeft)), Math.max(6, fb.offsetTop - 16), [`${R.name} says hi! 👋`, ...R.say][Math.floor(Math.random() * 3)]); return; }
     if (fb) { const b = BIRDS[fb.dataset.fi]; birdSound(b); fb.classList.remove('a-hop'); void fb.offsetWidth; fb.classList.add('a-hop'); setTimeout(() => fb.classList.remove('a-hop'), 1000); bubble(scene, Math.max(6, Math.min(scene.clientWidth - 150, fb.offsetLeft - 10)), Math.max(6, fb.offsetTop - 16), [`${b.name} says hi! 👋`, 'Tweet tweet!', `Hi ${me.name}! 💛`][Math.floor(Math.random() * 3)]); return; }
     if (e.target.closest('.trick-btn,.fly,button')) return;
     if (was) { if (moved <= 25) petReact(scene, pet); return; }
@@ -1917,6 +2150,7 @@ function mountPetExtras() {
     }
     if (tick % 4 !== 0) return;
     const r = Math.random();
+    if (fern && PLACES[scene.dataset.where]) { if (r < .5) pumpkinExplore(); else if (r < .7) flickTongue(scene, pet); return; }
     if (fern) {
       const have = TANK_DECOR.filter(t => earned(me.id) >= t.at).map(t => t.name);
       if (r < .2 && have.length && pumpkinVisit(have[Math.floor(Math.random() * have.length)])) return;
@@ -2139,7 +2373,7 @@ function placeCocoInCage(animate) {
 }
 function mountPet() {
   stopPet(); if (swinging) { clearTimeout(swinging); swinging = null; petBusy = false; } clearInterval(guestT); guestT = null; if (view !== 'pet') return;
-  startGuests(); setTimeout(mountFriends, 0);
+  startGuests(); setTimeout(mountFriends, 0); if (design() === 'fern') { setTimeout(mountPlace, 0); setTimeout(mountReps, 50); }
   try { if (sceneRO) sceneRO.disconnect(); sceneRO = new ResizeObserver(() => { fitCage(); placeCocoInCage(); }); const sc0 = $('#scene'); if (sc0) sceneRO.observe(sc0); } catch (e) {}
   fitCage();
   updatePetStats();
@@ -2198,7 +2432,7 @@ const FXSET = { notes: ['🎵','🎶'], hearts: ['❤️','💕','💖'], stars:
 function emit(scene, x, y, list, n = 5, spread = 70) { for (let i = 0; i < n; i++) setTimeout(() => { const e = document.createElement('div'); e.className = 'note'; e.textContent = list[i % list.length]; e.style.left = (x + (Math.random() - .5) * spread) + 'px'; e.style.top = (y + (Math.random() - .5) * 20) + 'px'; scene.appendChild(e); setTimeout(() => e.remove(), 1700); }, i * 200); }
 function petSound() { if (design() === 'fern') SND.gecko(); else cocoSound(); }
 function flickTongue(scene, pet) {
-  const flip = /scaleX\(-1\)/.test(pet.style.transform), mx = pet.offsetLeft + (flip ? 4.4 : 91.6), my = pet.offsetTop + 28;
+  const flip = /scaleX\(-1\)/.test(pet.style.transform), mx = pet.offsetLeft + (flip ? .046 : .954) * pet.offsetWidth, my = pet.offsetTop + pet.offsetHeight * .51;
   const t = document.createElement('div'); t.className = 'tongue'; t.style.left = mx + 'px'; t.style.top = (my - 2.5) + 'px'; t.style.transform = `rotate(${flip ? 180 : 0}deg)`; scene.appendChild(t);
   requestAnimationFrame(() => requestAnimationFrame(() => { t.style.width = '34px'; })); setTimeout(() => { t.style.width = '0px'; }, 220); setTimeout(() => t.remove(), 450);
 }
@@ -2252,7 +2486,10 @@ async function petAction(a) {
   if (a === 'whistle') { whistleTune(); ['🎵','🎶','🎵'].forEach((n, i) => setTimeout(() => { const e = document.createElement('div'); e.className = 'note'; e.textContent = n; e.style.left = (pet.offsetLeft + 50 + i * 12) + 'px'; e.style.top = (pet.offsetTop) + 'px'; scene.appendChild(e); setTimeout(() => e.remove(), 1700); }, i * 400)); return petSave({ playAt: now, counts: bump('play') }); }
   if (a === 'worms') { if (p.out) { for (let i = 0; i < 3; i++) { const w = document.createElement('div'); w.className = 'worm'; w.style.left = (40 + Math.random() * (W - 100)) + 'px'; scene.appendChild(w); } bubble(scene, W / 2, H - 120, 'Worms on the floor!'); setTimeout(() => birdGuest(true), 1500); if (Math.random() < .6) setTimeout(() => birdGuest(true), 3500); } else { bubble(scene, W / 2 + 40, 190, 'Worms in her dish!'); setTimeout(() => birdGuest(), 2500); setTimeout(() => cocoPeckDish(scene, pet), 600); return petSave({ foodAt: now, counts: bump('feed') }); } return; }
   if (a.startsWith('go') && TANK_FUN[a.slice(2)]) { if (!pumpkinVisit(a.slice(2))) toast('Pumpkin is busy, try again in a moment'); return; }
-  if (a === 'friends') { openModal(friendSheet()); return; }
+  if (a === 'friends') { openModal(design() === 'fern' ? repSheet() : friendSheet()); return; }
+  if (a === 'explore') { openModal(exploreSheet()); return; }
+  if (a === 'race') { openModal(raceSheet()); return; }
+  if (['bask', 'log', 'splash', 'treasure'].includes(a)) { placeFun(a); return; }
   if (a === 'adventure') { startAdventure(); return; }
   if (a === 'garden') { if (petBusy) return toast('Coco is busy, try again in a moment'); petBusy = true; if (p.out) await flyPath(pet, [-60, 40], { noLand: true, lift: 40 }); petBusy = false; cocoArrive = 'garden'; await petSave({ out: true, where: 'garden' }); render(); return; }
   if (a === 'inside') { if (petBusy) return toast('Coco is busy, try again in a moment'); petBusy = true; await flyPath(pet, [-60, 40], { noLand: true, lift: 40 }); petBusy = false; cocoArrive = 'window'; await petSave({ out: true, where: 'room' }); render(); return; }
@@ -3713,6 +3950,327 @@ function endAdventure(finished) {
   ov.appendChild(card); whistleTune(); celebrate && celebrate();
   card.querySelector('#advAgain').onclick = () => { cancelAnimationFrame(adv.raf); ov.remove(); adv = null; startAdventure(); };
   card.querySelector('#advHome').onclick = () => endAdventure(false);
+}
+/* ===== Fearne's adventures: outside places for Pumpkin, reptile friends, and the race track ===== */
+const PLACES = {
+  desert: { e: '🏜️', name: 'The desert', blurb: 'Hot sand, cactuses and a big sunny rock', act: ['bask', '☀️ Sunbathe on the rock'], spots: [[86, 228, 'rock'], [250, 246, 'dune'], [306, 292, 'cactus'], [150, 300, 'sand'], [40, 296, 'sand']] },
+  forest: { e: '🌲', name: 'The forest', blurb: 'Tall trees, a mossy log and a stream', act: ['log', '🪵 Climb the log'], spots: [[196, 250, 'log'], [110, 300, 'stone'], [300, 246, 'stump'], [40, 296, 'moss'], [250, 304, 'moss']] },
+  rainforest: { e: '🌴', name: 'The rainforest', blurb: 'Giant leaves, vines and a waterfall', act: ['splash', '💦 Paddle in the pool'], spots: [[100, 172, 'branch'], [282, 262, 'pool'], [200, 236, 'leaf'], [40, 300, 'ferns'], [160, 304, 'ferns']] },
+  shipwreck: { e: '🏴‍☠️', name: 'The old shipwreck', blurb: 'A pirate ship washed up on a sandy beach', act: ['treasure', '💰 Open the treasure chest'], spots: [[176, 176, 'deck'], [120, 112, 'mast'], [292, 278, 'chest'], [56, 262, 'barrel'], [210, 304, 'sand']] }
+};
+const PLACE_SAY = { rock: ['So toasty! ☀️', 'Best rock ever 😎'], dune: ['Sand surfing! 🏄', 'Look how far I can see!'], cactus: ['Ouch, spiky! 🌵', 'Nice shade here'], sand: ['Warm toes! 🦶', 'Hello desert!'], log: ['King of the log! 👑', 'Mossy! 🌿'], stone: ['Hop hop! 🪨', 'Splash! 💧'], stump: ['Up here! 👋'], moss: ['Squishy moss 🌱'], branch: ['Jungle explorer! 🌴', 'Swinging vines!'], pool: ['Splish splash! 💦'], leaf: ['Biggest leaf ever! 🍃'], ferns: ['Hide and seek 🙈'], deck: ['Ahoy! 🏴‍☠️', 'Captain Pumpkin!'], mast: ['Land ahoy! 🔭'], chest: ['Treasure! 💰'], barrel: ['Yo ho ho! 🛢️'] };
+function placeScene(where) {
+  const P = PLACES[where] || PLACES.desert, id = 'pl' + where;
+  const sky = { desert: ['#f7b267', '#fde4b6'], forest: ['#9fd3c7', '#e1f2e8'], rainforest: ['#6cc59a', '#cdeedb'], shipwreck: ['#4fb8ea', '#cdeefe'] }[where];
+  let art = '';
+  if (where === 'desert') art = `<circle cx="290" cy="60" r="34" fill="#fff3c4"/><circle cx="290" cy="60" r="60" fill="#ffe08a" opacity=".35"/>
+    <path d="M-600,220 L-200,220 L-180,170 L-110,170 L-90,220 L40,220 L60,186 L130,186 L150,220 L960,220 L960,330 L-600,330 Z" fill="#d98b5a" opacity=".55"/>
+    <path d="M-600,250 C-300,220 -100,260 60,236 C180,218 260,226 360,244 C520,266 760,232 960,248 L960,330 L-600,330 Z" fill="#f2c27b"/>
+    <path d="M-600,280 C-300,262 0,290 120,276 C220,266 300,286 400,274 C600,256 800,290 960,276 L960,330 L-600,330 Z" fill="#e9b062"/>
+    <g fill="#e2a457" opacity=".6">${Array.from({ length: 30 }, (_, i) => `<ellipse cx="${-560 + i * 50}" cy="${296 + (i % 3) * 10}" rx="10" ry="1.4"/>`).join('')}</g>
+    <path d="M40,252 C30,214 60,196 96,198 C132,200 146,226 136,252 Z" fill="#a7774f"/><path d="M52,214 C70,202 100,202 120,212" stroke="#c99a6e" stroke-width="4" fill="none" stroke-linecap="round"/>
+    ${[[300, 290, 1], [196, 270, .7], [-60, 280, .9], [420, 286, .8]].map(([x, y, s]) => `<g transform="translate(${x} ${y}) scale(${s})"><rect x="-9" y="-110" width="18" height="110" rx="9" fill="#3f9b4f"/><path d="M-9,-60 L-26,-60 L-26,-86" stroke="#3f9b4f" stroke-width="14" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M9,-44 L24,-44 L24,-74" stroke="#3f9b4f" stroke-width="14" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M-3,-104 L-3,-4 M4,-104 L4,-4" stroke="#2f7f3f" stroke-width="1.5"/><circle cx="0" cy="-112" r="5" fill="#ff6fa8"/></g>`).join('')}
+    <text x="150" y="302" font-size="20">🦴</text><g class="pl-tumble"><circle cx="0" cy="0" r="12" fill="none" stroke="#a57946" stroke-width="2.4" stroke-dasharray="5 3"/><circle cx="0" cy="0" r="7" fill="none" stroke="#b88a52" stroke-width="2" stroke-dasharray="4 3"/></g>`;
+  if (where === 'forest') art = `${Array.from({ length: 14 }, (_, i) => { const x = -560 + i * 110 + (i % 3) * 20; return `<rect x="${x}" y="-20" width="${18 + (i % 2) * 6}" height="290" fill="#6d5844" opacity=".55"/><circle cx="${x + 10}" cy="20" r="60" fill="#4f9a6a" opacity=".5"/>`; }).join('')}
+    ${[[30, 26], [300, 30], [-80, 28], [450, 24]].map(([x, w]) => `<rect x="${x}" y="-40" width="${w}" height="320" fill="#7a5233"/><path d="M${x + 4},40 L${x + 4},270 M${x + w - 6},10 L${x + w - 6},270" stroke="#5c3b22" stroke-width="2"/><circle cx="${x + w / 2}" cy="-10" r="70" fill="#3f8f55"/><circle cx="${x + w / 2 - 40}" cy="20" r="46" fill="#4fa564"/><circle cx="${x + w / 2 + 44}" cy="16" r="42" fill="#378048"/>`).join('')}
+    <rect x="-600" y="264" width="1560" height="70" fill="#5a8f3a"/><path d="M-600,300 C-200,292 0,312 140,304 C240,298 260,316 360,306 C600,296 800,312 960,304 L960,330 L-600,330 Z" fill="#4a7d2f"/>
+    <path d="M-600,292 C-300,286 20,300 120,296 C200,292 260,300 360,294 L960,296 L960,310 L-600,310 Z" fill="#7cc6e8" opacity=".85"/><path class="pl-stream" d="M-600,300 C-400,296 -200,304 0,300 C200,296 400,304 600,300 C800,296 900,302 960,300" stroke="#e6f7ff" stroke-width="2" stroke-dasharray="14 18" fill="none"/>
+    <ellipse cx="110" cy="300" rx="16" ry="6" fill="#9a9a9a"/><ellipse cx="60" cy="302" rx="12" ry="5" fill="#8a8a8a"/>
+    <path d="M120,268 C120,252 280,252 280,268 C280,284 120,284 120,268 Z" fill="#8a5a33"/><ellipse cx="280" cy="268" rx="9" ry="16" fill="#c79a68"/><ellipse cx="280" cy="268" rx="5" ry="10" fill="#a87a50"/><path d="M130,258 C170,250 230,250 270,258" stroke="#5a9a3a" stroke-width="6" stroke-linecap="round"/>
+    <rect x="286" y="250" width="30" height="30" fill="#7a5233"/><ellipse cx="301" cy="250" rx="15" ry="5" fill="#c79a68"/>
+    ${[[20, 284], [340, 290], [230, 288], [-40, 290]].map(([x, y]) => `<text x="${x}" y="${y}" font-size="20">🍄</text>`).join('')}
+    ${Array.from({ length: 8 }, (_, i) => `<text class="pl-leaf" x="${i * 50}" y="0" font-size="14" style="animation-delay:${i * 1.3}s">🍂</text>`).join('')}`;
+  if (where === 'rainforest') art = `${Array.from({ length: 10 }, (_, i) => `<path d="M${-560 + i * 160},330 C${-540 + i * 160},200 ${-520 + i * 160},120 ${-500 + i * 160},-20" stroke="#4a6b3a" stroke-width="20" fill="none" opacity=".5"/>`).join('')}
+    <g class="pl-fall"><rect x="240" y="-20" width="44" height="280" fill="#bfe9ff"/><path d="M246,-20 L246,260 M258,-20 L258,260 M270,-20 L270,260" stroke="#fff" stroke-width="3" stroke-dasharray="20 14" opacity=".9"/></g>
+    <ellipse cx="270" cy="270" rx="80" ry="18" fill="#58b8e0"/><ellipse cx="270" cy="266" rx="60" ry="10" fill="#9ddcf5" opacity=".7"/><circle cx="262" cy="258" r="6" fill="#fff" opacity=".7"/><circle cx="282" cy="256" r="4" fill="#fff" opacity=".6"/>
+    <rect x="-600" y="282" width="1560" height="50" fill="#2f6f3a"/>
+    <path d="M-20,190 C40,170 120,166 200,180" stroke="#6b4a2b" stroke-width="14" fill="none" stroke-linecap="round"/>
+    ${[[-30, 200, 30], [370, 200, -30], [150, 300, 10], [20, 300, -20], [330, 300, 25], [-120, 260, 15], [480, 260, -15]].map(([x, y, r]) => `<g transform="translate(${x} ${y}) rotate(${r})"><path d="M0,0 C-40,-40 -50,-110 0,-150 C50,-110 40,-40 0,0 Z" fill="#2f9e44"/><path d="M0,0 L0,-146" stroke="#1f7a32" stroke-width="2.5"/>${[30, 60, 90, 120].map(y2 => `<path d="M0,-${y2} L-24,-${y2 - 12} M0,-${y2} L24,-${y2 - 12}" stroke="#1f7a32" stroke-width="1.5"/>`).join('')}</g>`).join('')}
+    <path d="M170,236 C190,206 240,206 250,236 C230,246 190,246 170,236 Z" fill="#3fb050"/>
+    ${[60, 140, 330, 210, -60, 420].map((x, i) => `<path class="pl-vine" style="animation-delay:${i * .7}s" d="M${x},-10 C${x + 10},40 ${x - 10},80 ${x + 4},${110 + (i % 3) * 30}" stroke="#3f8f3a" stroke-width="3" fill="none"/><circle cx="${x + 4}" cy="${112 + (i % 3) * 30}" r="5" fill="#ff6fa8"/>`).join('')}
+    ${[[40, 100], [310, 80]].map(([x, y]) => `<text x="${x}" y="${y}" font-size="26">🦜</text>`).join('')}<text class="pl-bfly" x="180" y="120" font-size="18">🦋</text><text x="20" y="296" font-size="22">🌺</text><text x="340" y="298" font-size="22">🌺</text>`;
+  if (where === 'shipwreck') art = `<rect x="-600" y="150" width="1560" height="120" fill="#2a9fd6"/><path class="pl-waves" d="M-600,160 q15,-8 30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0 t30,0" stroke="#e6f7ff" stroke-width="2.5" fill="none"/>
+    <path d="M-600,236 C-300,222 -100,250 60,234 C200,220 300,242 400,232 C600,216 800,244 960,232 L960,330 L-600,330 Z" fill="#f2d79c"/><path d="M-600,236 C-300,222 -100,250 60,234 C200,220 300,242 400,232 C600,216 800,244 960,232" stroke="#fff" stroke-width="4" fill="none" opacity=".7"/>
+    <g transform="rotate(-8 180 220)"><path d="M70,190 L300,190 L270,256 L100,256 Z" fill="#7a4b28"/><path d="M70,190 L300,190" stroke="#5a3418" stroke-width="5"/>${[0, 1, 2, 3].map(i => `<path d="M${80 + i * 3},${206 + i * 13} L${292 - i * 7},${206 + i * 13}" stroke="#5a3418" stroke-width="2"/>`).join('')}<circle cx="130" cy="222" r="7" fill="#2a1a10"/><circle cx="180" cy="222" r="7" fill="#2a1a10"/><circle cx="230" cy="222" r="7" fill="#2a1a10"/><path d="M200,256 L216,232 L232,256 Z" fill="#f2d79c"/>
+    <rect x="148" y="70" width="7" height="122" fill="#5a3418"/><path d="M152,80 L210,100 L200,150 L152,140 Z" fill="#efe6d0" opacity=".9"/><path d="M190,108 L200,150" stroke="#cfc4a8" stroke-width="1"/><rect x="132" y="104" width="40" height="5" fill="#5a3418"/>
+    <g class="pl-flag"><path d="M155,72 L190,64 L188,84 L155,88 Z" fill="#1d1d1d"/><text x="166" y="82" font-size="11">☠️</text></g></g>
+    <g id="chest"><rect x="270" y="266" width="44" height="26" rx="3" fill="#8a5a2b" stroke="#4a2e14" stroke-width="2"/><path id="chestLid" d="M268,266 C268,250 316,250 316,266 Z" fill="#a0692f" stroke="#4a2e14" stroke-width="2" style="transform-box:fill-box;transform-origin:0% 100%;transition:transform .5s"/><rect x="288" y="266" width="8" height="10" fill="#f2c318"/></g>
+    <g><ellipse cx="56" cy="262" rx="18" ry="6" fill="#7a4b28"/><rect x="38" y="262" width="36" height="34" fill="#8a5a2b"/><ellipse cx="56" cy="296" rx="18" ry="6" fill="#6a3f20"/><rect x="38" y="270" width="36" height="3" fill="#4a4a4a"/><rect x="38" y="286" width="36" height="3" fill="#4a4a4a"/></g>
+    <path d="M-40,300 C-34,250 -44,210 -26,170" stroke="#8b5a2b" stroke-width="9" fill="none"/>${[-60, -20, 20, 60, 100].map(a => `<path d="M-26,170 q${Math.round(Math.cos(a * D0) * 30)},${Math.round(-20 + Math.sin(a * D0) * 10)} ${Math.round(Math.cos(a * D0) * 56)},${Math.round(Math.sin(a * D0) * 30)}" stroke="#2f9e44" stroke-width="7" fill="none" stroke-linecap="round"/>`).join('')}
+    <text x="330" y="300" font-size="20">🦀</text><text x="110" y="310" font-size="16">🐚</text><text x="380" y="306" font-size="16">⭐</text>`;
+  return `<div class="scene place-scene place-${where}" id="scene" data-where="${where}" style="border:5px solid #1c1c1c"><svg class="scene-svg" style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 360 330" preserveAspectRatio="xMidYMax meet"><defs><linearGradient id="${id}sk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${sky[0]}"/><stop offset="1" stop-color="${sky[1]}"/></linearGradient></defs>
+    <rect x="-600" y="-600" width="1560" height="930" fill="url(#${id}sk)"/>${art}<g id="heatLamp" opacity="0"><ellipse cx="90" cy="220" rx="120" ry="120" fill="#ffd27a" opacity=".45"/></g></svg>
+    <div class="pet" id="petEl" style="left:40%;top:200px">${geckoSVG(130)}</div></div>`;
+}
+const D0 = Math.PI / 180;
+function placeFun(a) {
+  const scene = $('#scene'), pet = $('#petEl'), sp = placeSpots(); if (!scene || !pet || !sp.length) return;
+  if (petBusy) return toast('Pumpkin is busy, try again in a moment');
+  const name = { bask: 'rock', log: 'log', splash: 'pool', treasure: 'chest' }[a], s = sp.find(x => x[2] === name) || sp[0];
+  petBusy = true; SND.gecko();
+  walkTo(pet, s[0] - (a === 'treasure' ? 40 : 0), s[1] - (a === 'log' ? 6 : 0)).then(() => {
+    const W = scene.clientWidth, bx = Math.max(6, Math.min(W - 150, s[0] - 60)), by = Math.max(6, s[1] - 60);
+    if (a === 'bask') { const l = $('#heatLamp'); if (l) { l.style.transition = 'opacity 1s'; l.setAttribute('opacity', '1'); } pet.classList.add('basking'); emit(scene, s[0], s[1] - 40, ['☀️', '✨', '😎'], 5, 60); bubble(scene, bx, by, 'Sunbathing! ☀️😎'); setTimeout(() => { pet.classList.remove('basking'); if (l) l.setAttribute('opacity', '0'); }, 5000); }
+    if (a === 'log') { pet.classList.add('a-hop'); setTimeout(() => pet.classList.remove('a-hop'), 1300); bubble(scene, bx, by, 'King of the log! 👑'); emit(scene, s[0], s[1] - 30, ['🍂', '🌿'], 4, 60); }
+    if (a === 'splash') { for (let i = 0; i < 12; i++) { const d = document.createElement('div'); d.className = 'drop'; d.style.left = (s[0] - 40 + Math.random() * 80) + 'px'; d.style.top = (s[1] - 60) + 'px'; d.style.animationDelay = Math.random() * .5 + 's'; scene.appendChild(d); setTimeout(() => d.remove(), 1800); } bubble(scene, bx, by, 'Splish splash! 💦'); }
+    if (a === 'treasure') { const lid = $('#chestLid'); if (lid) lid.style.transform = 'rotate(-110deg)'; emit(scene, s[0], s[1] - 30, ['💰', '🪙', '💎', '👑', '✨'], 10, 70); bubble(scene, bx, by, ['Treasure! 💰', 'Pirate gold! 🪙', "I'm rich! 💎"][Math.floor(Math.random() * 3)]); tone(1320, 0, .1, 'triangle', .08); tone(1760, .1, .15, 'triangle', .08); setTimeout(() => { if (lid) lid.style.transform = ''; }, 5000); }
+    petSave({ playAt: new Date().toISOString(), counts: bump('explore') });
+    setTimeout(() => { petBusy = false; }, 1500);
+  });
+}
+function placeSpots() {
+  const sc = $('#scene'), P = PLACES[sc?.dataset.where]; if (!P) return [];
+  return P.spots.map(([x, y, n]) => [...scenePt(x, y), n]);
+}
+function walkTo(el, x, y, o = {}) {
+  return new Promise(res => {
+    if (!el || !el.isConnected) return res();
+    const isPet = el.id === 'petEl', w = el.offsetWidth, h = el.offsetHeight, l = x - w / 2, t = y - h / 2;
+    const dist = Math.hypot(l - el.offsetLeft, t - el.offsetTop), secs = o.secs || Math.max(.6, Math.min(3.2, dist / (o.speed || 90)));
+    const left = l < el.offsetLeft - 2;
+    if (isPet) { el.style.transformOrigin = '50% 50%'; el.style.transform = left ? 'scaleX(-1)' : 'none'; } else el.classList.toggle('flip', left);
+    el.style.transition = `left ${secs}s linear, top ${secs}s linear, transform .3s`;
+    el.classList.add('moving'); el.style.left = l + 'px'; el.style.top = t + 'px';
+    setTimeout(() => { el.classList.remove('moving'); el.style.transition = ''; res(); }, secs * 1000 + 30);
+  });
+}
+function pumpkinExplore() {
+  const scene = $('#scene'), pet = $('#petEl'), sp = placeSpots(); if (!scene || !pet || !sp.length || petBusy) return false;
+  const [x, y, n] = sp[Math.floor(Math.random() * sp.length)]; petBusy = true;
+  walkTo(pet, x, y).then(() => { petBusy = false; if (Math.random() < .55) { const l = PLACE_SAY[n] || ['Exploring! 🧭']; bubble(scene, Math.max(6, Math.min(scene.clientWidth - 150, x - 50)), Math.max(6, y - 50), l[Math.floor(Math.random() * l.length)]); SND.gecko(); } });
+  return true;
+}
+let pumpArrive = false;
+function mountPlace() {
+  const scene = $('#scene'), pet = $('#petEl'); if (!scene || !pet || !PLACES[scene.dataset.where]) return;
+  const sp = placeSpots(), s0 = sp[0];
+  if (pumpArrive) { pumpArrive = false; pet.style.transition = 'none'; pet.style.left = '-110px'; pet.style.top = (s0[1] - 27) + 'px'; void pet.offsetWidth; pet.style.transition = ''; setTimeout(() => { petBusy = true; walkTo(pet, s0[0], s0[1]).then(() => { petBusy = false; bubble(scene, Math.max(6, s0[0] - 50), Math.max(6, s0[1] - 50), ['Adventure time! 🧭', 'Wow! 😮', `I love ${PLACES[scene.dataset.where].name.replace('The ', 'the ')}!`][Math.floor(Math.random() * 3)]); SND.gecko(); }); }, 200); }
+  else { pet.style.transition = 'none'; pet.style.left = (s0[0] - pet.offsetWidth / 2) + 'px'; pet.style.top = (s0[1] - pet.offsetHeight / 2) + 'px'; void pet.offsetWidth; pet.style.transition = ''; }
+}
+function exploreSheet() {
+  const cur = petItem()?.data.where;
+  return `<div class="row"><div class="grow"><div class="eyebrow-dark">Go exploring</div><h3 style="margin:2px 0 0">Where shall Pumpkin go?</h3></div><button class="iconbtn sm" data-act="close" aria-label="Close">${ic('close')}</button></div>
+    <div class="place-grid">${Object.entries(PLACES).map(([k, P]) => `<button class="place-pick ${cur === k ? 'on' : ''}" data-act="goPlace" data-x="${k}"><span class="pe">${P.e}</span><b>${P.name}</b><small>${P.blurb}</small></button>`).join('')}
+    <button class="place-pick ${!PLACES[cur] ? 'on' : ''}" data-act="goPlace" data-x="tank"><span class="pe">🏠</span><b>Home to the tank</b><small>Back to Pumpkin's cosy tank</small></button></div>`;
+}
+A.goPlace = async el => { closeModal(); const k = el.dataset.x, pet = $('#petEl'); if (pet && !petBusy) { petBusy = true; await walkTo(pet, -120, pet.offsetTop + 27, { speed: 200 }); petBusy = false; } pumpArrive = k !== 'tank'; await petSave({ where: k === 'tank' ? '' : k }); render(); };
+
+/* reptile friends */
+let repFriends = [], repT = null, repShow = false;
+function repUnlocked() { return Math.min(REPTILES.length, 2 + unlockedCount(me.id, REPTILES.length)); }
+function repEl(i) { return document.querySelector(`#scene .pal[data-ri="${i}"]`); }
+function repSize() { const sc = $('#scene'); return sc ? Math.round(Math.min(150, Math.max(84, sc.clientWidth * .17))) : 96; }
+function spawnRep(i, arrive) {
+  const scene = $('#scene'), R = REPTILES[i]; if (!scene || !R || repEl(i)) return;
+  const size = repSize(), W = scene.clientWidth, H = scene.clientHeight, g = document.createElement('div');
+  g.className = 'guest pal rep'; g.dataset.ri = i; g.style.width = size + 'px'; g.innerHTML = repSVG(i, size);
+  scene.appendChild(g);
+  const sp = placeSpots(), p = sp.length ? sp[Math.floor(Math.random() * sp.length)] : [W * (.2 + Math.random() * .6), H - 50 - Math.random() * 40];
+  if (arrive) { const left = Math.random() < .5; g.style.left = (left ? -size - 10 : W + 10) + 'px'; g.style.top = (p[1] - size * .28) + 'px'; setTimeout(() => walkTo(g, p[0], p[1], { speed: R.kind === 'tortoise' ? 45 : 110 }).then(() => { SND.gecko(); bubble(scene, Math.max(6, Math.min(W - 150, g.offsetLeft)), Math.max(6, g.offsetTop - 16), [`Hi Pumpkin! 👋`, `Hello ${me.name}!`, ...R.say][Math.floor(Math.random() * 4)]); }), 60); }
+  else { g.style.left = (p[0] - size / 2) + 'px'; g.style.top = (p[1] - size * .28) + 'px'; }
+}
+function repLeave(i) {
+  const g = repEl(i), scene = $('#scene'); repFriends = repFriends.filter(x => x !== i); if (!g || !scene) return;
+  const W = scene.clientWidth; bubble(scene, Math.max(6, Math.min(W - 150, g.offsetLeft)), Math.max(6, g.offsetTop - 16), ['Bye Pumpkin! 👋', 'See you soon!', 'That was fun! 🧡'][Math.floor(Math.random() * 3)]);
+  setTimeout(() => walkTo(g, g.offsetLeft < W / 2 ? -g.offsetWidth : W + g.offsetWidth, g.offsetTop + g.offsetHeight / 2, { speed: 140 }).then(() => g.remove()), 700);
+}
+function mountReps() {
+  clearInterval(repT); repT = null; if (design() !== 'fern' || !$('#scene')) return;
+  repFriends.forEach(i => spawnRep(i, false));
+  repT = setInterval(() => {
+    if (view !== 'pet' || document.hidden || repShow) return;
+    const scene = $('#scene'), pet = $('#petEl'); if (!scene || !pet) return;
+    repFriends.forEach(i => {
+      const g = repEl(i); if (!g || g.classList.contains('moving')) return;
+      const R = REPTILES[i], r = Math.random(), W = scene.clientWidth, H = scene.clientHeight, sp = R.kind === 'tortoise' ? 40 : 90;
+      if (r < .3) { const side = Math.random() < .5 ? -1 : 1; walkTo(g, Math.max(30, Math.min(W - 30, pet.offsetLeft + 48 + side * (70 + Math.random() * 30))), pet.offsetTop + 27, { speed: sp }).then(() => { if (Math.random() < .5) { SND.gecko(); bubble(scene, Math.max(6, Math.min(W - 150, g.offsetLeft)), Math.max(6, g.offsetTop - 16), [...R.say, 'Race you Pumpkin! 💨', 'Hi buddy! 🧡'][Math.floor(Math.random() * 4)]); } }); }
+      else if (r < .55) { const s = placeSpots(), p = s.length ? s[Math.floor(Math.random() * s.length)] : [40 + Math.random() * (W - 80), H - 40 - Math.random() * 60]; walkTo(g, p[0], p[1], { speed: sp }); }
+      else if (r < .65) { g.classList.add('licking'); setTimeout(() => g.classList.remove('licking'), 700); }
+    });
+  }, 3000);
+}
+function repSheet() {
+  const n = repUnlocked();
+  return `<div class="row"><div class="grow"><div class="eyebrow-dark">Reptile hangout</div><h3 style="margin:2px 0 0">Invite Pumpkin's friends</h3></div><button class="iconbtn sm" data-act="close" aria-label="Close">${ic('close')}</button></div>
+    <p class="muted">Tap a reptile to invite them round. Up to 4 at once. Tap again to say goodbye. Earn points to unlock more friends.</p>
+    <div class="friend-grid rep-grid">${REPTILES.map((R, i) => i < n ? `<button class="friend-pick ${repFriends.includes(i) ? 'on' : ''}" data-act="toggleRep" data-x="${i}">${repSVG(i, 96)}<span>${esc(R.name)}</span><em>${repFriends.includes(i) ? '✓ Visiting' : 'Invite'}</em></button>` : `<div class="friend-pick lock">${repSVG(i, 96, true)}<span>🔒 ${esc(R.name)}</span></div>`).join('')}</div>
+    ${repFriends.length ? `<div class="row mt" style="gap:8px;flex-wrap:wrap"><button class="btn sec" data-act="repFun" data-x="party">🎉 Reptile party</button><button class="btn sec" data-act="repFun" data-x="race">🏁 Lizard race</button><button class="btn sec" data-act="repFun" data-x="bask">☀️ Sunbathe together</button><button class="btn sec" data-act="repFun" data-x="home">👋 Everyone home</button></div>` : ''}`;
+}
+A.toggleRep = el => { const i = Number(el.dataset.x); if (repFriends.includes(i)) repLeave(i); else { if (repFriends.length >= 4) return toast('4 friends is the most at once. Say goodbye to one first.'); repFriends.push(i); spawnRep(i, true); } openModal(repSheet()); };
+A.repFun = el => { closeModal(); repFun(el.dataset.x); };
+function repFun(k) {
+  const scene = $('#scene'), pet = $('#petEl'); if (!scene || !pet) return;
+  if (k === 'home') { [...repFriends].forEach((i, n) => setTimeout(() => repLeave(i), n * 400)); return; }
+  if (petBusy || repShow) return toast('Pumpkin is busy, try again in a moment');
+  const W = scene.clientWidth, H = scene.clientHeight, gs = repFriends.map(repEl).filter(Boolean), all = [pet, ...gs];
+  repShow = true; petBusy = true; const end = ms => setTimeout(() => { repShow = false; petBusy = false; }, ms);
+  const floorY = H - 46;
+  if (k === 'party') {
+    const gap = W / (all.length + 1);
+    all.forEach((el, n) => walkTo(el, gap * (n + 1), floorY, { secs: 1.4 }));
+    setTimeout(() => {
+      SND.vroom && SND.vroom(); whistleTune(); setTimeout(whistleTune, 1700);
+      all.forEach((el, n) => setTimeout(() => { el.classList.remove('a-dance'); void el.offsetWidth; el.classList.add('a-dance'); setTimeout(() => el.classList.remove('a-dance'), 2300); setTimeout(() => { el.classList.add('a-dance'); setTimeout(() => el.classList.remove('a-dance'), 2300); }, 2300); }, n * 120));
+      const lights = setInterval(() => emit(scene, Math.random() * W, 20 + Math.random() * H * .5, ['🎵', '🎶', '✨', '🎉', '🦎'], 1, 10), 160); setTimeout(() => clearInterval(lights), 4400);
+      bubble(scene, W / 2 - 60, 20, 'Reptile party! 🎉'); SND.gecko();
+      petSave({ playAt: new Date().toISOString(), counts: bump('party') });
+    }, 1500);
+    return end(6400);
+  }
+  if (k === 'bask') {
+    const l = $('#heatLamp'); if (l) { l.style.transition = 'opacity 1s'; l.setAttribute('opacity', '1'); }
+    const [sx, sy] = scenePt(90, 250);
+    all.forEach((el, n) => walkTo(el, Math.max(40, Math.min(W - 40, sx + (n - (all.length - 1) / 2) * 60)), sy + (n % 2) * 18, { secs: 1.6 }));
+    setTimeout(() => { all.forEach(el => el.classList.add('basking')); emit(scene, sx, sy - 60, ['☀️', '✨', '😎'], 6, 120); bubble(scene, Math.max(6, sx - 60), Math.max(6, sy - 90), 'Ahh, lovely and warm ☀️'); }, 1700);
+    setTimeout(() => { all.forEach(el => el.classList.remove('basking')); if (l) l.setAttribute('opacity', '0'); }, 6500);
+    petSave({ playAt: new Date().toISOString(), counts: bump('bask') });
+    return end(6600);
+  }
+  if (k === 'race') {
+    const lane = Math.min(40, (H * .45) / all.length);
+    all.forEach((el, n) => walkTo(el, 50, H - 40 - n * lane, { secs: 1.2 }));
+    setTimeout(() => { bubble(scene, W / 2 - 40, 20, 'Ready...'); }, 1300);
+    setTimeout(() => { bubble(scene, W / 2 - 40, 20, 'GO! 🏁'); SND.vroom && SND.vroom(); }, 2200);
+    const times = all.map(el => { const R = el === pet ? null : REPTILES[el.dataset.ri]; return R && R.kind === 'tortoise' ? 2.6 + Math.random() * 1.2 : 2.4 + Math.random() * 2.2; });
+    if (Math.random() < .35) { const ti = all.findIndex(el => el !== pet && REPTILES[el.dataset.ri].kind === 'tortoise'); if (ti > 0) times[ti] = 2.1; }
+    setTimeout(() => all.forEach((el, n) => walkTo(el, W - 50, H - 40 - n * lane, { secs: times[n] })), 2300);
+    const win = times.indexOf(Math.min(...times)), wEl = all[win];
+    setTimeout(() => { const name = wEl === pet ? 'Pumpkin' : REPTILES[wEl.dataset.ri].name; emit(scene, W - 60, H - 100, ['🏆', '🎉', '⭐'], 6, 60); bubble(scene, Math.max(6, W / 2 - 80), 20, `${name} wins! 🏆${REPTILES[wEl.dataset.ri]?.kind === 'tortoise' ? ' Slow and steady!' : ''}`); SND.gecko(); }, 2300 + Math.min(...times) * 1000 + 200);
+    petSave({ playAt: new Date().toISOString(), counts: bump('race') });
+    return end(2300 + Math.max(...times) * 1000 + 600);
+  }
+}
+/* ===== Race track game: Fearne drives her cars around a circuit ===== */
+let race = null;
+const TRACK_PTS = [[260, 560], [250, 330], [360, 190], [600, 170], [760, 300], [900, 330], [1060, 190], [1300, 170], [1450, 300], [1440, 560], [1300, 720], [1080, 700], [900, 600], [720, 700], [520, 820], [330, 760]];
+function trackLine(n = 720) {
+  const P = TRACK_PTS, m = P.length, out = [];
+  for (let i = 0; i < n; i++) {
+    const f = i / n * m, k = Math.floor(f), t = f - k, p0 = P[(k - 1 + m) % m], p1 = P[k % m], p2 = P[(k + 1) % m], p3 = P[(k + 2) % m];
+    const c = (a, b, c2, d) => .5 * ((2 * b) + (-a + c2) * t + (2 * a - 5 * b + 4 * c2 - d) * t * t + (-a + 3 * b - 3 * c2 + d) * t * t * t);
+    out.push([c(p0[0], p1[0], p2[0], p3[0]), c(p0[1], p1[1], p2[1], p3[1])]);
+  }
+  return out;
+}
+function raceSheet() {
+  const n = unlockedCount(me.id, CARS.length);
+  return `<div class="row"><div class="grow"><div class="eyebrow-dark">Race day</div><h3 style="margin:2px 0 0">Pick your car</h3></div><button class="iconbtn sm" data-act="close" aria-label="Close">${ic('close')}</button></div>
+    <p class="muted">3 laps against 3 other cars. Hold the left or right side of the screen to steer. Stay on the track to go fastest!</p>
+    <div class="race-grid">${CARS.slice(0, n).map((c, i) => `<button class="race-pick" data-act="raceGo" data-x="${i}">${carSVG(c, false, 150)}<span>${esc(c.name)}</span></button>`).join('')}</div>`;
+}
+A.raceGo = el => { closeModal(); startRace(Number(el.dataset.x)); };
+function startRace(ci) {
+  if (race) return;
+  const line = trackLine(), N = line.length, TW = 150;
+  const ov = document.createElement('div'); ov.className = 'race';
+  ov.innerHTML = `<canvas id="raceCv"></canvas><div class="race-hud"><span id="raceLap">Lap 1/3</span><span id="racePos">1st</span><span id="raceTime">0:00.0</span></div><button class="adv-x" aria-label="Stop">✕</button>
+    <div class="race-lights" id="raceLights">${'<i></i>'.repeat(5)}</div><div class="race-msg" id="raceMsg"></div>
+    <button class="race-btn l" aria-label="Steer left">◀</button><button class="race-btn r" aria-label="Steer right">▶</button>`;
+  document.body.appendChild(ov);
+  const cv = ov.querySelector('#raceCv'), ctx = cv.getContext('2d'), dpr = Math.min(2, devicePixelRatio || 1);
+  const size = () => { cv.width = innerWidth * dpr; cv.height = innerHeight * dpr; cv.style.width = innerWidth + 'px'; cv.style.height = innerHeight + 'px'; };
+  size(); addEventListener('resize', size);
+  // cars on the grid
+  const pool = CARS.map((_, i) => i).filter(i => i !== ci).sort(() => Math.random() - .5).slice(0, 3);
+  const dir0 = Math.atan2(line[2][1] - line[0][1], line[2][0] - line[0][0]);
+  const cars = [ci, ...pool].map((c, n) => { const back = 14 + Math.floor(n / 2) * 30 + (n % 2) * 14, side = n % 2 ? 26 : -26, p = line[(N - back) % N], nx = -Math.sin(dir0), ny = Math.cos(dir0); return { ci: c, x: p[0] + nx * side, y: p[1] + ny * side, h: dir0, v: 0, idx: (N - back) % N, lap: -1, done: false, me: n === 0, skill: n === 0 ? 1 : .84 + Math.random() * .12, spin: 0, wob: Math.random() * 10, finishT: 0 }; });
+  const st = { t0: 0, started: false, left: false, right: false, last: performance.now(), lapT: 0, best: 0, finished: false, laps: 3 };
+  race = { ov, raf: 0, st };
+  // controls
+  const set = (k, v) => { st[k] = v; };
+  const bl = ov.querySelector('.race-btn.l'), br = ov.querySelector('.race-btn.r');
+  [[bl, 'left'], [br, 'right']].forEach(([b, k]) => { b.addEventListener('pointerdown', e => { e.preventDefault(); set(k, true); }); ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => b.addEventListener(ev, () => set(k, false))); });
+  const touch = new Map();
+  cv.addEventListener('pointerdown', e => { touch.set(e.pointerId, e.clientX < innerWidth / 2 ? 'left' : 'right'); set(touch.get(e.pointerId), true); });
+  ['pointerup', 'pointercancel'].forEach(ev => cv.addEventListener(ev, e => { const k = touch.get(e.pointerId); touch.delete(e.pointerId); if (k && ![...touch.values()].includes(k)) set(k, false); }));
+  const key = e => { if (e.key === 'ArrowLeft') set('left', e.type === 'keydown'); if (e.key === 'ArrowRight') set('right', e.type === 'keydown'); };
+  addEventListener('keydown', key); addEventListener('keyup', key);
+  ov.querySelector('.adv-x').onclick = () => endRace();
+  race.cleanup = () => { removeEventListener('resize', size); removeEventListener('keydown', key); removeEventListener('keyup', key); try { race.eng && race.eng.stop(); } catch (e) {} };
+  // engine sound
+  try { const a = audio(); if (a) { const o = a.createOscillator(), g = a.createGain(), f = a.createBiquadFilter(); o.type = 'sawtooth'; f.type = 'lowpass'; f.frequency.value = 600; g.gain.value = 0; o.connect(f); f.connect(g); g.connect(a.destination); o.start(); race.eng = { o, g, stop: () => { g.gain.value = 0; o.stop(); } }; } } catch (e) {}
+  // start lights
+  const lights = [...ov.querySelectorAll('#raceLights i')];
+  lights.forEach((l, i) => setTimeout(() => { l.classList.add('on'); tone(440, 0, .15, 'square', .06); }, 700 + i * 700));
+  setTimeout(() => { lights.forEach(l => l.classList.remove('on')); ov.querySelector('#raceLights').classList.add('go'); tone(880, 0, .35, 'square', .08); st.started = true; st.t0 = performance.now(); st.lapStart = st.t0; msg('GO! 🏁'); }, 700 + 5 * 700 + 500);
+  const msg = t => { const m = ov.querySelector('#raceMsg'); m.textContent = t; m.classList.remove('show'); void m.offsetWidth; m.classList.add('show'); };
+  const nearest = c => { let bi = c.idx, bd = 1e9; for (let d = -25; d <= 60; d++) { const i = (c.idx + d + N) % N, dx = line[i][0] - c.x, dy = line[i][1] - c.y, dd = dx * dx + dy * dy; if (dd < bd) { bd = dd; bi = i; } } return [bi, Math.sqrt(bd)]; };
+  const fmt = ms => { const s = ms / 1000; return `${Math.floor(s / 60)}:${(s % 60).toFixed(1).padStart(4, '0')}`; };
+  // static decorations
+  const rng = (() => { let s = 5; return () => (s = (s * 9301 + 49297) % 233280) / 233280; })();
+  const trees = []; for (let i = 0; i < 90; i++) { const x = rng() * 1800 - 100, y = rng() * 1100 - 100; let near = false; for (let j = 0; j < N; j += 6) if (Math.hypot(line[j][0] - x, line[j][1] - y) < 140) { near = true; break; } if (!near) trees.push([x, y, 18 + rng() * 16]); }
+  const path = new Path2D(); line.forEach(([x, y], i) => i ? path.lineTo(x, y) : path.moveTo(x, y)); path.closePath();
+  const step = now => {
+    if (!race || race.st !== st) return;
+    const dt = Math.min(.04, (now - st.last) / 1000); st.last = now;
+    const W = innerWidth, H = innerHeight;
+    // physics
+    cars.forEach(c => {
+      const [ni, dist] = nearest(c), prev = c.idx; c.idx = ni;
+      if (prev > N * .85 && ni < N * .15) { c.lap++; if (c.me && st.started && c.lap === 0) st.lapStart = now; else if (c.me && st.started) { const lt = now - st.lapStart; st.lapStart = now; if (!st.best || lt < st.best) st.best = lt; if (c.lap === st.laps) { st.finished = true; c.done = true; c.finishT = now - st.t0; setTimeout(() => endRace(true), 1600); msg('🏁 Finished!'); } else if (c.lap === st.laps - 1) msg('Final lap! 🔥'); else msg(`Lap ${c.lap + 1}`); } else if (!c.me && c.lap >= st.laps && !c.finishT) c.finishT = now - st.t0; }
+      else if (prev < N * .15 && ni > N * .85) c.lap--;
+      const off = dist > TW / 2, vmax = (off ? 150 : 330) * c.skill;
+      let steer = 0;
+      if (c.me) { steer = (st.right ? 1 : 0) - (st.left ? 1 : 0); if (!steer && !st.finished) { const tg = line[(ni + 14) % N], want = Math.atan2(tg[1] - c.y, tg[0] - c.x); let d = want - c.h; d = Math.atan2(Math.sin(d), Math.cos(d)); steer = Math.max(-1, Math.min(1, d * 1.2)) * .35; } if (st.finished) { const tg = line[(ni + 14) % N]; let d = Math.atan2(tg[1] - c.y, tg[0] - c.x) - c.h; d = Math.atan2(Math.sin(d), Math.cos(d)); steer = Math.max(-1, Math.min(1, d * 2)); } }
+      else { const look = 12 + Math.round(c.v / 30), tg = line[(ni + look) % N], wob = Math.sin(now / 900 + c.wob) * 10; let d = Math.atan2(tg[1] + wob - c.y, tg[0] + wob - c.x) - c.h; d = Math.atan2(Math.sin(d), Math.cos(d)); steer = Math.max(-1, Math.min(1, d * 2.2)); }
+      const go = st.started ? 1 : 0, target = c.me && st.finished ? 120 : vmax * (c.me ? 1 : 1 - Math.min(.35, Math.abs(steer) * .3));
+      c.v += ((go ? target : 0) - c.v) * Math.min(1, dt * (c.v < target ? 1.1 : 2.5));
+      c.h += steer * 2.7 * dt * Math.min(1, .35 + c.v / 300);
+      c.x += Math.cos(c.h) * c.v * dt; c.y += Math.sin(c.h) * c.v * dt; c.spin += c.v * dt / 14;
+    });
+    for (let i = 0; i < cars.length; i++) for (let j = i + 1; j < cars.length; j++) { const a = cars[i], b = cars[j], dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy); if (d < 34 && d > .01) { const p = (34 - d) / 2, ux = dx / d, uy = dy / d; a.x -= ux * p; a.y -= uy * p; b.x += ux * p; b.y += uy * p; a.v *= .985; b.v *= .985; } }
+    const me = cars[0];
+    // ranking
+    const order = [...cars].sort((a, b) => (b.lap * N + b.idx) - (a.lap * N + a.idx)), pos = order.indexOf(me) + 1;
+    if (race.eng) { const a = audio(); race.eng.o.frequency.setTargetAtTime(55 + me.v * .32, a.currentTime, .05); race.eng.g.gain.setTargetAtTime(st.started ? .035 : .015, a.currentTime, .1); }
+    // camera
+    const sc = Math.min(W, H) / 560, cx = me.x + Math.cos(me.h) * 60, cy = me.y + Math.sin(me.h) * 60;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = '#4caf50'; ctx.fillRect(0, 0, W, H);
+    ctx.save(); ctx.translate(W / 2, H / 2); ctx.scale(sc, sc); ctx.translate(-cx, -cy);
+    for (let x = -400; x < 2000; x += 80) { ctx.fillStyle = (x / 80) % 2 ? '#52b356' : '#48a84c'; ctx.fillRect(x, -400, 40, 1800); }
+    ctx.lineJoin = ctx.lineCap = 'round';
+    ctx.strokeStyle = '#e8dfc8'; ctx.lineWidth = TW + 60; ctx.stroke(path);
+    ctx.strokeStyle = '#d7263d'; ctx.lineWidth = TW + 16; ctx.stroke(path); ctx.setLineDash([22, 22]); ctx.strokeStyle = '#fff'; ctx.stroke(path); ctx.setLineDash([]);
+    ctx.strokeStyle = '#4b4f55'; ctx.lineWidth = TW; ctx.stroke(path);
+    ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 3; ctx.setLineDash([26, 30]); ctx.stroke(path); ctx.setLineDash([]);
+    // start line
+    { const p = line[0], q = line[2], a = Math.atan2(q[1] - p[1], q[0] - p[0]); ctx.save(); ctx.translate(p[0], p[1]); ctx.rotate(a); for (let r = 0; r < 2; r++) for (let k = -7; k < 7; k++) { ctx.fillStyle = (r + k) % 2 ? '#111' : '#fff'; ctx.fillRect(r * 10 - 10, k * TW / 14, 10, TW / 14); } ctx.restore(); }
+    // grandstand and pit building
+    ctx.fillStyle = '#7b8794'; ctx.fillRect(110, 380, 60, 260); ctx.fillStyle = '#e63946'; ctx.fillRect(100, 370, 80, 14);
+    for (let i = 0; i < 60; i++) { ctx.fillStyle = ['#ffd166', '#ef476f', '#06d6a0', '#118ab2', '#fff'][i % 5]; ctx.beginPath(); ctx.arc(120 + (i % 4) * 13, 395 + Math.floor(i / 4) * 16 + Math.sin(now / 200 + i) * 1.5, 4.5, 0, 7); ctx.fill(); }
+    ctx.fillStyle = '#fff'; ctx.fillRect(380, 400, 120, 70); ctx.fillStyle = '#1d4ed8'; ctx.fillRect(380, 400, 120, 14); ctx.fillStyle = '#111'; ctx.font = '900 18px Arial'; ctx.fillText('PIT', 422, 450);
+    trees.forEach(([x, y, r]) => { ctx.fillStyle = 'rgba(0,0,0,.18)'; ctx.beginPath(); ctx.arc(x + 6, y + 8, r, 0, 7); ctx.fill(); const g = ctx.createRadialGradient(x - r * .3, y - r * .3, 2, x, y, r); g.addColorStop(0, '#7ddc6e'); g.addColorStop(1, '#2e7d32'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); });
+    // tyre walls on the outside of bends
+    for (let i = 0; i < N; i += 9) { const a = line[(i + N - 4) % N], b = line[i], c2 = line[(i + 4) % N], cr = (b[0] - a[0]) * (c2[1] - b[1]) - (b[1] - a[1]) * (c2[0] - b[0]); if (Math.abs(cr) < 30) continue; const d = Math.atan2(c2[1] - a[1], c2[0] - a[0]), s = cr > 0 ? -1 : 1, ox = b[0] + Math.cos(d + s * Math.PI / 2) * (TW / 2 + 46), oy = b[1] + Math.sin(d + s * Math.PI / 2) * (TW / 2 + 46); ctx.fillStyle = '#222'; ctx.beginPath(); ctx.arc(ox, oy, 8, 0, 7); ctx.fill(); ctx.fillStyle = i % 18 ? '#e63946' : '#fff'; ctx.beginPath(); ctx.arc(ox, oy, 3, 0, 7); ctx.fill(); }
+    // cars (shadows, then 3D models)
+    cars.forEach(c => { ctx.fillStyle = 'rgba(0,0,0,.28)'; ctx.save(); ctx.translate(c.x + 4, c.y + 6); ctx.rotate(c.h); ctx.beginPath(); ctx.ellipse(0, 0, 44, 18, 0, 0, 7); ctx.fill(); ctx.restore(); });
+    ctx.restore();
+    cars.forEach(c => { const sx = W / 2 + (c.x - cx) * sc, sy = H / 2 + (c.y - cy) * sc, sz = 118 * sc; if (sx < -sz || sy < -sz || sx > W + sz || sy > H + sz) return; if (!B3D.carTop(ctx, c.ci, sx, sy, sz, c.h, c.spin)) { ctx.save(); ctx.translate(sx, sy); ctx.rotate(c.h); ctx.fillStyle = CARS[c.ci].a; ctx.fillRect(-40 * sc, -12 * sc, 80 * sc, 24 * sc); ctx.restore(); } if (c.me) { ctx.fillStyle = '#ffd43b'; ctx.beginPath(); ctx.moveTo(sx, sy - sz * .55); ctx.lineTo(sx - 8, sy - sz * .55 - 12); ctx.lineTo(sx + 8, sy - sz * .55 - 12); ctx.fill(); } });
+    // mini map
+    const mw = Math.min(150, W * .3), ms = mw / 1600, mx = W - mw - 14, my = 70;
+    ctx.fillStyle = 'rgba(255,255,255,.75)'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(mx - 8, my - 8, mw + 16, 1000 * ms + 16, 12) : ctx.rect(mx - 8, my - 8, mw + 16, 1000 * ms + 16); ctx.fill();
+    ctx.save(); ctx.translate(mx, my); ctx.scale(ms, ms); ctx.strokeStyle = '#4b4f55'; ctx.lineWidth = 40; ctx.stroke(path); cars.forEach(c => { ctx.fillStyle = CARS[c.ci].a === '#111111' ? '#555' : CARS[c.ci].a; ctx.beginPath(); ctx.arc(c.x, c.y, c.me ? 46 : 32, 0, 7); ctx.fill(); if (c.me) { ctx.strokeStyle = '#ffd43b'; ctx.lineWidth = 14; ctx.stroke(); } }); ctx.restore();
+    // hud
+    const L = $('#raceLap'), Pp = $('#racePos'), T = $('#raceTime');
+    if (L) L.textContent = `Lap ${Math.min(st.laps, Math.max(1, me.lap + 1))}/${st.laps}`;
+    if (Pp) Pp.textContent = ['1st 🥇', '2nd 🥈', '3rd 🥉', '4th'][pos - 1];
+    if (T && st.started && !st.finished) T.textContent = fmt(now - st.t0);
+    race.pos = pos; race.me = me;
+    race.raf = requestAnimationFrame(step);
+  };
+  race.raf = requestAnimationFrame(step);
+}
+function endRace(finished) {
+  if (!race) return; const { ov, st } = race;
+  if (!finished) { cancelAnimationFrame(race.raf); race.cleanup(); ov.remove(); race = null; return; }
+  const pos = race.pos, t = race.me.finishT, fmt = ms => { const s = ms / 1000; return `${Math.floor(s / 60)}:${(s % 60).toFixed(1).padStart(4, '0')}`; };
+  petSave({ playAt: new Date().toISOString(), counts: bump('race') });
+  const card = document.createElement('div'); card.className = 'adv-end';
+  card.innerHTML = `<div class="adv-card"><div style="font-size:54px">${['🥇', '🥈', '🥉', '🏁'][pos - 1]}</div><h2>${['You won!', '2nd place!', '3rd place!', 'You finished!'][pos - 1]}</h2><p>Race time <b>${fmt(t)}</b>${st.best ? `<br>Best lap <b>${fmt(st.best)}</b>` : ''}</p><div class="row" style="justify-content:center;gap:10px"><button class="btn" id="raceAgain">🏁 Race again</button><button class="btn sec" id="raceHome">🏠 Done</button></div></div>`;
+  ov.appendChild(card); if (pos === 1) { celebrate && celebrate(); whistleTune(); }
+  card.querySelector('#raceAgain').onclick = () => { const ci = race.me.ci; cancelAnimationFrame(race.raf); race.cleanup(); ov.remove(); race = null; startRace(ci); };
+  card.querySelector('#raceHome').onclick = () => endRace(false);
 }
 const birdSound = b => (SND[BIRD_SND[b.name]] || SND.tweet)();
 const cocoSound = () => [SND.whistle, SND.chirrup, SND.tweet][Math.floor(Math.random() * 3)]();
