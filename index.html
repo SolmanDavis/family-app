@@ -149,9 +149,7 @@ p{margin:0 0 10px}
 @keyframes swingSvg{from{transform:rotate(-17deg)}to{transform:rotate(17deg)}}
 .scene .pet.basking{filter:drop-shadow(0 0 10px rgba(255,181,71,.9))}.scene .pet.hiding{opacity:.25;transform:translateY(14px) scale(.85)!important}
 .scene .guest{position:absolute;z-index:4;transition:left 1.2s ease-in-out,top 1.2s ease-in-out;pointer-events:none}.scene .guest svg{width:100%;height:auto;display:block}
-.scene .guest.flip svg{transform:scaleX(-1)}.scene .guest.flying svg{animation:guestFlap .18s ease-in-out infinite alternate}
-@keyframes guestFlap{from{transform:translateY(0) rotate(-6deg)}to{transform:translateY(-6px) rotate(6deg)}}.scene .guest.flip.flying svg{animation:guestFlapF .18s ease-in-out infinite alternate}
-@keyframes guestFlapF{from{transform:scaleX(-1) translateY(0) rotate(-6deg)}to{transform:scaleX(-1) translateY(-6px) rotate(6deg)}}
+.scene .guest.flip svg{transform:scaleX(-1)}
 .scene .zoomer{position:absolute;z-index:4;transition:left 1.9s cubic-bezier(.4,0,.7,1);pointer-events:none}.scene .zoomer svg{width:100%;height:auto;display:block}.scene .zoomer.flip svg{transform:scaleX(-1)}
 .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.btn.disabled{opacity:.45}
 .how{max-height:55vh;overflow:auto;margin:10px 0}.how-part{display:flex;gap:12px;padding:10px;border-radius:14px;transition:background .3s}.how-part.on{background:#E0F2FE}.how-e{font-size:28px;line-height:1}.how-part p{margin:4px 0 0;color:var(--muted);line-height:1.45}
@@ -415,6 +413,44 @@ body.fern .pet-top{background:linear-gradient(#121212 85%, rgba(18,18,18,0))}
 @keyframes slideR{from{transform:translateX(-40px);opacity:0}to{transform:none;opacity:1}}
 .login{max-width:420px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 30px) 18px 30px}
 a{color:var(--deep)}
+.critter{overflow:visible}
+.critter .breath{transform-box:view-box;transform-origin:52px 100px;animation:cocoBreath 3.2s ease-in-out infinite}
+@keyframes cocoBreath{0%,100%{transform:scale(1)}50%{transform:scale(1.015,1.028)}}
+.critter .head{transform-box:view-box;transform-origin:57px 46px;animation:cocoHead 7.5s ease-in-out infinite}
+@keyframes cocoHead{0%,16%,100%{transform:rotate(0)}20%,32%{transform:rotate(-8deg)}36%,50%{transform:rotate(6deg) translateY(-.6px)}54%,68%{transform:rotate(0)}72%,82%{transform:rotate(-14deg) translateX(.6px)}}
+.critter .crest{transform-box:view-box;transform-origin:56px 22px;animation:cocoCrest 4.2s ease-in-out infinite}
+@keyframes cocoCrest{0%,100%{transform:rotate(0)}50%{transform:rotate(-6deg)}}
+.critter .lid{transform-box:fill-box;transform-origin:50% 0;transform:scaleY(0);animation:cocoBlink 5.6s infinite}
+@keyframes cocoBlink{0%,93%,100%{transform:scaleY(0)}95.5%{transform:scaleY(1)}}
+.critter .tail{transform-box:view-box;transform-origin:47px 86px;animation:cocoTail 5s ease-in-out infinite}
+@keyframes cocoTail{0%,100%{transform:rotate(0)}50%{transform:rotate(3deg)}}
+.critter .wing-open,.critter .wing-far,.critter .tucked{opacity:0;transition:opacity .12s}
+.critter .wing-open{transform-box:view-box;transform-origin:46px 56px}
+.critter .wing-far{transform-box:view-box;transform-origin:52px 53px}
+.flying .critter .wing{opacity:0}.flying .critter .legs{opacity:0}.flying .critter .tucked{opacity:1}
+.flying .critter .wing-open,.flying .critter .wing-far{opacity:1}
+.flying .critter .wing-open{animation:wingBeat .19s ease-in-out infinite alternate}
+.flying .critter .wing-far{animation:wingBeatFar .19s ease-in-out infinite alternate}
+@keyframes wingBeat{from{transform:rotate(-6deg) scaleY(1.05)}to{transform:rotate(16deg) scaleY(-.5)}}
+@keyframes wingBeatFar{from{transform:rotate(-14deg) scaleY(.9)}to{transform:rotate(8deg) scaleY(-.38)}}
+.flying.gliding .critter .wing-open{animation:none;transform:rotate(30deg) scaleY(.32)}
+.flying.gliding .critter .wing-far{animation:none;transform:rotate(22deg) scaleY(.25)}
+.flying .critter .breath,.flying .critter .head{animation-play-state:paused}
+
+.pet.flap .critter .wing{opacity:0}.pet.flap .critter .wing-open,.pet.flap .critter .wing-far{opacity:1}
+.pet.flap .critter .wing-open{animation:wingBeat .19s ease-in-out infinite alternate}.pet.flap .critter .wing-far{animation:wingBeatFar .19s ease-in-out infinite alternate}
+.landed svg{animation:landBounce .42s ease-out}
+@keyframes landBounce{0%{scale:1.08 .86}55%{scale:.96 1.05}100%{scale:1 1}}
+.scene .flyshadow{position:absolute;height:8px;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.55),rgba(0,0,0,0));pointer-events:none;z-index:2}
+.gecko3d g{transform-box:view-box}
+.gecko3d .gtail{animation:gTail 3.4s ease-in-out infinite}@keyframes gTail{0%,100%{transform:rotate(0)}50%{transform:rotate(-5deg)}}
+.gecko3d .ghead{animation:gHead 6.5s ease-in-out infinite}@keyframes gHead{0%,64%,100%{transform:rotate(0)}70%,84%{transform:rotate(-8deg)}}
+.gecko3d .gbody{transform-origin:64px 42px;animation:gBreath 3s ease-in-out infinite}@keyframes gBreath{0%,100%{transform:scale(1)}50%{transform:scale(1.012,1.035)}}
+.moving .gecko3d .gleg{animation:gStep .3s ease-in-out infinite alternate}.moving .gecko3d .lf2,.moving .gecko3d .lb1{animation-delay:-.3s}
+@keyframes gStep{from{transform:rotate(-18deg)}to{transform:rotate(18deg)}}
+.moving .gecko3d .gtail{animation:gTail .6s ease-in-out infinite}.moving .gecko3d .gbody{animation:gWig .6s ease-in-out infinite}@keyframes gWig{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
+.car3d .wheel{transform-box:view-box}.scene .zoomer .wheel{animation:wheelSpin .22s linear infinite}@keyframes wheelSpin{to{transform:rotate(360deg)}}
+.scene .zoomer svg{animation:carRumble .12s linear infinite alternate}@keyframes carRumble{to{translate:0 -1px}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -742,119 +778,230 @@ function shade(hex, amt) {
   return '#' + [f(r), f(g), f(b)].map(v => v.toString(16).padStart(2, '0')).join('');
 }
 
+/* ===== 3D-style animals: shared feather helpers ===== */
+function featherPath(bx, by, ang, len, wd) {
+  const a = ang * Math.PI / 180, tx = bx + Math.cos(a) * len, ty = by + Math.sin(a) * len, nx = -Math.sin(a), ny = Math.cos(a);
+  const mx = (bx + tx) / 2, my = (by + ty) / 2, f = v => v.toFixed(1);
+  return `M${f(bx + nx * wd * .45)},${f(by + ny * wd * .45)} Q${f(mx + nx * wd * .62)},${f(my + ny * wd * .62)} ${f(tx)},${f(ty)} Q${f(mx - nx * wd * .62)},${f(my - ny * wd * .62)} ${f(bx - nx * wd * .45)},${f(by - ny * wd * .45)} Z`;
+}
+/* An open wing: broad silhouette with a scalloped feather edge, drawn raised up and back from the shoulder */
+function openWing(id, sx, sy, cols, scale = 1) {
+  const { cov, covD, prim, primD, edge, patch } = cols, s = scale, f = v => v.toFixed(1);
+  const P = (x, y) => [sx + (x - 46) * s, sy + (y - 58) * s];
+  const pt = (x, y) => P(x, y).map(f).join(',');
+  // trailing edge feather tips from wing tip back to the body
+  const tips = [], N = 11; for (let i = 0; i <= N; i++) { const t = i / N, x = (1 - t) * (1 - t) * 4 + 2 * (1 - t) * t * 2 + t * t * 56, y = (1 - t) * (1 - t) * 4 + 2 * (1 - t) * t * 56 + t * t * 64; tips.push([x, y]); }
+  let d = `M${pt(46, 61)} C${pt(44, 50)} ${pt(38, 37)} ${pt(31, 27)} C${pt(22, 16)} ${pt(13, 8)} ${pt(4, 4)}`;
+  for (let i = 1; i < tips.length; i++) { const [x0, y0] = tips[i - 1], [x1, y1] = tips[i], mx = (x0 + x1) / 2, my = (y0 + y1) / 2, nx = -(y1 - y0), ny = (x1 - x0), L = Math.hypot(nx, ny) || 1; d += ` Q${pt(mx - nx / L * 2.6, my - ny / L * 2.6)} ${pt(x1, y1)}`; }
+  d += ' Z';
+  let g = `<defs><linearGradient id="${id}ow" gradientUnits="userSpaceOnUse" x1="${f(P(52, 62)[0])}" y1="${f(P(52, 62)[1])}" x2="${f(P(8, 4)[0])}" y2="${f(P(8, 4)[1])}"><stop offset="0" stop-color="${cov}"/><stop offset=".45" stop-color="${covD}"/><stop offset=".62" stop-color="${prim}"/><stop offset="1" stop-color="${primD}"/></linearGradient>
+    <linearGradient id="${id}sh" gradientUnits="userSpaceOnUse" x1="${f(P(30, 24)[0])}" y1="${f(P(30, 24)[1])}" x2="${f(P(40, 52)[0])}" y2="${f(P(40, 52)[1])}"><stop offset="0" stop-color="#fff" stop-opacity=".28"/><stop offset="1" stop-color="#000" stop-opacity=".18"/></linearGradient></defs>`;
+  g += `<path d="${d}" fill="url(#${id}ow)"/><path d="${d}" fill="url(#${id}sh)"/>`;
+  // feather lines from each tip towards the leading edge
+  g += `<g fill="none" stroke="${shade(primD, -.35)}" stroke-width="${f(.5 * s)}" opacity=".6">` + tips.slice(1, -1).map(([x, y], i) => { const t = i / (tips.length - 2), ax = 8 + t * 34, ay = 6 + t * 46; return `<path d="M${pt(x, y)} Q${pt((x + ax) / 2 + 3, (y + ay) / 2 - 2)} ${pt(ax + 6, ay + 3)}"/>`; }).join('') + `</g>`;
+  if (patch) g += `<path d="M${pt(46, 61)} C${pt(44, 51)} ${pt(39, 40)} ${pt(33, 30)} C${pt(37, 31)} ${pt(43, 39)} ${pt(48, 50)} C${pt(50, 55)} ${pt(50, 59)} ${pt(49, 62)} Z" fill="${patch}"/>`;
+  g += `<path d="M${pt(46, 61)} C${pt(44, 50)} ${pt(38, 37)} ${pt(31, 27)} C${pt(22, 16)} ${pt(13, 8)} ${pt(4, 4)}" fill="none" stroke="${edge}" stroke-width="${f(1.1 * s)}" stroke-linecap="round" opacity=".75"/>`;
+  return g;
+}
+function cocoSVG(w = 70) {
+  const id = gid('co');
+  const wingCols = { cov: '#a3a39f', covD: '#6b6b67', prim: '#6d6d69', primD: '#3e3e3b', edge: '#f2f0e8', patch: '#f4f2ea' };
+  const farCols = { cov: '#7d7d79', covD: '#4f4f4c', prim: '#555552', primD: '#2e2e2c', edge: '#c9c7bf', patch: '#c9c7bf' };
+  const prim = (i) => featherPath(44 - i * 1.6, 78 + i * 2.2, 103 + i * 3.5, 26 - i * 2, 6);
+  return `<svg class="critter coco" viewBox="0 0 100 120" width="${w}" overflow="visible"><defs>
+    <radialGradient id="${id}b" cx="38%" cy="24%" r="86%"><stop offset="0" stop-color="#e6e6e2"/><stop offset=".42" stop-color="#b6b6b1"/><stop offset=".78" stop-color="#868682"/><stop offset="1" stop-color="#5c5c58"/></radialGradient>
+    <linearGradient id="${id}ao" x1="0" y1="0" x2="0" y2="1"><stop offset=".45" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".34"/></linearGradient>
+    <linearGradient id="${id}rim" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".35" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    <radialGradient id="${id}y" cx="45%" cy="35%" r="75%"><stop offset="0" stop-color="#d9d8d2"/><stop offset="1" stop-color="#9c9b95"/></radialGradient>
+    <linearGradient id="${id}w" x1=".2" y1="0" x2=".7" y2="1"><stop offset="0" stop-color="#a7a7a3"/><stop offset=".55" stop-color="#7d7d79"/><stop offset="1" stop-color="#4f4f4c"/></linearGradient>
+    <linearGradient id="${id}p" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6f6f6b"/><stop offset="1" stop-color="#363634"/></linearGradient>
+    <linearGradient id="${id}wp" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#dcd9cc"/></linearGradient>
+    <linearGradient id="${id}t" x1="0" y1="0" x2="-.4" y2="1"><stop offset="0" stop-color="#8e8e8a"/><stop offset=".6" stop-color="#5d5d59"/><stop offset="1" stop-color="#3a3a38"/></linearGradient>
+    <radialGradient id="${id}hg" cx="30%" cy="30%" r="80%"><stop offset="0" stop-color="#cfcfca"/><stop offset=".6" stop-color="#9d9d98"/><stop offset="1" stop-color="#6e6e6a"/></radialGradient>
+    <radialGradient id="${id}f" cx="62%" cy="30%" r="80%"><stop offset="0" stop-color="#fff6cf"/><stop offset=".5" stop-color="#f3df8f"/><stop offset="1" stop-color="#cdb262"/></radialGradient>
+    <linearGradient id="${id}cr" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#f0dc8c"/><stop offset=".55" stop-color="#cfc8a6"/><stop offset="1" stop-color="#9a978a"/></linearGradient>
+    <radialGradient id="${id}c" cx="45%" cy="45%" r="55%"><stop offset="0" stop-color="#ff6510"/><stop offset=".6" stop-color="#ff8a3a"/><stop offset="1" stop-color="#ffa565" stop-opacity="0"/></radialGradient>
+    <radialGradient id="${id}e" cx="40%" cy="35%" r="65%"><stop offset="0" stop-color="#5a3620"/><stop offset=".7" stop-color="#1c0f07"/><stop offset="1" stop-color="#050302"/></radialGradient>
+    <linearGradient id="${id}k" x1="0" y1="0" x2=".5" y2="1"><stop offset="0" stop-color="#ddd0c7"/><stop offset=".6" stop-color="#a8968b"/><stop offset="1" stop-color="#7a685e"/></linearGradient>
+    <linearGradient id="${id}ft" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c9aa9b"/><stop offset="1" stop-color="#9a7c6e"/></linearGradient></defs>
+    <g class="wing-far">${openWing(id + 'f', 52, 53, farCols, .92)}</g>
+    <g class="tail"><path d="M43,82 C36,96 26,109 13,119 C17,121 22,120 26,117 C36,107 45,96 51,86 Z" fill="url(#${id}t)"/>
+      <path d="M47,84 C42,98 35,110 27,119 C31,120 34,119 36,116 C42,106 48,96 52,87 Z" fill="#6c6c68"/>
+      <path d="M45,86 C38,99 29,110 18,118" fill="none" stroke="#2e2e2c" stroke-width=".7" opacity=".6"/><path d="M44,84 C37,97 28,108 16,117" fill="none" stroke="#d8d6ce" stroke-width=".6" opacity=".45"/></g>
+    <g class="legs"><g class="leg1"><path d="M46,95 L45,105" stroke="url(#${id}ft)" stroke-width="2.8" stroke-linecap="round"/><path d="M45,105 C42,104.5 39.5,105.5 38.5,107.5 M45,105 C47,104.6 49,105.4 50,107.2 M45,105 L44.5,108.4" stroke="#a88a7c" stroke-width="2.1" fill="none" stroke-linecap="round"/></g>
+      <g class="leg2"><path d="M54,96 L55,105.5" stroke="url(#${id}ft)" stroke-width="2.8" stroke-linecap="round"/><path d="M55,105.5 C52.4,105 50,106 49,108 M55,105.5 C57.4,105 59.6,105.8 60.8,107.8 M55,105.5 L55.4,108.8" stroke="#b39486" stroke-width="2.1" fill="none" stroke-linecap="round"/></g>
+      <path class="leg2up" d="M54,95 C59,97 62,94 60,90 M60,90 C61.5,88.6 63,88.8 63.6,90" stroke="#b39486" stroke-width="2.4" stroke-linecap="round" fill="none" opacity="0"/></g>
+    <g class="tucked" opacity="0"><path d="M45,92 C47,95 51,96 54,94" stroke="#a88a7c" stroke-width="2.2" fill="none" stroke-linecap="round"/></g>
+    <g class="breath">
+      <path d="M33,62 C31,44 42,33 57,34 C71,35 76,50 74,66 C72,84 64,98 50,99 C38,99 34,82 33,62 Z" fill="url(#${id}b)"/>
+      <path d="M59,47 C71,51 73,69 68,84 C63,93 56,96 52,94 C58,80 60,64 59,47 Z" fill="url(#${id}y)" opacity=".85"/>
+      <g fill="none" stroke="#6c6b66" stroke-width=".6" opacity=".38">${[0, 1, 2, 3, 4, 5].map(r => [0, 1, 2].map(c => `<path d="M${57 + c * 4 - r * .6},${54 + r * 6.5} q2,2.2 4,0"/>`).join('')).join('')}</g>
+      <path d="M33,62 C31,44 42,33 57,34 C71,35 76,50 74,66 C72,84 64,98 50,99 C38,99 34,82 33,62 Z" fill="url(#${id}ao)"/>
+      <path d="M34,64 C33,48 41,38 52,35" fill="none" stroke="url(#${id}rim)" stroke-width="3" stroke-linecap="round" opacity=".8"/>
+      <g class="wing">
+        ${[0, 1, 2, 3].map(i => `<path d="${prim(i)}" fill="url(#${id}p)" stroke="#2f2f2d" stroke-width=".4"/>`).join('')}
+        <path d="M37,52 C44,42 60,44 62,58 C64,74 56,88 45,96 C37,92 32,79 33,66 C33,60 35,55 37,52 Z" fill="url(#${id}w)"/>
+        <g fill="none" stroke="#4b4b48" stroke-width=".6" opacity=".55"><path d="M37,74 q7,3 16,-1"/><path d="M38,81 q6,3 13,-1"/><path d="M40,87 q5,2.5 10,-1"/><path d="M37,68 q8,3 18,-2"/></g>
+        <path d="M38,54 C44,46 56,48 59,57 C57,61 52,63 46,63 C42,62 39,59 38,54 Z" fill="url(#${id}wp)"/>
+        <g fill="none" stroke="#c8c4b6" stroke-width=".5"><path d="M41,59 q6,1.6 14,-1.6"/><path d="M40,56 q7,1.2 15,-1"/></g>
+        <path d="M37,53 C43,45 56,46 60,55" fill="none" stroke="#fff" stroke-width="1" opacity=".55" stroke-linecap="round"/>
+      </g>
+      <g class="wing-open">${openWing(id + 'n', 46, 56, wingCols, 1)}</g>
+      <g class="head">
+        <g class="crest">
+          <path d="M53,23 C47,13 42,6 36,1 C44,4 51,10 57,20 Z" fill="url(#${id}cr)"/>
+          <path d="M56,21 C52,11 49,4 46,-1 C53,3 58,10 60,20 Z" fill="url(#${id}cr)"/>
+          <path d="M59,21 C58,12 58,5 58,0 C62,6 63,13 62,21 Z" fill="url(#${id}cr)"/>
+          <path d="M55,21 C51,12 47,6 42,1" fill="none" stroke="#fff" stroke-width=".6" opacity=".5"/>
+        </g>
+        <circle cx="57" cy="33" r="15" fill="url(#${id}hg)"/>
+        <path d="M51,21 C61,16 73,21 74,33 C75,43 68,48 60,47 C54,46 51,41 52,35 C52.5,30 50,26 51,21 Z" fill="url(#${id}f)"/>
+        <ellipse cx="65.5" cy="39.5" rx="6.3" ry="5.4" fill="url(#${id}c)"/>
+        <ellipse cx="55" cy="23.5" rx="6" ry="2.6" fill="#fff" opacity=".35" transform="rotate(-22 55 23.5)"/>
+        <circle cx="62" cy="30" r="4.3" fill="#e6dcc0"/><circle cx="62" cy="30" r="3.4" fill="url(#${id}e)"/><circle cx="62.2" cy="30.2" r="1.5" fill="#000"/>
+        <circle cx="63.4" cy="28.6" r="1.15" fill="#fff"/><circle cx="60.9" cy="31.4" r=".5" fill="#fff" opacity=".7"/>
+        <ellipse class="lid" cx="62" cy="30" rx="4.5" ry="4.5" fill="#e9d688"/>
+        <path d="M70,30 C76,28.4 81.6,32 80.2,39.2 C79.6,41.6 77.9,43 76.6,42.4 C76.8,38.4 74.4,36.6 70,36.6 Z" fill="url(#${id}k)"/>
+        <path d="M71,31 C75.5,30.2 79,32.6 79.6,36" fill="none" stroke="#fff" stroke-width=".7" opacity=".55"/>
+        <path d="M70,36.6 C73.6,37 76.2,38.6 75.8,42.2 C73.2,43.2 71,41.6 70,39.6 Z" fill="#7d6a60"/>
+        <circle cx="71.6" cy="31.6" r=".7" fill="#6d5c53"/>
+      </g>
+    </g></svg>`;
+}
 function birdSVG(b, locked, w = 96, noPerch) {
   const id = gid('b'), L = '#cfd6da', LD = '#b9c2c7';
   const c = locked ? { body: L, head: L, wing: LD, belly: '#e3e8eb', beak: LD } : b;
   const head = c.head || c.body, sh = b.shape;
-  const g = locked ? { body: L, head: L, belly: '#e3e8eb', wing: LD } : { body: `url(#${id}b)`, head: `url(#${id}h)`, belly: `url(#${id}y)`, wing: `url(#${id}w)` };
+  const g = locked ? { body: L, head: L, belly: '#e3e8eb', wing: LD, tail: LD, prim: LD } : { body: `url(#${id}b)`, head: `url(#${id}h)`, belly: `url(#${id}y)`, wing: `url(#${id}w)`, tail: `url(#${id}t)`, prim: `url(#${id}pr)` };
   const defs = locked ? '' : `<defs>
-    <radialGradient id="${id}b" cx="65%" cy="30%" r="80%"><stop offset="0" stop-color="${shade(c.body, .25)}"/><stop offset=".55" stop-color="${c.body}"/><stop offset="1" stop-color="${shade(c.body, -.35)}"/></radialGradient>
-    <radialGradient id="${id}h" cx="60%" cy="30%" r="75%"><stop offset="0" stop-color="${shade(head, .3)}"/><stop offset=".6" stop-color="${head}"/><stop offset="1" stop-color="${shade(head, -.3)}"/></radialGradient>
-    <radialGradient id="${id}y" cx="45%" cy="35%" r="70%"><stop offset="0" stop-color="${shade(c.belly, .3)}"/><stop offset="1" stop-color="${shade(c.belly, -.15)}"/></radialGradient>
-    <linearGradient id="${id}w" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${shade(c.wing, .15)}"/><stop offset="1" stop-color="${shade(c.wing, -.35)}"/></linearGradient>
-    <linearGradient id="${id}p" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9a7350"/><stop offset="1" stop-color="#5e4128"/></linearGradient></defs>`;
+    <radialGradient id="${id}b" cx="36%" cy="24%" r="88%"><stop offset="0" stop-color="${shade(c.body, .42)}"/><stop offset=".4" stop-color="${shade(c.body, .08)}"/><stop offset=".78" stop-color="${shade(c.body, -.22)}"/><stop offset="1" stop-color="${shade(c.body, -.48)}"/></radialGradient>
+    <radialGradient id="${id}h" cx="38%" cy="26%" r="80%"><stop offset="0" stop-color="${shade(head, .45)}"/><stop offset=".5" stop-color="${head}"/><stop offset="1" stop-color="${shade(head, -.4)}"/></radialGradient>
+    <radialGradient id="${id}y" cx="42%" cy="30%" r="78%"><stop offset="0" stop-color="${shade(c.belly, .38)}"/><stop offset=".6" stop-color="${c.belly}"/><stop offset="1" stop-color="${shade(c.belly, -.25)}"/></radialGradient>
+    <linearGradient id="${id}w" x1=".2" y1="0" x2=".7" y2="1"><stop offset="0" stop-color="${shade(c.wing, .25)}"/><stop offset=".55" stop-color="${c.wing}"/><stop offset="1" stop-color="${shade(c.wing, -.45)}"/></linearGradient>
+    <linearGradient id="${id}pr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(c.wing, -.15)}"/><stop offset="1" stop-color="${shade(c.wing, -.55)}"/></linearGradient>
+    <linearGradient id="${id}t" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(c.wing, .05)}"/><stop offset="1" stop-color="${shade(c.wing, -.5)}"/></linearGradient>
+    <linearGradient id="${id}ao" x1="0" y1="0" x2="0" y2="1"><stop offset=".45" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".3"/></linearGradient>
+    <radialGradient id="${id}e" cx="38%" cy="32%" r="70%"><stop offset="0" stop-color="#4a3424"/><stop offset=".7" stop-color="#120c08"/><stop offset="1" stop-color="#000"/></radialGradient>
+    <linearGradient id="${id}k" x1="0" y1="0" x2=".3" y2="1"><stop offset="0" stop-color="${shade(c.beak, .35)}"/><stop offset="1" stop-color="${shade(c.beak, -.35)}"/></linearGradient>
+    <linearGradient id="${id}p" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a17a55"/><stop offset=".5" stop-color="#7c5a3b"/><stop offset="1" stop-color="#4f3622"/></linearGradient></defs>`;
   const longLegs = sh === 'flamingo';
   const legTop = 86, legBot = longLegs ? 106 : 100, legC = locked ? LD : (longLegs ? '#e7849f' : '#7a5c44');
-  let s = `<svg viewBox="0 0 120 112" width="${w}">${defs}`;
-  if (!longLegs) s += `${noPerch ? '' : `<rect x="6" y="99" width="108" height="7" rx="3.5" fill="${locked ? LD : `url(#${id}p)`}"/>`}`;
+  const owlish = sh === 'owl';
+  let s = `<svg class="critter bird3d" viewBox="0 0 120 112" width="${w}" overflow="visible">${defs}`;
+  if (!longLegs) s += `${noPerch ? '' : `<rect x="6" y="99" width="108" height="7" rx="3.5" fill="${locked ? LD : `url(#${id}p)`}"/>${locked ? '' : '<rect x="8" y="100" width="104" height="1.4" rx=".7" fill="#fff" opacity=".25"/>'}`}`;
   else s += `<ellipse cx="60" cy="108" rx="34" ry="3" fill="#000" opacity=".12"/>`;
-  s += `<path d="M34,64 L8,90 L12,95 L20,93 L44,74 Z" fill="${locked ? LD : shade(c.wing, -.3)}"/><path d="M36,66 L16,94 L24,95 L46,74 Z" fill="${locked ? LD : shade(c.wing, -.1)}" opacity=".8"/>`;
-  s += `<line x1="54" y1="${legTop}" x2="51" y2="${legBot}" stroke="${legC}" stroke-width="2.6" stroke-linecap="round"/><line x1="64" y1="${legTop}" x2="66" y2="${legBot}" stroke="${legC}" stroke-width="2.6" stroke-linecap="round"/>`;
-  s += `<path d="M46,${legBot} L56,${legBot} M61,${legBot} L71,${legBot}" stroke="${legC}" stroke-width="2.4" stroke-linecap="round"/>`;
-  s += `<path d="M30,62 C30,42 50,33 70,38 C87,43 92,62 84,77 C76,91 48,93 36,83 C31,78 30,70 30,62 Z" fill="${g.body}"/>`;
+  // far wing for flight
+  if (!locked) s += `<g class="wing-far" style="transform-origin:48px 56px">${openWing(id + 'f', 48, 56, { cov: shade(c.wing, -.15), covD: shade(c.wing, -.4), prim: shade(c.wing, -.35), primD: shade(c.wing, -.6), edge: shade(c.wing, .1), patch: '' }, 1.02)}</g>`;
+  // tail: three layered feathers
+  const tailLen = sh === 'eagle' ? 30 : owlish ? 18 : sh === 'puffin' ? 14 : 28;
+  s += `<g class="tail" style="transform-origin:44px 76px">${[0, 1, 2].map(i => `<path d="${featherPath(40 + i * 2, 74 + i * 1.5, 140 - i * 6, tailLen - i * 3, 9)}" fill="${i === 1 ? (locked ? LD : shade(c.wing, -.2)) : g.tail}" ${locked ? '' : `stroke="${shade(c.wing, -.6)}" stroke-width=".4"`}/>`).join('')}</g>`;
+  // legs and toes
+  s += `<g class="legs"><line x1="54" y1="${legTop}" x2="51" y2="${legBot}" stroke="${legC}" stroke-width="2.8" stroke-linecap="round"/><line class="leg2" x1="64" y1="${legTop}" x2="66" y2="${legBot}" stroke="${legC}" stroke-width="2.8" stroke-linecap="round"/>`;
+  s += `<path d="M51,${legBot} C48,${legBot - .6} 45.5,${legBot + .4} 44.5,${legBot + 1.6} M51,${legBot} L57,${legBot + .8} M66,${legBot} C63,${legBot - .6} 60.5,${legBot + .4} 59.5,${legBot + 1.6} M66,${legBot} L72,${legBot + .8}" stroke="${legC}" stroke-width="2.2" stroke-linecap="round" fill="none"/></g>`;
+  s += `<g class="breath" style="transform-origin:60px 92px">`;
+  // body with shading, belly, chest feathers, ambient shadow and rim light
+  const body = `M30,62 C30,42 50,33 70,38 C87,43 92,62 84,77 C76,91 48,93 36,83 C31,78 30,70 30,62 Z`;
+  s += `<path d="${body}" fill="${g.body}"/>`;
   s += `<path d="M60,50 C78,51 86,66 80,78 C72,89 54,89 48,81 C53,71 52,59 60,50 Z" fill="${g.belly}"/>`;
+  if (!locked) {
+    s += `<g fill="none" stroke="${shade(c.belly, -.35)}" stroke-width=".55" opacity=".4">${[0, 1, 2, 3].map(r => [0, 1, 2].map(k => `<path d="M${60 + k * 5 - r},${58 + r * 6.5} q2.2,2.2 4.4,0"/>`).join('')).join('')}</g>`;
+    s += `<path d="${body}" fill="url(#${id}ao)"/><path d="M32,64 C31,50 42,40 56,37" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" opacity=".28"/>`;
+  }
+  // folded wing with primaries
+  s += `<g class="wing">`;
+  if (!locked) s += [0, 1, 2, 3].map(i => `<path d="${featherPath(44 - i * 1.4, 72 + i * 1.6, 150 - i * 7, 22 - i * 2, 6.5)}" fill="${g.prim}" stroke="${shade(c.wing, -.65)}" stroke-width=".4"/>`).join('');
   s += `<path d="M33,56 C43,43 63,46 67,60 C70,73 57,83 41,81 C35,73 32,64 33,56 Z" fill="${g.wing}"/>`;
-  if (!locked) s += `<g fill="none" stroke="${shade(c.wing, -.5)}" stroke-width=".9" opacity=".55"><path d="M40,58 C47,56 55,58 60,64"/><path d="M38,64 C46,62 55,66 60,72"/><path d="M38,70 C45,69 52,73 56,78"/><path d="M44,52 C50,50 56,52 61,57"/></g><g fill="${shade(c.wing, .35)}" opacity=".35"><path d="M42,57 q4,-3 8,0 q-4,2 -8,0Z"/><path d="M52,61 q4,-3 8,0 q-4,2 -8,0Z"/></g>`;
-  if (sh === 'flamingo' && !locked) s += `<path d="M72,46 C76,30 70,24 74,16" fill="none" stroke="${g.head}" stroke-width="9" stroke-linecap="round"/>`;
-  const hx = sh === 'flamingo' ? 80 : 79, hy = sh === 'flamingo' ? 14 : 34, hr = sh === 'owl' ? 18 : 16;
-  if ((c.crest) && !locked) s += `<path d="M${hx - 4},${hy - 12} C${hx - 12},${hy - 26} ${hx - 4},${hy - 32} ${hx + 4},${hy - 30} C${hx - 2},${hy - 24} ${hx - 1},${hy - 18} ${hx + 2},${hy - 12} Z" fill="${shade(c.crest, -.1)}"/><path d="M${hx - 1},${hy - 13} C${hx - 4},${hy - 26} ${hx + 6},${hy - 30} ${hx + 10},${hy - 26} C${hx + 4},${hy - 23} ${hx + 3},${hy - 18} ${hx + 4},${hy - 12} Z" fill="${c.crest}"/>`;
+  if (!locked) s += `<g fill="none" stroke="${shade(c.wing, -.55)}" stroke-width=".7" opacity=".55"><path d="M40,58 q9,-2 18,4"/><path d="M38,64 q10,-1 20,7"/><path d="M38,70 q8,0 16,7"/><path d="M44,52 q8,-2 15,3"/></g><path d="M35,55 C43,46 58,46 64,55" fill="none" stroke="#fff" stroke-width="1" opacity=".38" stroke-linecap="round"/><g fill="${shade(c.wing, .4)}" opacity=".3"><path d="M42,57 q4,-3 8,0 q-4,2 -8,0Z"/><path d="M52,61 q4,-3 8,0 q-4,2 -8,0Z"/></g>`;
+  s += `</g>`;
+  if (!locked) s += `<g class="wing-open" style="transform-origin:44px 58px">${openWing(id + 'n', 44, 58, { cov: shade(c.wing, .15), covD: shade(c.wing, -.1), prim: shade(c.wing, -.2), primD: shade(c.wing, -.5), edge: shade(c.wing, .45), patch: '' }, 1.08)}</g>`;
+  // head
+  if (sh === 'flamingo' && !locked) s += `<path d="M72,46 C76,30 70,24 74,16" fill="none" stroke="${shade(head, -.12)}" stroke-width="9" stroke-linecap="round"/><path d="M71,44 C74,32 69,26 72,18" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".3"/>`;
+  const hx = sh === 'flamingo' ? 80 : 79, hy = sh === 'flamingo' ? 14 : 34, hr = owlish ? 18 : 16;
+  s += `<g class="head" style="transform-origin:${hx - 6}px ${hy + 12}px">`;
+  if (c.crest && !locked) s += `<g class="crest" style="transform-origin:${hx - 2}px ${hy - 12}px"><path d="M${hx - 4},${hy - 12} C${hx - 12},${hy - 26} ${hx - 4},${hy - 32} ${hx + 4},${hy - 30} C${hx - 2},${hy - 24} ${hx - 1},${hy - 18} ${hx + 2},${hy - 12} Z" fill="${shade(c.crest, -.15)}"/><path d="M${hx - 1},${hy - 13} C${hx - 4},${hy - 26} ${hx + 6},${hy - 30} ${hx + 10},${hy - 26} C${hx + 4},${hy - 23} ${hx + 3},${hy - 18} ${hx + 4},${hy - 12} Z" fill="${c.crest}"/><path d="M${hx - 2},${hy - 14} C${hx - 4},${hy - 24} ${hx + 3},${hy - 28} ${hx + 7},${hy - 26}" fill="none" stroke="#fff" stroke-width=".7" opacity=".55"/></g>`;
   s += `<circle cx="${hx}" cy="${hy}" r="${hr}" fill="${g.head}"/>`;
-  if (sh === 'owl' && !locked) {
-    s += `<path d="M${hx},${hy - 13} C${hx - 16},${hy - 16} ${hx - 18},${hy + 10} ${hx},${hy + 15} C${hx + 18},${hy + 10} ${hx + 16},${hy - 16} ${hx},${hy - 13} Z" fill="#fffaf2" stroke="#c99a62" stroke-width="1.4"/><circle cx="${hx - 6}" cy="${hy - 1}" r="3.4" fill="#111"/><circle cx="${hx + 6}" cy="${hy - 1}" r="3.4" fill="#111"/><circle cx="${hx - 5}" cy="${hy - 2.2}" r="1.1" fill="#fff"/><circle cx="${hx + 7}" cy="${hy - 2.2}" r="1.1" fill="#fff"/><path d="M${hx - 2},${hy + 4} L${hx + 2},${hy + 4} L${hx},${hy + 9} Z" fill="#d9b48a"/>`;
+  if (!locked) s += `<ellipse cx="${hx - 5}" cy="${hy - hr * .55}" rx="${hr * .42}" ry="${hr * .2}" fill="#fff" opacity=".32" transform="rotate(-20 ${hx - 5} ${hy - hr * .55})"/><path d="M${hx - hr + 1},${hy + 4} A${hr},${hr} 0 0 0 ${hx + hr - 3},${hy + 8}" fill="none" stroke="#000" stroke-width="3" opacity=".12"/>`;
+  const eye = (ex, ey, r) => locked ? `<circle cx="${ex}" cy="${ey}" r="${r}" fill="#141414"/>` : `<circle cx="${ex}" cy="${ey}" r="${r + .9}" fill="${shade(head, -.3)}" opacity=".45"/><circle cx="${ex}" cy="${ey}" r="${r}" fill="url(#${id}e)"/><circle cx="${ex + r * .35}" cy="${ey - r * .38}" r="${r * .34}" fill="#fff"/><circle cx="${ex - r * .35}" cy="${ey + r * .4}" r="${r * .15}" fill="#fff" opacity=".7"/><ellipse class="lid" cx="${ex}" cy="${ey}" rx="${r + 1}" ry="${r + 1}" fill="${shade(head, -.05)}"/>`;
+  if (owlish && !locked) {
+    s += `<path d="M${hx},${hy - 13} C${hx - 16},${hy - 16} ${hx - 18},${hy + 10} ${hx},${hy + 15} C${hx + 18},${hy + 10} ${hx + 16},${hy - 16} ${hx},${hy - 13} Z" fill="#fffaf2" stroke="#c99a62" stroke-width="1.4"/><path d="M${hx},${hy - 11} C${hx - 12},${hy - 13} ${hx - 14},${hy + 7} ${hx},${hy + 12}" fill="none" stroke="#efe2cf" stroke-width="2"/>${eye(hx - 6, hy - 1, 3.6)}${eye(hx + 6, hy - 1, 3.6)}<path d="M${hx - 2},${hy + 4} L${hx + 2},${hy + 4} L${hx},${hy + 9} Z" fill="url(#${id}k)"/>`;
   } else {
     if (sh === 'puffin' && !locked) s += `<path d="M${hx - 6},${hy - 6} C${hx + 4},${hy - 10} ${hx + 14},${hy - 4} ${hx + 14},${hy + 6} C${hx + 6},${hy + 12} ${hx - 6},${hy + 10} ${hx - 8},${hy + 2} Z" fill="#f4f4f4"/>`;
     if (c.cheek && !locked) s += `<circle cx="${hx + 5}" cy="${hy + 6}" r="5" fill="${c.cheek}" opacity=".9"/>`;
-    s += `<circle cx="${hx + 4}" cy="${hy - 3}" r="3.3" fill="#141414"/>${locked ? '' : `<circle cx="${hx + 5.2}" cy="${hy - 4.3}" r="1.1" fill="#fff"/><circle cx="${hx + 4}" cy="${hy - 3}" r="4.2" fill="none" stroke="${shade(head, -.35)}" stroke-width=".6" opacity=".6"/>`}`;
-    const bx = hx + hr - 3, by = hy - 1, bk = c.beak;
-    if (sh === 'toucan' && !locked) s += `<path d="M${bx - 2},${by - 6} C${bx + 20},${by - 12} ${bx + 32},${by - 2} ${bx + 30},${by + 4} C${bx + 20},${by + 8} ${bx + 6},${by + 8} ${bx - 2},${by + 6} Z" fill="${bk}"/><path d="M${bx + 22},${by - 6} C${bx + 28},${by - 4} ${bx + 31},${by} ${bx + 30},${by + 4} C${bx + 27},${by + 5} ${bx + 24},${by + 5} ${bx + 21},${by + 5} Z" fill="#111"/><path d="M${bx},${by + 1} C${bx + 10},${by + 1} ${bx + 20},${by + 2} ${bx + 29},${by + 3}" stroke="${shade(bk, -.4)}" stroke-width=".8" fill="none"/>`;
+    s += eye(hx + 4, hy - 3, 3.4);
+    const bx = hx + hr - 3, by = hy - 1, bk = locked ? LD : `url(#${id}k)`, bkd = locked ? LD : shade(c.beak, -.35);
+    if (sh === 'toucan' && !locked) s += `<path d="M${bx - 2},${by - 6} C${bx + 20},${by - 12} ${bx + 32},${by - 2} ${bx + 30},${by + 4} C${bx + 20},${by + 8} ${bx + 6},${by + 8} ${bx - 2},${by + 6} Z" fill="${bk}"/><path d="M${bx + 22},${by - 6} C${bx + 28},${by - 4} ${bx + 31},${by} ${bx + 30},${by + 4} C${bx + 27},${by + 5} ${bx + 24},${by + 5} ${bx + 21},${by + 5} Z" fill="#111"/><path d="M${bx},${by + 1} C${bx + 10},${by + 1} ${bx + 20},${by + 2} ${bx + 29},${by + 3}" stroke="${bkd}" stroke-width=".8" fill="none"/><path d="M${bx},${by - 4} C${bx + 10},${by - 8} ${bx + 20},${by - 7} ${bx + 26},${by - 4}" stroke="#fff" stroke-width="1" fill="none" opacity=".45"/>`;
     else if (sh === 'eagle' && !locked) s += `<path d="M${bx - 2},${by - 5} C${bx + 8},${by - 6} ${bx + 12},${by} ${bx + 9},${by + 7} C${bx + 7},${by + 3} ${bx + 4},${by + 2} ${bx - 2},${by + 4} Z" fill="${bk}"/><path d="M${hx - 2},${hy - 8} L${hx + 10},${hy - 6}" stroke="${shade(head, -.4)}" stroke-width="2.4" stroke-linecap="round"/>`;
     else if (sh === 'puffin' && !locked) s += `<path d="M${bx - 2},${by - 7} L${bx + 12},${by} L${bx - 2},${by + 7} Z" fill="${bk}"/><path d="M${bx + 1},${by - 5} L${bx + 1},${by + 5}" stroke="#58606a" stroke-width="2"/><path d="M${bx + 5},${by - 3} L${bx + 5},${by + 3}" stroke="#f2c318" stroke-width="1.2"/>`;
     else if (sh === 'flamingo' && !locked) s += `<path d="M${bx - 2},${by - 3} C${bx + 8},${by - 4} ${bx + 12},${by + 2} ${bx + 9},${by + 9} C${bx + 6},${by + 5} ${bx + 2},${by + 4} ${bx - 2},${by + 4} Z" fill="#f7efe4"/><path d="M${bx + 6},${by + 1} C${bx + 10},${by + 3} ${bx + 11},${by + 6} ${bx + 9},${by + 9} C${bx + 7},${by + 7} ${bx + 6},${by + 5} ${bx + 5},${by + 4} Z" fill="#111"/>`;
-    else s += `<path d="M${bx - 2},${by - 4} L${bx + 12},${by + 1} L${bx - 2},${by + 3} Z" fill="${bk}"/><path d="M${bx - 2},${by + 3} L${bx + 9},${by + 2} L${bx - 2},${by + 6} Z" fill="${locked ? LD : shade(bk, -.3)}"/>`;
+    else s += `<path d="M${bx - 2},${by - 4} L${bx + 12},${by + 1} L${bx - 2},${by + 3} Z" fill="${bk}"/><path d="M${bx - 2},${by + 3} L${bx + 9},${by + 2} L${bx - 2},${by + 6} Z" fill="${bkd}"/>${locked ? '' : `<path d="M${bx},${by - 2.6} L${bx + 8},${by}" stroke="#fff" stroke-width=".7" opacity=".5"/>`}`;
   }
-  return s + `</svg>`;
+  return s + `</g></g></svg>`;
 }
-
 function carSVG(c, locked, w = 150) {
   const id = gid('c'), a = locked ? '#cfd6da' : c.a, b = locked ? '#b9c2c7' : c.b, n = locked ? '?' : c.n, nc = locked ? '#9aa' : c.nc;
   const body = locked ? a : `url(#${id}a)`, acc = locked ? b : `url(#${id}s)`;
   const numCol = locked ? '#9aa' : (nc.toLowerCase() === '#ffffff' ? (a.toLowerCase() === '#ffffff' ? '#111' : a) : nc);
-  const wheel = (x, y, r) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#141414"/><circle cx="${x}" cy="${y}" r="${r - 2.4}" fill="none" stroke="#2e2e2e" stroke-width="1.2"/>${locked ? '' : `<path d="M${x - r + 3.4},${y} A${r - 3.4},${r - 3.4} 0 0 1 ${x + (r - 3.4) * .7},${y - (r - 3.4) * .7}" fill="none" stroke="#f2c318" stroke-width="1.4"/>`}<circle cx="${x}" cy="${y}" r="${r * .55}" fill="${locked ? '#9aa' : `url(#${id}r)`}"/>${locked ? '' : [0, 60, 120, 180, 240, 300].map(d => `<line x1="${x}" y1="${y}" x2="${(x + Math.cos(d * Math.PI / 180) * r * .5).toFixed(1)}" y2="${(y + Math.sin(d * Math.PI / 180) * r * .5).toFixed(1)}" stroke="#6c737a" stroke-width="1"/>`).join('')}<circle cx="${x}" cy="${y}" r="${r * .16}" fill="#2a2a2a"/>`;
-  return `<svg viewBox="0 0 204 72" width="${w}">${locked ? '' : `<defs>
-    <linearGradient id="${id}a" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(a, .4)}"/><stop offset=".4" stop-color="${a}"/><stop offset="1" stop-color="${shade(a, -.45)}"/></linearGradient>
-    <linearGradient id="${id}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(b, .25)}"/><stop offset="1" stop-color="${shade(b, -.3)}"/></linearGradient>
-    <radialGradient id="${id}r" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#f6f6f6"/><stop offset=".6" stop-color="#9aa1a8"/><stop offset="1" stop-color="#4b5258"/></radialGradient></defs>`}
-    <ellipse cx="104" cy="65" rx="96" ry="3.5" fill="#000" opacity=".2"/>
+  const wheel = (x, y, r) => `<g class="wheel" style="transform-origin:${x}px ${y}px"><circle cx="${x}" cy="${y}" r="${r}" fill="${locked ? '#555' : `url(#${id}ty)`}"/><circle cx="${x}" cy="${y}" r="${r - 2.4}" fill="none" stroke="#2e2e2e" stroke-width="1.2"/>${locked ? '' : `<path d="M${x - r + 3.4},${y} A${r - 3.4},${r - 3.4} 0 0 1 ${x + (r - 3.4) * .7},${y - (r - 3.4) * .7}" fill="none" stroke="#f2c318" stroke-width="1.4"/>`}<circle cx="${x}" cy="${y}" r="${r * .56}" fill="${locked ? '#9aa' : `url(#${id}r)`}"/>${locked ? '' : [0, 60, 120, 180, 240, 300].map(d => `<line x1="${x}" y1="${y}" x2="${(x + Math.cos(d * Math.PI / 180) * r * .52).toFixed(1)}" y2="${(y + Math.sin(d * Math.PI / 180) * r * .52).toFixed(1)}" stroke="#59616a" stroke-width="1.4" stroke-linecap="round"/>`).join('')}<circle cx="${x}" cy="${y}" r="${r * .17}" fill="#2a2a2a"/>${locked ? '' : `<ellipse cx="${x - r * .3}" cy="${y - r * .45}" rx="${r * .35}" ry="${r * .14}" fill="#fff" opacity=".18" transform="rotate(-25 ${x} ${y})"/>`}</g>`;
+  return `<svg class="car3d" viewBox="0 0 204 72" width="${w}" overflow="visible">${locked ? '' : `<defs>
+    <linearGradient id="${id}a" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(a, .55)}"/><stop offset=".22" stop-color="${shade(a, .18)}"/><stop offset=".5" stop-color="${a}"/><stop offset=".85" stop-color="${shade(a, -.4)}"/><stop offset="1" stop-color="${shade(a, -.6)}"/></linearGradient>
+    <linearGradient id="${id}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shade(b, .4)}"/><stop offset=".5" stop-color="${b}"/><stop offset="1" stop-color="${shade(b, -.4)}"/></linearGradient>
+    <radialGradient id="${id}ty" cx="45%" cy="40%" r="60%"><stop offset="0" stop-color="#3a3a3a"/><stop offset=".8" stop-color="#151515"/><stop offset="1" stop-color="#050505"/></radialGradient>
+    <linearGradient id="${id}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9fdcff"/><stop offset=".5" stop-color="#1d2b33"/><stop offset="1" stop-color="#0b1216"/></linearGradient>
+    <linearGradient id="${id}sh" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    <radialGradient id="${id}r" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#ffffff"/><stop offset=".55" stop-color="#a8afb6"/><stop offset="1" stop-color="#454c52"/></radialGradient></defs>`}
+    <ellipse cx="104" cy="65" rx="98" ry="4.5" fill="#000" opacity=".22"/><ellipse cx="104" cy="65" rx="70" ry="2.5" fill="#000" opacity=".18"/>
     <rect x="28" y="16" width="4" height="26" fill="#2a2a2a"/>
     <rect x="6" y="12" width="7" height="34" rx="1.5" fill="${acc}"/><rect x="4" y="10" width="34" height="5" rx="2" fill="${body}"/><rect x="5" y="17" width="28" height="3" rx="1.5" fill="${acc}"/>
+    ${locked ? '' : '<rect x="5" y="10.6" width="32" height="1.2" rx=".6" fill="#fff" opacity=".45"/>'}
     <rect x="30" y="47" width="110" height="5" rx="1" fill="#1f1f1f"/>
     <path d="M30,47 L33,36 C46,32 66,28 84,26 L90,15 L103,13 L110,24 C122,27 132,31 140,36 L140,47 Z" fill="${body}"/>
     <path d="M58,47 L62,38 C78,35 108,35 128,38 L134,47 Z" fill="${acc}"/>
     <path d="M64,40 C82,38 108,38 126,40" fill="none" stroke="#000" stroke-width="1" opacity=".25"/>
     <path d="M136,40 C152,40 176,44 198,48 L198,51 C176,51 152,51 136,50 Z" fill="${body}"/>
-    <path d="M138,44 C156,45 178,47 197,49.5" fill="none" stroke="${locked ? b : shade(b, 0)}" stroke-width="1.6"/>
-    ${locked ? '' : `<path d="M36,36 C54,31 74,28 88,27 M112,26 C122,29 132,32 140,37 M140,41 C160,42 180,45 196,48" fill="none" stroke="#fff" stroke-width="1" opacity=".5"/>`}
-    <path d="M91,16 L96,8 L104,8 L102,15 Z" fill="${body}"/><path d="M95,10 L102,10 L101,14 L94,14 Z" fill="#111"/>
-    <circle cx="106" cy="21" r="5" fill="${locked ? b : '#f7f7f7'}"/><path d="M104,19 L111,19 L111,22 L105,22 Z" fill="#1d2b33"/>
+    <path d="M138,44 C156,45 178,47 197,49.5" fill="none" stroke="${b}" stroke-width="1.6"/>
+    ${locked ? '' : `<path d="M36,35.5 C54,30.5 74,27.5 88,26.5 M112,25.5 C122,28.5 132,31.5 140,36.5 M140,40.6 C160,41.6 180,44.6 196,47.6" fill="none" stroke="#fff" stroke-width="1.3" opacity=".6" stroke-linecap="round"/><path d="M40,34 C60,29 80,27 92,26.5 L92,28 C78,29 58,31 41,36 Z" fill="url(#${id}sh)"/><path d="M32,46 L138,46" stroke="#000" stroke-width="1.6" opacity=".25"/>`}
+    <path d="M91,16 L96,8 L104,8 L102,15 Z" fill="${body}"/><path d="M95,10 L102,10 L101,14 L94,14 Z" fill="${locked ? '#888' : `url(#${id}g)`}"/>
+    <circle cx="106" cy="21" r="5" fill="${locked ? b : '#f7f7f7'}"/><path d="M104,19 L111,19 L111,22 L105,22 Z" fill="${locked ? '#888' : `url(#${id}g)`}"/>${locked ? '' : '<circle cx="104.5" cy="18.6" r="1.1" fill="#fff" opacity=".9"/>'}
     <path d="M96,26 C100,16 114,15 120,25" fill="none" stroke="#1d1d1d" stroke-width="2.6" stroke-linecap="round"/>
     <rect x="170" y="53" width="30" height="3" rx="1" fill="${acc}"/><rect x="196" y="44" width="4" height="12" rx="1" fill="${acc}"/>
     ${wheel(40, 50, 15)}${wheel(162, 51, 13)}
-    <circle cx="70" cy="36" r="8" fill="${locked ? '#e3e8eb' : '#ffffff'}"/>
+    <circle cx="70" cy="36" r="8" fill="${locked ? '#e3e8eb' : '#ffffff'}"/>${locked ? '' : '<circle cx="70" cy="36" r="8" fill="none" stroke="#000" stroke-width=".6" opacity=".2"/>'}
     <text x="70" y="40" text-anchor="middle" font-size="${String(n).length > 1 ? 9.5 : 11}" font-weight="900" fill="${numCol}" font-family="Arial Black,Arial,sans-serif">${n}</text></svg>`;
 }
-
-function cocoSVG(w = 70) {
-  const id = gid('co');
-  return `<svg viewBox="0 0 100 120" width="${w}"><defs>
-    <radialGradient id="${id}b" cx="60%" cy="30%" r="80%"><stop offset="0" stop-color="#c9c9c9"/><stop offset=".55" stop-color="#9c9c9c"/><stop offset="1" stop-color="#6c6c6c"/></radialGradient>
-    <linearGradient id="${id}w" x1="0" y1="0" x2=".6" y2="1"><stop offset="0" stop-color="#8e8e8e"/><stop offset="1" stop-color="#585858"/></linearGradient>
-    <radialGradient id="${id}h" cx="65%" cy="35%" r="75%"><stop offset="0" stop-color="#d8d8d8"/><stop offset=".6" stop-color="#a6a6a6"/><stop offset="1" stop-color="#7c7c7c"/></radialGradient>
-    <radialGradient id="${id}c" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ff7a26"/><stop offset=".7" stop-color="#ff8e45"/><stop offset="1" stop-color="#ff9e5c" stop-opacity="0"/></radialGradient>
-    <linearGradient id="${id}t" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a7a7a"/><stop offset="1" stop-color="#4e4e4e"/></linearGradient></defs>
-    <path d="M40,80 C32,96 24,108 15,118 L21,119 C31,110 40,98 47,86 Z" fill="url(#${id}t)"/><path d="M43,82 C38,98 32,110 26,119 L31,119 C38,109 45,97 49,86 Z" fill="#6a6a6a"/>
-    <path d="M34,60 C32,40 46,30 60,34 C72,38 74,56 70,74 C66,92 52,100 42,94 C34,88 34,74 34,60 Z" fill="url(#${id}b)"/>
-    <path d="M57,46 C68,50 70,66 64,80 C59,89 51,90 49,85 C55,73 57,60 57,46 Z" fill="#b5b5b5" opacity=".7"/>
-    <g class="wing"><path d="M36,52 C44,42 58,46 59,62 C59,78 51,92 41,97 C35,85 32,66 36,52 Z" fill="url(#${id}w)"/>
-    <path d="M40,56 C46,51 53,55 52,64 C48,70 41,68 40,56 Z" fill="#f2f1ea"/><path d="M41,66 C46,68 50,67 52,64" stroke="#d9d8cf" stroke-width=".8" fill="none"/></g>
-    <g fill="none" stroke="#4a4a4a" stroke-width=".7" opacity=".6"><path d="M39,72 C44,74 50,74 55,70"/><path d="M39,79 C44,81 49,80 53,77"/><path d="M40,86 C44,88 48,87 51,84"/></g>
-    <path d="M54,24 C48,12 44,6 39,2 C46,5 53,11 58,21 Z" fill="#cfc8a8"/><path d="M57,22 C54,10 53,4 51,0 C56,4 60,11 61,21 Z" fill="#ddd6b4"/><path d="M60,22 C60,12 62,6 63,2 C65,8 64,15 63,22 Z" fill="#c4bea0"/>
-    <circle cx="58" cy="34" r="15" fill="url(#${id}h)"/>
-    <path d="M57,22 C68,21 74,29 73,39 C70,47 60,48 55,42 C57,35 55,28 57,22 Z" fill="#e6dfc4"/>
-    <ellipse cx="64" cy="40" rx="6.5" ry="5.5" fill="url(#${id}c)"/>
-    <circle cx="62" cy="30" r="3" fill="#141414"/><circle cx="63.1" cy="28.9" r="1" fill="#fff"/><circle cx="62" cy="30" r="3.8" fill="none" stroke="#8a8a8a" stroke-width=".6"/>
-    <path d="M70,31 C76,31 80,35 78,41 C76,38 73,37 70,37 Z" fill="#b9a99f"/><path d="M70,37 C73,38 76,40 75,43 C72,43 70,41 70,37 Z" fill="#9b8a80"/><circle cx="72" cy="32" r=".7" fill="#7a6a62"/>
-    <path d="M47,96 L46,106" stroke="#b49a8c" stroke-width="2.6" stroke-linecap="round"/><path class="leg2" d="M55,96 L56,106" stroke="#b49a8c" stroke-width="2.6" stroke-linecap="round"/><path class="leg2up" d="M55,96 C60,98 62,94 59,91" stroke="#b49a8c" stroke-width="2.6" stroke-linecap="round" fill="none" opacity="0"/>
-    <path d="M40,107 C43,105 47,105 49,107" stroke="#b49a8c" stroke-width="2.4" fill="none" stroke-linecap="round"/><path class="leg2" d="M52,107 C55,105 59,105 61,107" stroke="#b49a8c" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg>`;
-}
-
 function geckoSVG(w = 96) {
   const id = gid('ge');
-  return `<svg viewBox="0 0 130 74" width="${w}"><defs>
-    <radialGradient id="${id}b" cx="55%" cy="30%" r="80%"><stop offset="0" stop-color="#e3c19a"/><stop offset=".6" stop-color="#c49565"/><stop offset="1" stop-color="#94673d"/></radialGradient>
-    <radialGradient id="${id}h" cx="55%" cy="35%" r="70%"><stop offset="0" stop-color="#e6c7a2"/><stop offset="1" stop-color="#a5764a"/></radialGradient>
-    <radialGradient id="${id}e" cx="40%" cy="35%" r="65%"><stop offset="0" stop-color="#e9cf86"/><stop offset="1" stop-color="#a77d33"/></radialGradient></defs>
-    <path d="M32,42 C14,40 4,50 8,60 C12,68 26,68 28,58 C29,52 22,50 20,54 C18,58 22,60 23,57" fill="none" stroke="url(#${id}b)" stroke-width="7" stroke-linecap="round"/>
-    <g stroke="#b08053" stroke-width="5" stroke-linecap="round" fill="none"><path d="M42,48 L36,57 L28,60"/><path d="M76,48 L82,58 L90,60"/><path d="M44,32 L38,24 L30,22"/><path d="M78,32 L84,23 L92,21"/></g>
-    <g fill="#d8b089">${[[28,60],[90,60],[30,22],[92,21]].map(([x, y]) => `<circle cx="${x - 2}" cy="${y - 2}" r="2"/><circle cx="${x}" cy="${y + 1}" r="2"/><circle cx="${x + 2}" cy="${y - 1}" r="2"/>`).join('')}</g>
-    <path d="M30,40 C34,28 60,26 82,29 C92,31 98,36 98,42 C94,50 72,54 52,53 C38,52 30,48 30,40 Z" fill="url(#${id}b)"/>
-    <g fill="#7d5130" opacity=".85"><ellipse cx="44" cy="35" rx="4" ry="2.4" transform="rotate(-10 44 35)"/><ellipse cx="56" cy="44" rx="3.4" ry="2"/><ellipse cx="66" cy="34" rx="3" ry="1.8"/><ellipse cx="76" cy="44" rx="3.2" ry="2" transform="rotate(15 76 44)"/><ellipse cx="38" cy="45" rx="2.6" ry="1.6"/><ellipse cx="86" cy="36" rx="2.4" ry="1.5"/><circle cx="50" cy="40" r="1.4"/><circle cx="71" cy="39" r="1.3"/><circle cx="62" cy="47" r="1.2"/></g>
-    <path d="M33,36 C48,30 70,29 94,34" fill="none" stroke="#f3e0c4" stroke-width="1.4" stroke-dasharray="2.5 2" opacity=".9"/>
-    <path d="M34,30 L37,27 L40,30 L43,27 L46,29 L49,26 L52,28 L55,26 L58,28 L61,26 L64,28 L67,26 L70,28 L73,27 L76,29 L79,27 L82,29 L86,28 L89,30" fill="none" stroke="#e8c9a0" stroke-width="1.2"/>
-    <path d="M90,30 C100,23 117,25 124,33 C126,40 119,47 108,47 C98,47 92,43 90,37 Z" fill="url(#${id}h)"/>
-    <path d="M98,26 L100,21 L103,25 L106,20 L109,24 L112,20 L115,25 L118,23" fill="none" stroke="#f0d6b0" stroke-width="1.4" stroke-linejoin="round"/>
-    <path d="M92,36 L94,32 L96,36 L98,33" fill="none" stroke="#e8c9a0" stroke-width="1"/>
-    <ellipse cx="111" cy="33" rx="5.6" ry="4.6" fill="url(#${id}e)"/><ellipse cx="111" cy="33" rx="1" ry="3.9" fill="#111"/><circle cx="112.8" cy="31.2" r="1.1" fill="#fff"/>
-    <path d="M110,42 C116,43 121,41 124,37" fill="none" stroke="#7d5130" stroke-width="1"/><circle cx="122" cy="32.5" r=".7" fill="#5a3a22"/></svg>`;
+  const leg = (cls, hip, knee, foot, back) => `<g class="gleg ${cls}" style="transform-origin:${hip[0]}px ${hip[1]}px"><path d="M${hip[0]},${hip[1]} Q${knee[0]},${knee[1]} ${foot[0]},${foot[1]}" fill="none" stroke="${back ? `url(#${id}lb)` : `url(#${id}l)`}" stroke-width="${back ? 5 : 5.6}" stroke-linecap="round"/><g fill="${back ? '#c79a6a' : '#e2bd92'}">${[-40, 0, 40].map(a => { const r = (a + (foot[0] > hip[0] ? 0 : 180)) * Math.PI / 180, fx = foot[0] + Math.cos(r) * 3.4, fy = foot[1] + Math.sin(r) * 3.4 * .6 + 1; return `<line x1="${foot[0]}" y1="${foot[1]}" x2="${fx.toFixed(1)}" y2="${fy.toFixed(1)}" stroke="${back ? '#b8875a' : '#d4ab7d'}" stroke-width="1.6" stroke-linecap="round"/><circle cx="${fx.toFixed(1)}" cy="${fy.toFixed(1)}" r="1.6"/>`; }).join('')}</g></g>`;
+  return `<svg class="critter gecko3d" viewBox="0 0 130 74" width="${w}" overflow="visible"><defs>
+    <radialGradient id="${id}b" cx="50%" cy="22%" r="85%"><stop offset="0" stop-color="#f6dcb6"/><stop offset=".35" stop-color="#e0b27e"/><stop offset=".75" stop-color="#b98450"/><stop offset="1" stop-color="#7e5530"/></radialGradient>
+    <radialGradient id="${id}h" cx="52%" cy="25%" r="80%"><stop offset="0" stop-color="#f8e2c0"/><stop offset=".5" stop-color="#ddb07c"/><stop offset="1" stop-color="#8f6238"/></radialGradient>
+    <linearGradient id="${id}t" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8c193"/><stop offset=".6" stop-color="#bf8b56"/><stop offset="1" stop-color="#7e5530"/></linearGradient>
+    <linearGradient id="${id}l" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e6bf90"/><stop offset="1" stop-color="#a87747"/></linearGradient>
+    <linearGradient id="${id}lb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c3935f"/><stop offset="1" stop-color="#8a5f37"/></linearGradient>
+    <radialGradient id="${id}e" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#f6e2a2"/><stop offset=".55" stop-color="#d1a64a"/><stop offset="1" stop-color="#7e5a1c"/></radialGradient>
+    <linearGradient id="${id}ao" x1="0" y1="0" x2="0" y2="1"><stop offset=".5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".28"/></linearGradient></defs>
+    <ellipse class="gshadow" cx="66" cy="62" rx="44" ry="4.5" fill="#000" opacity=".16"/>
+    ${leg('lb2', [44, 38], [36, 28], [30, 22], true)}${leg('lf2', [80, 37], [86, 27], [93, 21], true)}
+    <g class="gtail" style="transform-origin:34px 42px"><path d="M36,36 C18,34 4,44 7,57 C10,67 25,68 28,59 C30,52 23,49 20,53 C18,57 21,60 23,58 L26,58 C25,63 15,64 12,57 C10,49 20,42 36,48 Z" fill="url(#${id}t)"/><g fill="#7d5130" opacity=".8"><ellipse cx="22" cy="40" rx="2.6" ry="1.6"/><ellipse cx="11" cy="49" rx="2" ry="1.4"/><ellipse cx="15" cy="60" rx="1.8" ry="1.2"/></g><path d="M34,37 C20,36 9,43 9,52" fill="none" stroke="#fff" stroke-width="1.1" opacity=".35" stroke-linecap="round"/></g>
+    ${leg('lb1', [42, 46], [34, 56], [27, 60])}${leg('lf1', [78, 47], [85, 57], [92, 60])}
+    <g class="gbody">
+    <path d="M30,40 C33,27 60,25 82,28 C93,30 99,36 99,42 C95,51 72,55 52,54 C37,53 29,49 30,40 Z" fill="url(#${id}b)"/>
+    <g fill="#7d5130" opacity=".82"><ellipse cx="44" cy="35" rx="4" ry="2.4" transform="rotate(-10 44 35)"/><ellipse cx="56" cy="45" rx="3.4" ry="2"/><ellipse cx="66" cy="33.5" rx="3" ry="1.8"/><ellipse cx="77" cy="44" rx="3.2" ry="2" transform="rotate(15 77 44)"/><ellipse cx="38" cy="45" rx="2.6" ry="1.6"/><ellipse cx="87" cy="36" rx="2.4" ry="1.5"/><circle cx="50" cy="40" r="1.4"/><circle cx="71" cy="39" r="1.3"/><circle cx="62" cy="48" r="1.2"/></g>
+    <g fill="#f8e7cc" opacity=".55">${[[40, 39], [47, 31], [53, 37], [60, 30], [62, 41], [69, 36], [74, 30], [81, 40], [90, 33], [46, 47], [68, 49], [84, 47]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r=".9"/>`).join('')}</g>
+    <path d="M30,40 C33,27 60,25 82,28 C93,30 99,36 99,42 C95,51 72,55 52,54 C37,53 29,49 30,40 Z" fill="url(#${id}ao)"/>
+    <path d="M36,32 C50,27 72,26 90,31" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" opacity=".38"/>
+    <path d="M34,30 L37,27 L40,30 L43,27 L46,29 L49,26 L52,28 L55,26 L58,28 L61,26 L64,28 L67,26 L70,28 L73,27 L76,29 L79,27 L82,29 L86,28 L89,30" fill="none" stroke="#f0d6b0" stroke-width="1.2" stroke-linejoin="round"/>
+    </g>
+    <g class="ghead" style="transform-origin:94px 38px">
+    <path d="M90,30 C100,22 118,24 125,32 C127,40 120,47 108,47.5 C98,47.5 91,43 89,37 Z" fill="url(#${id}h)"/>
+    <path d="M92,30 C100,25 114,25 121,30" fill="none" stroke="#fff" stroke-width="2" opacity=".4" stroke-linecap="round"/>
+    <path d="M98,26 L100,21 L103,25 L106,20 L109,24 L112,20 L115,25 L118,23" fill="none" stroke="#f3dcb8" stroke-width="1.4" stroke-linejoin="round"/>
+    <path d="M110,42 C116,43.5 121,41.5 124.5,37" fill="none" stroke="#7d5130" stroke-width="1.1" stroke-linecap="round"/>
+    <circle cx="122.4" cy="32.4" r=".75" fill="#5a3a22"/>
+    <ellipse cx="111" cy="33" rx="6.6" ry="5.6" fill="#8f6238" opacity=".5"/>
+    <ellipse cx="111" cy="33" rx="5.6" ry="4.7" fill="url(#${id}e)"/><ellipse class="gpupil" cx="111" cy="33" rx="1.1" ry="4" fill="#111"/>
+    <ellipse cx="113" cy="31" rx="1.5" ry="1.1" fill="#fff"/><circle cx="109" cy="35.6" r=".55" fill="#fff" opacity=".8"/>
+    <ellipse class="lid" cx="111" cy="33" rx="6.4" ry="5.5" fill="#d6a874"/>
+    </g></svg>`;
 }
 
 function waveBg(id) {
@@ -950,7 +1097,7 @@ function thermoSVG(sel) {
 }
 function cageScene(dec = []) {
   const has = k => dec.includes(k);
-  return `<div class="scene cage-scene" id="scene"><svg class="cage-svg" style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 360 330" preserveAspectRatio="xMidYMax meet"><defs>
+  return `<div class="scene cage-scene" id="scene" data-dec="${dec.join(',')}"><svg class="cage-svg" style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 360 330" preserveAspectRatio="xMidYMax meet"><defs>
     <linearGradient id="wallG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6e6"/><stop offset="1" stop-color="#f3e2c6"/></linearGradient>
     <linearGradient id="floorG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c99d6b"/><stop offset="1" stop-color="#a87b4c"/></linearGradient>
     <linearGradient id="winG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fd0f2"/><stop offset="1" stop-color="#d9f1fb"/></linearGradient>
@@ -1439,6 +1586,7 @@ let petIdleT = null;
 function mountPetExtras() {
   clearInterval(petIdleT);
   const scene = $('#scene'), pet = $('#petEl'); if (!scene || !pet) return;
+  if (design() === 'fern') { const mv = e => { if (e.target === pet && (e.propertyName === 'left' || e.propertyName === 'top')) pet.classList.toggle('moving', e.type === 'transitionrun'); }; ['transitionrun', 'transitionend', 'transitioncancel'].forEach(t => pet.addEventListener(t, mv)); }
   let down = null, moved = 0, lastHeart = 0, tick = 0;
   pet.addEventListener('pointerdown', e => { down = { x: e.clientX, y: e.clientY }; moved = 0; });
   scene.addEventListener('pointermove', e => {
@@ -1453,8 +1601,7 @@ function mountPetExtras() {
     const r = scene.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top, W = scene.clientWidth, H = scene.clientHeight;
     if (design() === 'ginny') {
       if (!petItem()?.data.out) { bubble(scene, pet.offsetLeft, pet.offsetTop - 16, 'Let me out first!'); return; }
-      pet.style.transformOrigin = '35px 77px'; pet.style.transform = x < pet.offsetLeft + 35 ? 'scaleX(-1)' : 'none';
-      pet.style.left = Math.max(0, Math.min(W - 70, x - 35)) + 'px'; pet.style.top = Math.max(0, Math.min(H - 135, y - 77)) + 'px';
+      cocoGo(Math.max(35, Math.min(W - 35, x)), Math.max(77, Math.min(H - 58, y)));
     } else {
       pet.style.transformOrigin = '50% 50%'; pet.style.transform = x < pet.offsetLeft + 48 ? 'scaleX(-1)' : 'none';
       pet.style.left = Math.max(-10, Math.min(W - 86, x - 48)) + 'px'; pet.style.top = Math.max(0, Math.min(H - 60, y - 27)) + 'px';
@@ -1509,6 +1656,94 @@ function pumpkinVisit(name, secs = 7) {
 /* ===== Visitors on the pet pages: Ginnie's birds and Fearne's race cars ===== */
 let guestT = null;
 function scenePt(x, y) { const sc = $('#scene'), sv = sc && sc.querySelector('.cage-svg, .scene-svg'); if (!sv) return [x, y]; const m = sv.getScreenCTM(), r = sc.getBoundingClientRect(); return [m.a * x + m.e - r.left, m.d * y + m.f - r.top]; }
+/* ===== Flight: birds fly in curved arcs around the room, with flapping, gliding, tilting and a shadow on the floor ===== */
+function flyPath(el, to, o = {}) {
+  return new Promise(res => {
+    if (!el || !el.isConnected) return res();
+    if (el._fly) el._fly.stop(true);
+    const fx = o.fx ?? 35, fy = o.fy ?? 77, sx = el.offsetLeft + fx, sy = el.offsetTop + fy, [tx, ty] = to;
+    const dx = tx - sx, dy = ty - sy, dist = Math.hypot(dx, dy);
+    const svg = el.querySelector('svg'), scene = el.closest('.scene'), keepTr = el.style.transition;
+    el.style.transition = 'none';
+    const left = Math.abs(dx) > 4 ? dx < 0 : (o.guest ? el.classList.contains('flip') : /scaleX\(-1\)/.test(el.style.transform));
+    if (o.guest) el.classList.toggle('flip', left); else { el.style.transformOrigin = `${fx}px ${fy}px`; el.style.transform = left ? 'scaleX(-1)' : 'none'; }
+    const lift = o.lift ?? Math.min(130, 24 + dist * .32);
+    const cx = sx + dx * (.5 + (o.swerve || 0)), cy = Math.min(sy, ty) - lift;
+    const dur = o.dur || Math.max(600, Math.min(2600, dist * 4 + 320));
+    const ease = { inout: t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2, in: t => t * t, out: t => 1 - (1 - t) * (1 - t), lin: t => t }[o.ease || 'inout'];
+    el.classList.add('flying'); el.classList.remove('landed');
+    if (svg) svg.style.transformOrigin = '50% 70%';
+    let sh = null, floorY = 0;
+    if (scene && !o.noShadow) { sh = document.createElement('div'); sh.className = 'flyshadow'; floorY = scene.querySelector('.cage-svg') ? scenePt(0, 300)[1] : scene.clientHeight - 30; scene.appendChild(sh); }
+    const flipT = () => (o.guest && el.classList.contains('flip') ? 'scaleX(-1) ' : '');
+    const t0 = performance.now(); let raf = 0, over = false;
+    const stop = (cut) => {
+      if (over) return; over = true; cancelAnimationFrame(raf); el._fly = null;
+      if (sh) sh.remove();
+      if (svg) svg.style.transform = '';
+      el.classList.remove('gliding');
+      if (!o.keep || cut) { el.classList.remove('flying'); if (!cut && !o.noLand) { el.classList.remove('landed'); void el.offsetWidth; el.classList.add('landed'); setTimeout(() => el.classList.remove('landed'), 450); } }
+      el.style.transition = keepTr; res();
+    };
+    el._fly = { stop };
+    const step = now => {
+      if (!el.isConnected) return stop(true);
+      const t = Math.min(1, (now - t0) / dur), e = ease(t), u = 1 - e;
+      const x = u * u * sx + 2 * u * e * cx + e * e * tx, y = u * u * sy + 2 * u * e * cy + e * e * ty;
+      const vx = 2 * u * (cx - sx) + 2 * e * (tx - cx), vy = 2 * u * (cy - sy) + 2 * e * (ty - cy);
+      el.style.left = (x - fx) + 'px'; el.style.top = (y - fy) + 'px';
+      const pitch = Math.atan2(vy, Math.abs(vx) + 1) * 180 / Math.PI;
+      const glide = vy > 0 && vy > Math.abs(vx) * .25 && t > .3 && t < .82;
+      el.classList.toggle('gliding', glide);
+      const ang = Math.max(-30, Math.min(30, pitch * .42)), sc = 1 + .1 * Math.sin(Math.PI * t), bob = glide ? 0 : Math.sin(now / 95) * 2.4;
+      if (svg) svg.style.transform = `${flipT()}translateY(${bob.toFixed(1)}px) rotate(${ang.toFixed(1)}deg) scale(${sc.toFixed(3)})`;
+      if (sh) { const hgt = Math.max(0, floorY - y), k = Math.max(0, 1 - hgt / 260), w = 26 + 26 * k; sh.style.width = w + 'px'; sh.style.left = (x - w / 2) + 'px'; sh.style.top = (floorY - 4) + 'px'; sh.style.opacity = (.08 + .32 * k).toFixed(2); }
+      if (t < 1) raf = requestAnimationFrame(step); else stop(false);
+    };
+    raf = requestAnimationFrame(step);
+  });
+}
+async function flyTour(el, pts, o = {}) {
+  for (let i = 0; i < pts.length; i++) {
+    if (!el.isConnected) return;
+    const last = i === pts.length - 1;
+    await flyPath(el, pts[i], { ...o, keep: !last, ease: pts.length === 1 ? 'inout' : i === 0 ? 'in' : last ? 'out' : 'lin', lift: pts[i][2] ?? o.lift, dur: pts[i][3] });
+  }
+}
+/* Places Coco can land when she's out of her cage, in scene pixels (her feet) */
+function roomSpots() {
+  const sc = $('#scene'), dec = (sc?.dataset.dec || '').split(','), s = [];
+  const add = (x, y, n) => s.push([...scenePt(x, y), n]);
+  add(180, 16, 'top'); add(108, 78, 'cage'); add(252, 78, 'cage'); add(53, 113, 'window');
+  if (dec.includes('plant')) add(38, 258, 'plant');
+  if (dec.includes('bath')) add(288, 270, 'bath');
+  if (dec.includes('lights')) { add(95, 35, 'lights'); add(265, 35, 'lights'); }
+  for (let i = 0; i < 3; i++) add(30 + Math.random() * 300, 296 + Math.random() * 10, 'floor');
+  return s;
+}
+const SPOT_SAY = { top: ['Top of the world! 🌍', 'I can see everything!', 'Up here! 👋'], window: ['Ooh, birds outside! 🐦', 'Nice view! ☀️', 'Hello garden!'], plant: ['Leafy! 🌿', 'Is this a tree?'], bath: ['Splish splash! 💦', 'Bath time! 🛁'], lights: ['So sparkly! ✨', 'Pretty lights!'], cage: ['On the roof! 🏠', 'Wheee!'], floor: ['Hello! 👋', 'Anything to eat? 🪱'] };
+function cocoGo(x, y, o = {}) {
+  const pet = $('#petEl'); if (!pet) return Promise.resolve();
+  petBusy = true; if (Math.random() < .6) petSound();
+  return flyPath(pet, [x, y], o).then(() => { petBusy = false; });
+}
+function cocoWander() {
+  const scene = $('#scene'), pet = $('#petEl'); if (!scene || !pet || petBusy) return;
+  const fx = pet.offsetLeft + 35, fy = pet.offsetTop + 77, spots = roomSpots().filter(p => Math.hypot(p[0] - fx, p[1] - fy) > 40);
+  if (!spots.length) return;
+  if (Math.random() < .25) return cocoLoop();
+  const [x, y, n] = spots[Math.floor(Math.random() * spots.length)];
+  cocoGo(x, y).then(() => { if (Math.random() < .45 && pet.isConnected) { const l = SPOT_SAY[n] || SPOT_SAY.floor; bubble(scene, Math.max(6, Math.min(scene.clientWidth - 150, x - 50)), Math.max(6, y - 100), l[Math.floor(Math.random() * l.length)]); } });
+}
+/* A big loop around the room, then she lands somewhere */
+function cocoLoop() {
+  const scene = $('#scene'), pet = $('#petEl'); if (!scene || !pet || petBusy) return Promise.resolve();
+  const W = scene.clientWidth, top = scenePt(0, 0)[1], spots = roomSpots(), land = spots[Math.floor(Math.random() * spots.length)];
+  const ltr = Math.random() < .5, a = ltr ? .15 : .85, b = ltr ? .85 : .15;
+  petBusy = true; petSound();
+  bubble(scene, Math.max(6, pet.offsetLeft - 20), Math.max(6, pet.offsetTop - 18), ['Wheee! 🪽', 'Watch me fly!', 'Zoom! 💨'][Math.floor(Math.random() * 3)]);
+  return flyTour(pet, [[W * a, top + 90, 60, 900], [W * b, top + 70, 40, 1300], [W * .5, top + 150, 30, 900], [land[0], land[1], 50]]).then(() => { petBusy = false; });
+}
 function birdGuest(goEat) {
   const scene = $('#scene'); if (!scene || design() !== 'ginny') return;
   const have = BIRDS.slice(0, unlockedCount(me.id, BIRDS.length)).filter(b => b.name !== 'Cockatiel');
@@ -1519,11 +1754,11 @@ function birdGuest(goEat) {
   if (!fromLeft) g.classList.add('flip');
   scene.appendChild(g);
   const spots = [[180, 30], [70, 34], [290, 34], [100 + Math.random() * 160, 300], [40 + Math.random() * 280, 300], [312, 266]];
-  const moveTo = (x, y) => { const cur = g.offsetLeft; g.classList.toggle('flip', x - size / 2 < cur); g.classList.add('flying'); g.style.left = (x - size / 2) + 'px'; g.style.top = (y - size * .92) + 'px'; setTimeout(() => g.classList.remove('flying'), 1200); };
+  const moveTo = (x, y) => flyPath(g, [x, y], { fx: size / 2, fy: size * .92, guest: true, dur: 1200 });
   const hop = () => { const w = scene.querySelector('.worm:not(.taken)'); if (w) { w.classList.add('taken'); moveTo(w.offsetLeft + 18, H - 46); setTimeout(() => { g.classList.add('a-nod'); birdSound(b); bubble(scene, g.offsetLeft, Math.max(6, g.offsetTop - 16), ['Yum! 🪱', 'Mmm, worms!', 'Thanks Coco!'][Math.floor(Math.random() * 3)]); w.remove(); setTimeout(() => g.classList.remove('a-nod'), 1300); }, 1300); return; } const [x, y] = scenePt(...spots[Math.floor(Math.random() * spots.length)]); moveTo(x, y); };
   setTimeout(() => { hop(); setTimeout(() => { birdSound(b); bubble(scene, Math.max(6, g.offsetLeft - 10), Math.max(6, g.offsetTop - 16), [`Hello Coco! 👋`, `Hi ${me.name}!`, `${b.name} here!`, 'Tweet tweet!', 'Can I play too?'][Math.floor(Math.random() * 5)]); setTimeout(() => { if (Math.random() < .6) petSound(); }, 1200); }, 1300); }, 60);
   const moves = setInterval(() => { if (!g.isConnected) return clearInterval(moves); if (Math.random() < .7) hop(); if (Math.random() < .35) birdSound(b); }, 3200);
-  setTimeout(() => { clearInterval(moves); if (!g.isConnected) return; g.classList.add('flying'); const left = Math.random() < .5; g.classList.toggle('flip', left); g.style.left = (left ? -size - 30 : W + 30) + 'px'; g.style.top = '-20px'; setTimeout(() => g.remove(), 1400); }, goEat ? 14000 : 11000 + Math.random() * 7000);
+  setTimeout(() => { clearInterval(moves); if (!g.isConnected) return; const left = Math.random() < .5; flyPath(g, [left ? -size - 30 : W + size + 30, -10], { fx: size / 2, fy: size * .92, guest: true, dur: 1400, noLand: true, lift: 30 }).then(() => g.remove()); }, goEat ? 14000 : 11000 + Math.random() * 7000);
 }
 function carZoom() {
   const scene = $('#scene'); if (!scene || design() !== 'fern' || scene.querySelector('.zoomer')) return;
@@ -1550,9 +1785,9 @@ function cocoSwing(secs = 9) {
   const sr = scene.getBoundingClientRect(), s = seat.getBoundingClientRect(), t = top.getBoundingClientRect();
   const seatX = s.left + s.width / 2 - sr.left, seatY = s.top - sr.top, pivX = t.left + t.width / 2 - sr.left, pivY = t.top + t.height / 2 - sr.top;
   const left = seatX - 35, topPx = seatY - 74;
-  pet.style.transform = 'none'; pet.style.left = left + 'px'; pet.style.top = topPx + 'px';
   bubble(scene, Math.max(6, left), Math.max(6, topPx - 18), 'Swing time! 🪢'); petSound();
-  swinging = setTimeout(() => {
+  swinging = -1;
+  flyPath(pet, [seatX, seatY + 3], { lift: 22 }).then(() => { if (!pet.isConnected) { swinging = null; petBusy = false; return; } pet.style.transform = 'none'; swinging = setTimeout(() => {
     pet.style.transition = 'none'; pet.style.transformOrigin = `${pivX - left}px ${pivY - topPx}px`;
     pet.classList.add('swinging'); sw.classList.add('swinging');
     const chirps = setInterval(() => { if (Math.random() < .5) petSound(); }, 2200);
@@ -1563,7 +1798,7 @@ function cocoSwing(secs = 9) {
       swinging = null; petBusy = false;
       petSave({ playAt: new Date().toISOString(), counts: bump('swing') });
     }, secs * 1000);
-  }, 1100);
+  }, 150); });
   return true;
 }
 function petReact(scene, pet) {
@@ -1584,13 +1819,13 @@ function updatePetStats() {
   const s = fern ? [['💦 Damp', p.waterAt], ['🍑 Fed', p.foodAt], ['💛 Happy', p.playAt]] : [['💧 Water', p.waterAt], ['🪱 Fed', p.foodAt], ['💛 Happy', p.playAt]];
   el.innerHTML = s.map(([n, t]) => `<div>${n}<div class="bar" style="margin-top:4px;height:8px"><i style="width:${petLevel(t)}%"></i></div></div>`).join('');
 }
-let petLoop = null, petState = {}, petBusy = false;
+let petLoop = null, petState = {}, petBusy = false, cocoLeaving = false;
 function stopPet() { clearInterval(petLoop); petLoop = null; clearInterval(petIdleT); petIdleT = null; petBusy = false; }
 function fitCage() { const sc = $('#scene'), sv = sc && sc.querySelector('.cage-svg, .scene-svg'); if (!sv) return; const W = sc.clientWidth, H = Math.max(1, sc.clientHeight), w = Math.max(360, 330 * W / H), h = Math.max(330, 360 * H / Math.max(1, W)); sv.setAttribute('viewBox', `${(360 - w) / 2} ${330 - h} ${w} ${h}`); }
 addEventListener('resize', () => { if (view === 'pet') fitCage(); });
 let sceneRO = null;
 function placeCocoInCage(animate) {
-  const pet = $('#petEl'); if (!pet || design() !== 'ginny' || petItem()?.data.out || swinging) return;
+  const pet = $('#petEl'); if (!pet || design() !== 'ginny' || petItem()?.data.out || swinging || pet.classList.contains('flying')) return;
   const [x, y] = scenePt(205, 166);
   if (!animate) pet.style.transition = 'none';
   pet.style.transform = 'none'; pet.style.left = (x - 35) + 'px'; pet.style.top = (y - 77) + 'px';
@@ -1606,7 +1841,11 @@ function mountPet() {
   petState = { worms: [], flies: [] };
   const p = petItem()?.data || {};
   pet.style.transformOrigin = design() === 'ginny' ? '35px 77px' : '50% 50%';
-  if (design() === 'ginny' && p.out) { const door = $('#door'); if (door) door.setAttribute('opacity', '1'); pet.style.left = '20px'; pet.style.top = (scene.clientHeight - 135) + 'px'; }
+  if (design() === 'ginny' && p.out) {
+    const door = $('#door'); if (door) door.setAttribute('opacity', '1');
+    if (cocoLeaving) { cocoLeaving = false; const [px, py] = scenePt(205, 166); pet.style.transition = 'none'; pet.style.left = (px - 35) + 'px'; pet.style.top = (py - 77) + 'px'; void pet.offsetWidth; pet.style.transition = ''; const [dx, dy] = scenePt(180, 236), sp = roomSpots().filter(s => s[2] !== 'cage' && s[2] !== 'top'), l = sp[Math.floor(Math.random() * sp.length)]; petBusy = true; setTimeout(() => flyTour(pet, [[dx, dy, 14, 700], [l[0], l[1], 70]]).then(() => { petBusy = false; }), 350); }
+    else { pet.style.left = '20px'; pet.style.top = (scene.clientHeight - 135) + 'px'; }
+  }
   else placeCocoInCage();
   petLoop = setInterval(() => {
     const W = scene.clientWidth, H = scene.clientHeight;
@@ -1614,10 +1853,7 @@ function mountPet() {
       const out = petItem()?.data.out;
       const worms = [...scene.querySelectorAll('.worm')];
       if (out && worms.length && !petBusy) cocoPeck(scene, pet, worms[0], H);
-      else if (out && !petBusy && Math.random() < .35) {
-        if (Math.random() < .25) { const [x, y] = scenePt(180, 30); pet.style.left = (x - 35) + 'px'; pet.style.top = (y - 77) + 'px'; pet.style.transform = 'none'; if (Math.random() < .5) setTimeout(() => bubble(scene, Math.max(6, x - 40), Math.max(6, y - 95), ['Top of the world! 🌍', 'I can see everything!', 'Up here! 👋'][Math.floor(Math.random() * 3)]), 1000); }
-        else { pet.style.left = Math.random() * (W - 80) + 'px'; pet.style.top = (20 + Math.random() * (H - 170)) + 'px'; pet.style.transform = Math.random() < .5 ? 'scaleX(-1)' : 'none'; }
-      }
+      else if (out && !petBusy && Math.random() < .2) cocoWander();
     } else {
       scene.querySelectorAll('.fly:not([data-caught])').forEach(f => { f.style.left = Math.random() * (W - 40) + 'px'; f.style.top = (10 + Math.random() * (H - 110)) + 'px'; });
     }
@@ -1628,12 +1864,15 @@ function cocoPeck(scene, pet, worm, H) {
   const wx = worm.offsetLeft + worm.offsetWidth / 2, flip = wx < pet.offsetLeft + 35;
   const left = flip ? wx - 35 + 52 : wx - 35 - 52, base = flip ? 'scaleX(-1) ' : '';
   const tilt = d => { pet.style.transform = base + `rotate(${d}deg)`; };
-  pet.style.transformOrigin = '35px 77px'; tilt(0); pet.style.left = left + 'px'; pet.style.top = (H - 135) + 'px';
-  setTimeout(() => { pet.style.transition = 'left 1s ease, top 1s ease, transform .2s ease'; tilt(70); }, 1050);
-  setTimeout(() => tilt(25), 1300);
-  setTimeout(() => { tilt(72); worm.style.animation = 'none'; worm.style.transition = 'transform .2s, opacity .2s'; worm.style.transform = 'scaleX(.15)'; worm.style.opacity = '0'; }, 1550);
-  setTimeout(() => { tilt(0); worm.remove(); bubble(scene, wx - 14, H - 175, 'Yum!'); petSave({ foodAt: new Date().toISOString(), playAt: new Date().toISOString(), counts: bump('worm') }); }, 1850);
-  setTimeout(() => { pet.style.transition = ''; petBusy = false; }, 2150);
+  flyPath(pet, [left + 35, H - 58], { lift: 40 }).then(() => {
+  if (!pet.isConnected) { petBusy = false; return; }
+  pet.style.transformOrigin = '35px 77px'; tilt(0);
+  setTimeout(() => { pet.style.transition = 'left 1s ease, top 1s ease, transform .2s ease'; tilt(70); }, 60);
+  setTimeout(() => tilt(25), 310);
+  setTimeout(() => { tilt(72); worm.style.animation = 'none'; worm.style.transition = 'transform .2s, opacity .2s'; worm.style.transform = 'scaleX(.15)'; worm.style.opacity = '0'; }, 560);
+  setTimeout(() => { tilt(0); worm.remove(); bubble(scene, wx - 14, H - 175, 'Yum!'); petSave({ foodAt: new Date().toISOString(), playAt: new Date().toISOString(), counts: bump('worm') }); }, 860);
+  setTimeout(() => { pet.style.transition = ''; petBusy = false; }, 1160);
+  });
 }
 function cocoPeckDish(scene, pet) {
   if (petBusy) return; petBusy = true;
@@ -1667,7 +1906,7 @@ function doTrick(name, ok = true) {
   else if (anim === 'plant') { pet.style.left = (W - 110) + 'px'; pet.style.top = (H - 130) + 'px'; setTimeout(() => cls('a-hide', 1600), 900); }
   else if (anim === 'tongue') { flickTongue(scene, pet); setTimeout(() => flickTongue(scene, pet), 550); setTimeout(() => flickTongue(scene, pet), 1100); }
   else if (anim === 'finale') { cls('a-twirl', 1250); setTimeout(() => cls('a-bounce', 1400), 1250); }
-  else if (anim === 'fly') { cls('a-fly', 2300); if (design() === 'ginny') cls('flap', 2300); }
+  else if (anim === 'fly') { if (design() === 'ginny' && petItem()?.data.out) { petBusy = false; cocoLoop(); } else { cls('a-fly', 2300); if (design() === 'ginny') cls('flying', 2300); } }
   else cls('a-' + anim);
   if (fx === 'sayhi') setTimeout(() => bubble(scene, px() - 40, py() - 20, `Hello ${me.name}!`), 300);
   else if (fx === 'count') ['1', '2', '3'].forEach((n, i) => setTimeout(() => bubble(scene, px() - 6, py() - 22, n), i * 600));
@@ -1702,7 +1941,8 @@ async function petAction(a) {
   if (a === 'worms') { if (p.out) { for (let i = 0; i < 3; i++) { const w = document.createElement('div'); w.className = 'worm'; w.style.left = (40 + Math.random() * (W - 100)) + 'px'; scene.appendChild(w); } bubble(scene, W / 2, H - 120, 'Worms on the floor!'); setTimeout(() => birdGuest(true), 1500); if (Math.random() < .6) setTimeout(() => birdGuest(true), 3500); } else { bubble(scene, W / 2 + 40, 190, 'Worms in her dish!'); setTimeout(() => birdGuest(), 2500); setTimeout(() => cocoPeckDish(scene, pet), 600); return petSave({ foodAt: now, counts: bump('feed') }); } return; }
   if (a.startsWith('go') && TANK_FUN[a.slice(2)]) { if (!pumpkinVisit(a.slice(2))) toast('Pumpkin is busy, try again in a moment'); return; }
   if (a === 'swing') { if (!cocoSwing()) toast('Coco is busy, try again in a moment'); return; }
-  if (a === 'out' || a === 'cage') { await petSave({ out: a === 'out' }); render(); setTimeout(petSound, 300); if (a === 'out') setTimeout(petSound, 1500); return; }
+  if (a === 'cage' && design() === 'ginny' && p.out && !petBusy) { petBusy = true; petSound(); const [dx, dy] = scenePt(180, 236), [px, py] = scenePt(205, 166); await flyTour(pet, [[dx, dy, 40], [px, py, 10, 650]]); petBusy = false; }
+  if (a === 'out' || a === 'cage') { if (a === 'out') cocoLeaving = true; await petSave({ out: a === 'out' }); render(); setTimeout(petSound, 300); if (a === 'out') setTimeout(petSound, 1500); return; }
   if (a === 'trick') {
     const tr = { ...(p.tricks || {}) }, name = pd.tricks.find(t => (tr[t] || 0) < 100);
     if (!name) return toast('All 30 tricks learned! ⭐');
