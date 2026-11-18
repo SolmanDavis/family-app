@@ -829,7 +829,7 @@ async function tickChore(cid) {
   const P = settings().points;
   if (done === total && total > 0 && !ledger(me.id).some(i => i.data.cat === 'allchores' && i.data.date === today())) {
     await award(me.id, P.allChoresBonus, 'Every chore done today', 'allchores');
-    let streak = 0; for (let d = 0; d < 30; d++) { const day = addDays(today(), -d); if (ledger(me.id).some(i => i.data.cat === 'allchores' && i.data.date === day)) streak++; else break; }
+    const streak = currentStreak(me.id);
     const lastStreak = ledger(me.id).filter(i => i.data.cat === 'streak').map(i => i.data.date).sort().pop();
     if (streak >= 7 && (!lastStreak || daysBetween(lastStreak, today()) >= 7)) { await award(me.id, P.weekStreakBonus, '7 days in a row!', 'streak'); toast(`7 day streak! +${P.weekStreakBonus} bonus points`); }
     else toast(`All done! 🔥 ${currentStreak(me.id)} day streak · +${P.allChoresBonus} points`);
@@ -1935,8 +1935,23 @@ function ipadCard() {
   return h + `</div>`;
 }
 function streakDays(mid) { return [...new Set(ledger(mid).filter(i => i.data.cat === 'allchores').map(i => i.data.date))].sort(); }
-function currentStreak(mid) { const set = new Set(streakDays(mid)); let d = set.has(today()) ? today() : addDays(today(), -1), n = 0; while (set.has(d)) { n++; d = addDays(d, -1); } return n; }
-function bestStreak(mid) { let best = 0, run = 0, prev = null; for (const d of streakDays(mid)) { run = prev && daysBetween(prev, d) === 1 ? run + 1 : 1; best = Math.max(best, run); prev = d; } return best; }
+/* A parent can correct a streak: "on this day the streak was N" */
+function streakFixes(mid) { const m = new Map(); K('streakfix').filter(f => f.data.member === mid).sort((a, b) => (a.data.at || '').localeCompare(b.data.at || '')).forEach(f => m.set(f.data.date, f.data.n)); return m; }
+function streakAt(mid, d) { const set = new Set(streakDays(mid)), fx = streakFixes(mid); let n = 0; for (let i = 0; i < 400; i++) { if (fx.has(d)) return n + fx.get(d); if (!set.has(d)) break; n++; d = addDays(d, -1); } return n; }
+function currentStreak(mid) { const set = new Set(streakDays(mid)), fx = streakFixes(mid), t = today(); return streakAt(mid, set.has(t) || fx.has(t) ? t : addDays(t, -1)); }
+function bestStreak(mid) { let best = 0, run = 0, prev = null; for (const d of streakDays(mid)) { run = prev && daysBetween(prev, d) === 1 ? run + 1 : 1; best = Math.max(best, run); prev = d; } streakFixes(mid).forEach((n, d) => { best = Math.max(best, streakAt(mid, d)); }); return Math.max(best, currentStreak(mid)); }
+function streakAnchor(mid) { const t = today(); return doneAllToday(mid) ? t : addDays(t, -1); }
+/* one-off repair: Chris asked for Ginnie's and Fearne's streaks to be 12 (18 Nov 2026) */
+let streakRepairDone = false;
+async function streakRepairNov18() {
+  if (streakRepairDone || !me) return; streakRepairDone = true;
+  for (const k of kids()) {
+    if (!/ginn|fearn|fern/i.test(k.name)) continue;
+    if (K('streakfix').some(f => f.data.member === k.id && f.data.tag === 'nov18')) continue;
+    const last = streakDays(k.id).filter(d => d <= '2026-11-18').pop(), date = last && last >= '2026-11-17' ? last : '2026-11-17';
+    await add('streakfix', { member: k.id, date, n: 12, at: '2026-11-18T20:45:00Z', tag: 'nov18' }, null, { silent: true });
+  }
+}
 const doneAllToday = mid => streakDays(mid).includes(today());
 function streakCard() {
   const ks = kids(); if (!ks.length) return '';
@@ -1945,7 +1960,7 @@ function streakCard() {
   const tie = rows.length > 1 && rows[0].c > 0 && rows[0].c === rows[1].c;
   const rec = rows.slice().sort((a, b) => b.b - a.b)[0];
   let note = leader ? `${esc(nameOf(leader))} is in the lead!` : tie ? "It's neck and neck!" : 'Who will start one?';
-  let h = `<div class="card streak">${secH('local_fire_department', 'orange', 'Streak challenge', `<span class="pill" style="background:#FFEDD5;color:#9A3412">${note}</span>`)}<ul class="list">${rows.map(r => `<li>${initialAvatar(r.k.id, 40)}<div class="grow"><b>${esc(r.k.name)}${leader === r.k.id ? ' 👑' : ''}</b><div class="muted">Best ever: ${r.b} ${r.b === 1 ? 'day' : 'days'} · ${r.t ? 'Today done ✓' : 'Today not done yet'}</div></div><div class="streak-n">🔥 ${r.c}</div></li>`).join('')}</ul>`;
+  let h = `<div class="card streak">${secH('local_fire_department', 'orange', 'Streak challenge', `<span class="pill" style="background:#FFEDD5;color:#9A3412">${note}</span>`)}<ul class="list">${rows.map(r => `<li>${initialAvatar(r.k.id, 40)}<div class="grow"><b>${esc(r.k.name)}${leader === r.k.id ? ' 👑' : ''}</b><div class="muted">Best ever: ${r.b} ${r.b === 1 ? 'day' : 'days'} · ${r.t ? 'Today done ✓' : 'Today not done yet'}</div></div><div class="streak-n">🔥 ${r.c}</div>${isKid() ? '' : `<button class="iconbtn sm" data-act="fixStreak" data-id="${r.k.id}" aria-label="Fix ${esc(r.k.name)}'s streak" title="Fix streak">${ic('edit')}</button>`}</li>`).join('')}</ul>`;
   if (rec && rec.b > 0) h += `<div class="muted mt">🏆 Family record: <b>${rec.b} days</b> by ${esc(rec.k.name)}</div>`;
   if (isKid()) { const c = currentStreak(me.id); if (c > 0 && !doneAllToday(me.id)) h += `<div class="streak-warn">Do all your chores today to keep your 🔥 ${c} day streak!</div>`; }
   return h + `</div>`;
@@ -2907,7 +2922,7 @@ function render() {
   if (same) window.scrollTo(0, y); else window.scrollTo(0, 0);
   const hd = document.querySelector('header.top'); if (hd) document.documentElement.style.setProperty('--hdr', hd.offsetHeight + 'px');
   if (view === 'pet') { mountPet(); mountPetExtras(); }
-  maybeStartBrush();
+  maybeStartBrush(); setTimeout(streakRepairNov18, 1500);
   if (!visitTimer) scheduleVisit(true);
   if (view === 'calm') mountCalm();
   document.body.classList.remove('wide');
@@ -3256,6 +3271,8 @@ C.playlist = el => { const p = settings().playlists; p[el.dataset.x] = el.value.
 
 /* ===== Forms ===== */
 const F = {};
+A.fixStreak = el => { const k = el.dataset.id; openModal(`<h3>Set ${esc(nameOf(k))}'s chore streak</h3><form data-form="fixStreak"><input type="hidden" name="id" value="${k}"><label>Streak (days)</label><input name="n" type="number" min="0" max="365" required value="${currentStreak(k)}"><p class="muted">Use this if the streak has gone wrong. ${doneAllToday(k) ? 'Today is already counted.' : "Today isn't done yet, so it will go up by 1 when today's chores are done."}</p><button class="btn big">Save</button></form>`); };
+F.fixStreak = async f => { closeModal(); const n = Math.max(0, Math.round(Number(f.n) || 0)); await add('streakfix', { member: f.id, date: streakAnchor(f.id), n, at: new Date().toISOString(), by: me.id }, null, { silent: true }); toast(`${nameOf(f.id)}'s streak is now ${n} 🔥`); render(); };
 F.addChore = f => { closeModal(); const days = DAY_SHORT.map((_, i) => f['day' + i] ? i : -1).filter(i => i >= 0); const grab = f.kind === 'grab'; const data = { name: f.name, points: Number(f.points) || 5, routine: ['morning', 'bedtime'].includes(f.kind) ? f.kind : '', who: f.who, days: days.length === 7 ? [] : days, grab };
   if (f.id) { toast('Chore saved'); return upd(f.id, data); }
   toast(grab ? 'Bonus job posted' : 'Chore added'); return add('chore', data, null); };
