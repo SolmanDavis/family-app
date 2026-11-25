@@ -509,6 +509,25 @@ body.fern .place-pick,body.fern .friend-pick,body.fern .race-pick{background:#1f
 .reef-card{position:absolute;right:12px;top:40px;z-index:5;width:min(280px,70%);background:rgba(255,255,255,.95);border-radius:16px;padding:12px 14px;box-shadow:0 10px 30px rgba(0,0,0,.3);opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .3s,transform .3s;color:#123}.reef-card.show{opacity:1;transform:none;pointer-events:auto}.reef-card p{margin:6px 0 8px;font-size:14px}
 .reef-pop{position:absolute;z-index:4;transform:translate(-50%,-100%);background:#fff;border-radius:12px;padding:3px 8px;font-weight:800;font-size:13px;pointer-events:none;animation:reefPop 1.5s ease-out forwards;color:#123}@keyframes reefPop{to{opacity:0;transform:translate(-50%,-160%)}}
 .reef-ripple{position:absolute;z-index:4;width:20px;height:20px;margin:-10px 0 0 -10px;border-radius:50%;border:2px solid rgba(255,255,255,.8);pointer-events:none;animation:reefRip .7s ease-out forwards}@keyframes reefRip{to{transform:scale(4);opacity:0}}
+
+.bed-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin:10px 0}
+.bed-story{display:flex;flex-direction:column;gap:2px;padding:10px;border-radius:14px;border:2px solid transparent;background:var(--soft,#f1f5f9);cursor:pointer;position:relative}.bed-story input{position:absolute;opacity:0}.bed-story .be{font-size:28px}.bed-story em{font-style:normal;font-size:11px;font-weight:800;color:#6d28d9}.bed-story:has(input:checked){border-color:#7c3aed;background:#f3e8ff}
+.seg{display:flex;gap:6px;flex-wrap:wrap}.seg label{flex:1}.seg input{position:absolute;opacity:0}.seg span{display:block;text-align:center;padding:10px 6px;border-radius:12px;background:var(--soft,#f1f5f9);font-weight:700;cursor:pointer;border:2px solid transparent}.seg input:checked+span{border-color:#7c3aed;background:#f3e8ff}
+.bed{position:fixed;inset:0;z-index:9500;background:linear-gradient(#0b1033,#1b1f4d 55%,#2a2350);color:#f4efff;overflow:hidden;animation:bedIn 1.2s ease-out;user-select:none;-webkit-user-select:none}.bed.out{animation:bedOut .6s ease-in forwards}@keyframes bedIn{from{opacity:0}}@keyframes bedOut{to{opacity:0}}
+.bed-sky{position:absolute;inset:0}.bed-sky i{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;box-shadow:0 0 6px #fff;animation:bedTw 4s ease-in-out infinite alternate}@keyframes bedTw{from{opacity:.25}to{opacity:1}}
+.bed-moon{position:absolute;right:12%;top:9%;width:90px;height:90px;border-radius:50%;background:radial-gradient(circle at 38% 38%,#fffbe6,#f4e7b5 60%,#e0d08f);box-shadow:0 0 60px 18px rgba(255,244,200,.25)}
+.bed-cloud{position:absolute;height:40px;width:160px;border-radius:40px;background:rgba(160,170,230,.18);filter:blur(2px);animation:bedCl 60s linear infinite}.bed-cloud.c1{top:20%;left:-20%}.bed-cloud.c2{top:34%;left:-40%;animation-duration:90s;transform:scale(.7)}@keyframes bedCl{to{left:110%}}
+.bed-room{position:absolute;left:0;right:0;bottom:calc(220px + env(safe-area-inset-bottom));height:240px}
+.bed-lamp{position:absolute;left:50%;bottom:-30px;width:420px;height:300px;transform:translateX(-50%);background:radial-gradient(ellipse at 50% 60%,rgba(255,200,120,.28),rgba(255,200,120,0) 65%)}
+.bed-perch{position:absolute;left:50%;bottom:28px;width:220px;height:12px;transform:translateX(-50%);border-radius:8px;background:linear-gradient(#a0703f,#5e3d1f)}
+.bed-coco{position:absolute;left:50%;bottom:34px;transform:translateX(-50%);width:150px}.bed-coco canvas{display:block;margin:0 auto}
+.bed-book{position:absolute;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));transform:translateX(-50%);width:min(680px,92%);background:rgba(20,22,60,.72);border:1px solid rgba(200,190,255,.2);border-radius:22px;padding:14px 18px 10px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.bed-title{font-weight:800;opacity:.75;font-size:14px;text-align:center}.bed-text{min-height:96px;font-size:clamp(17px,2.6vw,22px);line-height:1.5;text-align:center;margin:8px 0;opacity:0;transition:opacity .9s}.bed-text.in{opacity:1}
+.bed-dots{display:flex;justify-content:center;gap:5px}.bed-dots i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.2)}.bed-dots i.on{background:#c4b5fd}
+.bed-ctl{display:flex;justify-content:center;gap:14px;margin-top:6px}.bed-ctl button{background:rgba(255,255,255,.1);border:0;color:#fff;width:46px;height:40px;border-radius:14px;font-size:17px;cursor:pointer}
+.bed-x{position:absolute;right:14px;top:calc(14px + env(safe-area-inset-top));z-index:3;width:42px;height:42px;border-radius:50%;border:0;background:rgba(255,255,255,.12);color:#fff;font-size:18px;cursor:pointer}
+.bed-dim{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity 25s ease;display:flex;align-items:center;justify-content:center}.bed-dim.on{opacity:.86;pointer-events:auto}.bed-dim.on.peek{opacity:.55;transition:opacity 1s}
+.bed-sleep{color:#b9b0e8;text-align:center;font-size:28px;opacity:.55}.bed-sleep small{font-size:14px}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -1237,12 +1256,14 @@ const B3D = (() => {
     st.hy += ((locked ? 0 : look) - st.hy) * .08; st.hz += ((locked ? 0 : (cyc > 6 && cyc < 7.2 ? -14 : cyc > 2 && cyc < 3.4 ? 8 : 0)) - st.hz) * .08;
     const turn = locked ? 0 : (t % 17 < 6 ? 0 : t % 17 < 11 ? 22 : -10);
     st.yaw += (turn - st.yaw) * .03;
-    const blink = !locked && (t % 4.3 < .13);
-    const pose = { t, fly, glide, flap, oneLeg, locked, blink, hy: fly ? 0 : st.hy, hz: (fly ? 0 : st.hz) + Math.sin(t * 2.2) * 2, tail: Math.sin(t * 1.6) * 3, crest: Math.sin(t * 1.3) * 5 };
+    const sleepy = !!c.closest('.sleepy');
+    if (sleepy) { st.hy *= .95; st.yaw *= .97; st.sz = (st.sz || 0) + (-1 - (st.sz || 0)) * .02; } else st.sz = (st.sz || 0) * .9;
+    const blink = sleepy ? st.sz < -.6 || t % 3 < .5 : !locked && (t % 4.3 < .13);
+    const pose = { t, fly, glide, flap, oneLeg, locked, blink, hy: fly ? 0 : st.hy, hz: (fly ? 0 : st.hz) + (sleepy ? st.sz * 22 + Math.sin(t * .9) * 1.5 : Math.sin(t * 2.2) * 2), tail: Math.sin(t * (sleepy ? .5 : 1.6)) * 3, crest: sleepy ? st.sz * 25 : Math.sin(t * 1.3) * 5 };
     const parts = bird(b, pose);
     const W = Number(c.dataset.w), H = Number(c.dataset.h), np = c.dataset.np === '1';
     if (!np && !fly && b.shape !== 'flamingo') perch(56).forEach(p => { p.fixed = true; parts.push(p); });
-    const breathe = 1 + Math.sin(t * 2) * .012;
+    const breathe = 1 + Math.sin(t * (sleepy ? 1.1 : 2)) * (sleepy ? .03 : .012);
     const pit = fly ? -38 * D : 0;
     const by = 26;
     const pitch = { m: C(T(0, by, 0), RZ(pit), S(1, breathe, 1), T(0, -by, 0)) };
@@ -1896,7 +1917,7 @@ function eventRow(e, d) {
 }
 
 /* ===== Views ===== */
-const TITLES = { tank:'My fish tank', brush:'Brushing teeth', tasks:'Tasks', family:'The family', chat:'Family chat', votes:'Family votes', home:'', chores:'Chores', pet:'', calendar:'Calendar', more:'More', feel:'How am I feeling?', calm:'Calm down', collection:'My collection', rewards:'Rewards shop', badges:'Badges', lists:'Lists', list:'List', contacts:'Contacts', sunny:'Sunny', diary:'My diary', homework:'Homework', notices:'Noticeboard', meals:'Meals', challenges:'Sister challenges', todo:'Our to-do list', summary:'Weekly summary', settings:'Settings', kid:'' };
+const TITLES = { bedtime:'Bedtime story', tank:'My fish tank', brush:'Brushing teeth', tasks:'Tasks', family:'The family', chat:'Family chat', votes:'Family votes', home:'', chores:'Chores', pet:'', calendar:'Calendar', more:'More', feel:'How am I feeling?', calm:'Calm down', collection:'My collection', rewards:'Rewards shop', badges:'Badges', lists:'Lists', list:'List', contacts:'Contacts', sunny:'Sunny', diary:'My diary', homework:'Homework', notices:'Noticeboard', meals:'Meals', challenges:'Sister challenges', todo:'Our to-do list', summary:'Weekly summary', settings:'Settings', kid:'' };
 const V = {};
 
 V.home = () => isKid() ? kidHome() : parentHome();
@@ -2127,8 +2148,8 @@ V.pet = () => {
   const acts = d === 'fern'
     ? place ? [['explore','🗺️ Go somewhere else'],place.act,['flies','🪰 Catch bugs'],['friends','🦎 Invite friends'],['race','🏁 Race your cars'],['trick','⭐ Practise trick']]
     : [['mist','💦 Mist tank'],['fruit','🍑 Feed fruit'],['flies','🪰 Let flies in'],['climb','🌿 Climb branch'],...TANK_DECOR.filter(t => earned(me.id) >= t.at && TANK_FUN[t.name] && TANK_FUN[t.name][0]).map(t => ['go' + t.name, TANK_FUN[t.name][0]]),['hand','✋ Sit on my hand'],['explore','🗺️ Go exploring'],['friends','🦎 Invite friends'],['race','🏁 Race your cars'],['trick','⭐ Practise trick']]
-    : garden ? [['inside','🏠 Go back inside'],['worms','🪱 Worms'],['friends','🐦 Invite friends'],['adventure','🪽 Fly to the forest & beach'],['whistle','🎵 Whistle a tune'],['trick','⭐ Practise trick']]
-    : [['water','💧 Fresh water'],['worms','🪱 Worms'],[p.out ? 'cage' : 'out', p.out ? '🏠 Back in cage' : '🕊️ Let her out'],['garden','🌳 Out in the garden'],['friends','🐦 Invite friends'],['adventure','🪽 Big adventure'],...(earned(me.id) >= CAGE_DECOR.find(t => t.k === 'swing').at ? [['swing','🪢 Swing']] : []),['whistle','🎵 Whistle a tune'],['trick','⭐ Practise trick']];
+    : garden ? [['bedtime','🌙 Bedtime story'],['inside','🏠 Go back inside'],['worms','🪱 Worms'],['friends','🐦 Invite friends'],['adventure','🪽 Fly to the forest & beach'],['whistle','🎵 Whistle a tune'],['trick','⭐ Practise trick']]
+    : [['bedtime','🌙 Bedtime story'],['water','💧 Fresh water'],['worms','🪱 Worms'],[p.out ? 'cage' : 'out', p.out ? '🏠 Back in cage' : '🕊️ Let her out'],['garden','🌳 Out in the garden'],['friends','🐦 Invite friends'],['adventure','🪽 Big adventure'],...(earned(me.id) >= CAGE_DECOR.find(t => t.k === 'swing').at ? [['swing','🪢 Swing']] : []),['whistle','🎵 Whistle a tune'],['trick','⭐ Practise trick']];
   const hint = learned.length ? (show ? `Tap a trick around the edge to watch ${pet.name} do it.` : 'Trick buttons hidden.') : `Learn a trick and it will appear around the edge.`;
   let h = `<div class="pet-wrap"><div class="pet-main"><div class="pet-top"><div class="card" style="padding:12px 12px 10px"><div class="sec-h" style="margin-bottom:8px"><span class="chip c-${d === 'fern' ? 'green' : 'blue'}">${ic(d === 'fern' ? 'eco' : 'flutter_dash', 'fill')}</span><h3>${pet.name}</h3>${learned.length ? `<button class="btn sec small" data-act="toggleTricks">${ic(show ? 'visibility_off' : 'visibility')} ${show ? 'Hide tricks' : 'Show tricks'}</button>` : ''}</div>
     <div class="stage">${scene}${ring}</div><div class="pet-acts">${acts.map(([a2, t]) => `<button class="btn sec" data-act="pet" data-x="${a2}">${t}</button>`).join('')}</div></div></div></div><div class="pet-side"><div class="card"><div class="stage-hint" style="margin-top:0">${hint}<br>Tap ${pet.name} to say hi, stroke her for a cuddle, or tap anywhere to send her there.</div>
@@ -2516,6 +2537,7 @@ async function petAction(a) {
   if (a.startsWith('go') && TANK_FUN[a.slice(2)]) { if (!pumpkinVisit(a.slice(2))) toast('Pumpkin is busy, try again in a moment'); return; }
   if (a === 'friends') { openModal(design() === 'fern' ? repSheet() : friendSheet()); return; }
   if (a === 'explore') { openModal(exploreSheet()); return; }
+  if (a === 'bedtime') { openModal(bedSheet()); return; }
   if (a === 'race') { openModal(raceSheet()); return; }
   if (['bask', 'log', 'splash', 'treasure'].includes(a)) { placeFun(a); return; }
   if (a === 'adventure') { startAdventure(); return; }
@@ -2657,7 +2679,7 @@ V.more = () => {
   const row = (v, icon, col, name, sub = '') => `<button class="gi" data-act="go" data-v="${v}"><span class="chip c-${col}">${ic(icon, 'fill')}</span><div class="grow">${name}${sub ? `<div class="muted">${sub}</div>` : ''}</div>${ic('chevron_right', 'chev')}</button>`;
   if (isKid()) {
     const fern = design() === 'fern', rw = goalReward(me.id);
-    return `<div class="group-label">Me</div><div class="group">${row('tank', 'set_meal', 'teal', 'My fish tank', 'Tropical reef with 18 fish')}${row('collection', fern ? 'sports_motorsports' : 'flutter_dash', 'blue', fern ? 'My race cars' : 'My birds', `${unlockedCount(me.id, (fern ? CARS : BIRDS).length)} collected`)}<button class="gi" data-act="howItWorks"><span class="chip c-teal">${ic('record_voice_over', 'fill')}</span><div class="grow">How it works<div class="muted">Points, iPad time and rewards, read aloud</div></div>${ic('chevron_right', 'chev')}</button>${row('rewards', 'redeem', 'purple', 'Rewards shop', rw ? 'Saving for ' + esc(rw.data.name) : 'Spend your points')}${row('badges', 'military_tech', 'amber', 'My badges', `${earnedBadges(me.id).length} of ${badgesFor(me.id).length}`)}${row(fern ? 'calm' : 'feel', 'waves', 'teal', fern ? 'Calm down' : 'How am I feeling?')}${row('diary', 'auto_stories', 'pink', 'My diary', 'Only you can see it')}${row('homework', 'school', 'orange', 'Homework')}</div>
+    return `<div class="group-label">Me</div><div class="group">${design() === 'ginny' ? row('bedtime', 'bedtime', 'indigo', 'Bedtime story', 'Coco reads you a story') : ''}${row('tank', 'set_meal', 'teal', 'My fish tank', 'Tropical reef with 18 fish')}${row('collection', fern ? 'sports_motorsports' : 'flutter_dash', 'blue', fern ? 'My race cars' : 'My birds', `${unlockedCount(me.id, (fern ? CARS : BIRDS).length)} collected`)}<button class="gi" data-act="howItWorks"><span class="chip c-teal">${ic('record_voice_over', 'fill')}</span><div class="grow">How it works<div class="muted">Points, iPad time and rewards, read aloud</div></div>${ic('chevron_right', 'chev')}</button>${row('rewards', 'redeem', 'purple', 'Rewards shop', rw ? 'Saving for ' + esc(rw.data.name) : 'Spend your points')}${row('badges', 'military_tech', 'amber', 'My badges', `${earnedBadges(me.id).length} of ${badgesFor(me.id).length}`)}${row(fern ? 'calm' : 'feel', 'waves', 'teal', fern ? 'Calm down' : 'How am I feeling?')}${row('diary', 'auto_stories', 'pink', 'My diary', 'Only you can see it')}${row('homework', 'school', 'orange', 'Homework')}</div>
       <div class="group-label">Family</div><div class="group">${row('votes', 'how_to_vote', 'pink', 'Family votes', openVotesForMe() ? `<span class="pill warn">${openVotesForMe()} to vote on</span>` : 'Decide together')}${row('sunny', 'pets', 'amber', 'Sunny')}${row('challenges', 'handshake', 'green', 'Sister challenges')}${row('meals', 'restaurant', 'orange', 'Meals')}${row('lists', 'checklist', 'teal', 'Lists')}${row('notices', 'push_pin', 'red', 'Noticeboard')}${row('contacts', 'contacts', 'blue', 'Contacts')}</div>`;
   }
   const pr = K('redeem').filter(r => r.data.status === 'pending').length;
@@ -4566,6 +4588,7 @@ function reefItem() { return K('reef').find(x => x.owner === me.id); }
 async function reefSave(patch) { const r = reefItem(); if (r) await upd(r.id, patch, { silent: true }); else await add('reef', { cleanAt: new Date(Date.now() - 30 * 3600e3).toISOString(), fedAt: new Date(Date.now() - 6 * 3600e3).toISOString(), ...patch }, me.id, { silent: true }); }
 function reefAlgae() { const r = reefItem()?.data; const c = r?.cleanAt ? new Date(r.cleanAt) : new Date(Date.now() - 30 * 3600e3); const hrs = (Date.now() - c) / 3600e3 + (r?.waste || 0) * 2; return Math.max(0, Math.min(1, hrs / 96)); }
 function reefHungry() { const r = reefItem()?.data; const f = r?.fedAt ? new Date(r.fedAt) : new Date(Date.now() - 12 * 3600e3); return (Date.now() - f) / 3600e3; }
+V.bedtime = () => `<div class="card">${bedSheet()}</div>`;
 V.tank = () => `<div class="reef-wrap" id="reefWrap"><div class="reef-frame top"><span>🐠 ${esc(me.name)}'s reef tank</span></div><div class="reef-hud" id="reefHud"></div><div class="reef-msg" id="reefMsg"></div><div class="reef-card" id="reefCard"></div>
   <div class="reef-bar"><button class="reef-b" data-act="reefMode" data-x="feed">🍤<span>Feed</span></button><button class="reef-b" data-act="reefMode" data-x="clean">🧽<span>Clean glass</span></button><button class="reef-b" data-act="reefLights">💡<span>Lights</span></button><button class="reef-b" data-act="reefWho">🐟<span>Who's who</span></button></div></div>`;
 function stopReef() { if (reef) { cancelAnimationFrame(reef.raf); reef.raf = 0; } }
@@ -4742,6 +4765,226 @@ A.reefMode = el => {
 };
 A.reefLights = () => { if (!reef) return; reef.night = !reef.night; reefHud(); reefMsg(reef.night ? 'Night light 🌙 The corals glow in the dark!' : 'Good morning! ☀️'); };
 A.reefWho = () => openModal(`<div class="row"><div class="grow"><div class="eyebrow-dark">Your reef tank</div><h3 style="margin:2px 0 0">Who lives here?</h3></div><button class="iconbtn sm" data-act="close" aria-label="Close">${ic('close')}</button></div><ul class="list">${REEF_FISH.map(s => `<li><div class="grow"><b>${s.name}</b>${s.n > 1 ? ` <span class="pill">×${s.n}</span>` : ''}<div class="muted">${s.fact}</div></div></li>`).join('')}<li><div class="grow"><b>Turbo snails</b> <span class="pill">×5</span><div class="muted">Snails munch the green algae off the glass and rocks. They're the tank's cleaning crew!</div></div></li></ul><p class="muted">Tip: algae grows when there's lots of light and leftover food. Feed only what the fish eat in a couple of minutes, and wipe the glass about once a week.</p>`);
+/* ===== Bedtime with Coco: a story read aloud over calm music, then soft sleepy tweets ===== */
+const BED_STORIES = [
+  { t: 'Coco and the Sleepy Sea', e: '🌊', p: [
+    'Once upon a time, as the sun was going down, Coco flew to the beach with {n}. The sand was still warm, and the sky was turning pink and gold.',
+    'The last surfers were paddling in. Their boards glided slowly over the gentle waves, and they waved goodnight to the sea.',
+    'Coco settled on {n}\'s shoulder. "Shall we count the waves?" she whispered. One wave rolled in... and slid back out. Two waves rolled in... and slid back out.',
+    'Let\'s breathe like the waves. Breathe in slowly, as the wave comes up the sand... and breathe out softly, as it slides away again.',
+    'A little crab tiptoed home to its rock. A seagull tucked its head under its wing. Even the wind was getting sleepy, and it blew very softly now.',
+    'The sun dipped into the sea like a big orange ball going to bed. The first star blinked on, high above the water.',
+    '"That star is for you, {n}," said Coco. "It shines a little brighter for people who were kind today."',
+    'They walked home slowly along the sand, listening to the waves. Shhh... shhh... the sea said, as if it were singing a lullaby.',
+    'At home, Coco fluffed up her feathers until she was round like a little cloud. {n} snuggled down under a warm blanket.',
+    'And far away, the sleepy sea kept whispering, shhh... shhh... all through the night. Goodnight, {n}. Goodnight, Coco.'] },
+  { t: 'The Moonlight Cricket Match', e: '🏏', p: [
+    'One night, when the moon was big and round, Coco heard a soft tock... tock... coming from the field behind the house.',
+    'She flew to the fence to look. The owls were playing cricket! The moon was so bright, it was like having floodlights.',
+    'A wise old owl was batting, very slowly and very carefully. A robin was the wicket keeper, wearing tiny gloves made of leaves.',
+    '"Would {n} like to bowl?" asked the owl. So {n} took the ball, walked back slowly, took a deep breath... and bowled a gentle, perfect ball.',
+    'Tock! The owl tapped it softly along the grass, and everyone clapped their wings. "Lovely bowling," hooted the owl. "Lovely and calm."',
+    'They played until the moon was right over the top of the field. Then the robin yawned a big yawn, and the owl stretched out his wings.',
+    '"Time for stumps," said the owl. Everyone shook wings and said well played. Nobody minded who had won. It had just been a lovely game.',
+    'Coco and {n} walked home across the cool, damp grass. The stars were out, and somewhere a sleepy cow said moo.',
+    'In bed, {n} could still hear the soft tock, tock of the game in her head, slower and slower, like a clock ticking down to sleep.',
+    'Coco tucked her head under her wing. "Well played today, {n}," she whispered. "Goodnight."'] },
+  { t: 'Sunny\'s Starry Walk', e: '🐕', p: [
+    'After tea, Sunny the dog wagged her tail at the back door. "One last walk around the garden?" she asked. Coco hopped onto her back for a ride.',
+    'The garden was dark and quiet. The flowers had closed up their petals, like little hands folded for the night.',
+    'Tiny lights began to glow in the hedge. Fireflies! They floated up and down, slowly, like little lanterns drifting in the air.',
+    'Sunny sniffed the grass, sniff, sniff, very slowly. She found a smell of hedgehog, and a smell of rain, and a smell of cut grass.',
+    'Coco looked up. The sky was full of stars. "That one looks like a surfboard," said Coco. "And that one looks like a wave."',
+    'Let\'s be like Sunny, all calm and slow. Wiggle your toes, and then let them go still. Let your shoulders sink down, soft and heavy.',
+    'An owl hooted, hoo, hoo, from the big tree. "Goodnight, owl," said Sunny. "Goodnight, Sunny," said the owl.',
+    'They went back inside where it was warm. Sunny turned around three times and flopped into her bed with a big happy sigh.',
+    'Coco flew up to her perch and fluffed her feathers. The house was quiet. Only the clock ticked, and Sunny snored a tiny snore.',
+    'And {n}, cosy in bed, felt calm and safe and sleepy, just like Sunny and Coco. Goodnight, {n}.'] },
+  { t: 'The Little Cloud Who Needed a Nap', e: '☁️', p: [
+    'High up in the sky lived a little white cloud. All day long it had floated around, playing with the wind and making shapes.',
+    'It had been a rabbit, and a boat, and a cricket bat. But now the little cloud was very, very tired.',
+    '"Where can I rest?" it wondered. It floated over a busy town, but that was too noisy. It floated over a mountain, but that was too pointy.',
+    'Then it floated over a cosy house, where a girl called {n} was getting ready for bed. A cockatiel called Coco was whistling softly at the window.',
+    '"This looks like a lovely, peaceful place," said the little cloud. And it settled down right over the roof, soft as a pillow.',
+    'Coco looked up and saw it. "Hello, little cloud," she whispered. "You can rest here. We\'re all getting sleepy too."',
+    'The little cloud got softer and fluffier. Breathe in slowly, like a cloud getting bigger... and breathe out, like a cloud floating gently away.',
+    'The moon came out and gave the little cloud a silver edge. The stars twinkled around it, like a blanket of tiny lights.',
+    'Inside, {n} snuggled under her duvet, which felt as soft as a cloud. Coco tucked one foot up and closed her eyes.',
+    'And the little cloud slept over the house all night long, keeping everyone safe and dreamy. Goodnight, little cloud. Goodnight, {n}.'] },
+  { t: 'Coco\'s Feather Boat', e: '🪶', p: [
+    'One evening, a small grey feather floated down from Coco\'s wing. It landed on the stream at the bottom of the garden, and it began to sail away.',
+    '"My feather boat!" said Coco. "Let\'s follow it, {n}." So they walked along the bank, very slowly, watching it bob along.',
+    'The feather boat floated past a frog sitting on a lily pad. The frog gave a slow, sleepy croak, and closed his big round eyes.',
+    'It floated past a family of ducks, all tucked up together in the reeds. The baby ducks were already fast asleep.',
+    'It floated under a little stone bridge, where the water went plink, plonk, very softly in the dark.',
+    'Let\'s float like the feather. Let your arms go light and loose. Let your legs go light and loose. Just float, gently, gently.',
+    'The stream got wider and wider, until it reached the sea. The feather boat sailed out onto the calm water, under the moon.',
+    '"Goodbye, feather boat," said Coco. "Sail all the way to the land of dreams." The feather twinkled in the moonlight and floated away.',
+    'Coco and {n} walked home hand in wing. Coco said she would grow a new feather by morning, an even softer one.',
+    'And as {n} fell asleep, she imagined she was floating too, light as a feather, all the way to the land of dreams. Goodnight, {n}.'] },
+  { t: 'The Lighthouse Lullaby', e: '🗼', p: [
+    'On a rocky island at the edge of the sea stood a tall white lighthouse. Every night, its light turned slowly round and round.',
+    'Coco flew there one evening to visit her friend, the lighthouse keeper, a kind old lady with a woolly jumper and a big pot of cocoa.',
+    '"Every night I help the boats find their way home," said the keeper. "And every night the light sings them a lullaby."',
+    'The light swept out across the water... and then it swept back again. Out... and back. Out... and back. Slow and steady.',
+    'Let\'s breathe with the lighthouse. As the light goes out across the sea, breathe in. As it comes back home, breathe out.',
+    'Far away, a little fishing boat saw the light and turned towards the harbour. The fisherman smiled. He was nearly home.',
+    'A seal popped its head out of the water, blinked its big eyes at the light, and then slid down to sleep on a rock.',
+    'Coco sat on the windowsill and drank a tiny drop of warm cocoa from a thimble. It made her tummy warm and her eyes heavy.',
+    '"Time for bed, Coco," said the keeper. "Go home to {n}. The light will keep watch tonight." So Coco flew home under the stars.',
+    'And all night long, far away, the lighthouse light went round and round, keeping everyone safe while they slept. Goodnight, {n}.'] },
+  { t: 'Pumpkin\'s Warm Rock', e: '🦎', p: [
+    'Pumpkin the gecko had a favourite rock. It stayed warm long after the sun went down, and it was just big enough for two.',
+    'One evening, Coco flew over and landed next to him. "Can I share your warm rock, Pumpkin?" she asked. "Of course," said Pumpkin, and he shuffled over.',
+    '"Shall we play the good things game?" asked Pumpkin. "We each think of something good that happened today."',
+    'Coco thought for a moment. "I had a big juicy worm," she said. "And {n} whistled me my favourite tune."',
+    'Pumpkin smiled his gecko smile. "I caught a fly on my very first try. And Fearne gave me a little stroke on my head."',
+    'What good things happened to you today, {n}? Think of one small thing that made you smile. Hold it in your mind, like holding a warm stone.',
+    'The rock was warm, and the stars were coming out one by one. Pumpkin\'s eyes began to blink slowly. Coco\'s feathers fluffed up.',
+    '"Thank you for sharing your rock," said Coco. "Thank you for sharing your good things," said Pumpkin.',
+    'Then Coco flew home to her perch, and Pumpkin curled his tail around himself, warm and happy and ready for sleep.',
+    'And {n} went to sleep thinking of all her good things, one after another, like warm stones in a row. Goodnight, {n}.'] },
+  { t: 'The Night Garden Choir', e: '🎶', p: [
+    'Every night, just before dark, the birds in the garden sing one last song together. They call it the goodnight choir.',
+    'Tonight, Coco was the conductor. She stood on the bird table holding a tiny twig like a baton, and all the birds went quiet.',
+    'First the robin sang, a sweet, trickling song, like water running over stones. Then he tucked his head down and was quiet.',
+    'Then the blackbird sang, a slow, mellow song, low and golden. Then she tucked her head down and was quiet.',
+    'Then the little wren sang, very high and very fast, and then very slow... and then she yawned and was quiet.',
+    'Let\'s be quiet too. Listen to the sounds around you. Maybe the hum of the house, or the wind outside. Breathe in slowly, and breathe out slowly.',
+    'Last of all, Coco sang her own song, the one {n} taught her. She whistled it softly, softly, the quietest she had ever sung.',
+    'The whole garden listened. The flowers swayed. The moon came out from behind a cloud to hear the very last note.',
+    'Then everything was still. The birds were all asleep in the hedges and the trees, tucked up and cosy.',
+    'Coco flew in through the window, landed on her perch and closed her eyes. "Goodnight, choir," she whispered. "Goodnight, {n}."'] }
+];
+let bed = null;
+function bedSheet() {
+  const p = petItem()?.data || {}, next = (p.storyNext || 0) % BED_STORIES.length, mins = p.tweetMins ?? 10;
+  return `<div class="bed-pick"><div class="row"><div class="grow"><div class="eyebrow-dark">Bedtime with Coco</div><h3 style="margin:2px 0 0">🌙 Pick tonight's story</h3></div><button class="iconbtn sm" data-act="close" aria-label="Close">${ic('close')}</button></div>
+    <div class="bed-list">${BED_STORIES.map((s, i) => `<label class="bed-story ${i === next ? 'on' : ''}"><input type="radio" name="bedStory" value="${i}" ${i === next ? 'checked' : ''}><span class="be">${s.e}</span><b>${esc(s.t)}</b>${i === next ? '<em>Tonight</em>' : ''}</label>`).join('')}</div>
+    <label>After the story, Coco tweets softly for</label><div class="seg">${[0, 5, 10].map(m => `<label><input type="radio" name="bedMins" value="${m}" ${m === mins ? 'checked' : ''}><span>${m ? m + ' minutes' : 'No tweets'}</span></label>`).join('')}</div>
+    <button class="btn big mt" data-act="bedStart">🌙 Start the story</button><p class="muted" style="text-align:center">Turn the sound up, then snuggle down 💤</p></div>`;
+}
+A.bedtime = () => openModal(bedSheet());
+A.bedStart = () => {
+  const si = Number(document.querySelector('input[name=bedStory]:checked')?.value || 0), mins = Number(document.querySelector('input[name=bedMins]:checked')?.value ?? 10);
+  closeModal(); unlockAudio(); startBedtime(si, mins);
+};
+/* calm music made in the browser: soft chords, a music box and gentle waves, all through a little reverb */
+function bedMusic() {
+  const a = audio(); if (!a) return null;
+  const out = a.createGain(); out.gain.value = 0; out.connect(a.destination);
+  const rev = a.createConvolver(), len = a.sampleRate * 3.2, ir = a.createBuffer(2, len, a.sampleRate);
+  for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.6); }
+  rev.buffer = ir; const wet = a.createGain(); wet.gain.value = .55; rev.connect(wet); wet.connect(out);
+  const dry = a.createGain(); dry.gain.value = .6; dry.connect(out);
+  const lp = a.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1400; lp.connect(dry); lp.connect(rev);
+  const m = { a, out, lp, rev, timers: [], nodes: [], musicVol: 1, tweetVol: 0 };
+  const mtof = n => 440 * Math.pow(2, (n - 69) / 12);
+  const chords = [[48, 55, 64, 71], [45, 52, 60, 67], [41, 48, 57, 64], [43, 50, 59, 66]];
+  let ci = 0;
+  const pad = () => {
+    const t = a.currentTime, ch = chords[ci++ % chords.length];
+    ch.forEach((n, k) => [0, 4].forEach(det => { const o = a.createOscillator(), g = a.createGain(); o.type = k === 0 ? 'sine' : 'triangle'; o.frequency.value = mtof(n); o.detune.value = det - 2; g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.022 * m.musicVol, t + 3); g.gain.linearRampToValueAtTime(.018 * m.musicVol, t + 7); g.gain.linearRampToValueAtTime(0, t + 11); o.connect(g); g.connect(lp); o.start(t); o.stop(t + 11.2); }));
+  };
+  const penta = [72, 74, 76, 79, 81, 84, 86, 88];
+  const box = () => {
+    if (m.musicVol < .05) return; const t = a.currentTime, n = penta[Math.floor(Math.random() * penta.length)];
+    [1, 2.01].forEach((h, k) => { const o = a.createOscillator(), g = a.createGain(); o.type = 'sine'; o.frequency.value = mtof(n) * h; g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime((k ? .006 : .03) * m.musicVol, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + 2.6); o.connect(g); g.connect(rev); g.connect(dry); o.start(t); o.stop(t + 2.7); });
+  };
+  // waves: soft filtered noise that swells and fades
+  const nb = a.createBuffer(1, a.sampleRate * 4, a.sampleRate), nd = nb.getChannelData(0); let last = 0; for (let i = 0; i < nd.length; i++) { last = (last + .02 * (Math.random() * 2 - 1)) / 1.02; nd[i] = last * 3.5; }
+  const ns = a.createBufferSource(); ns.buffer = nb; ns.loop = true; const nf = a.createBiquadFilter(); nf.type = 'lowpass'; nf.frequency.value = 500; const ng = a.createGain(); ng.gain.value = 0; ns.connect(nf); nf.connect(ng); ng.connect(out); ns.start();
+  const swell = () => { const t = a.currentTime, v = .05 * m.waveVol; ng.gain.cancelScheduledValues(t); ng.gain.setValueAtTime(ng.gain.value, t); ng.gain.linearRampToValueAtTime(v, t + 3.5); ng.gain.linearRampToValueAtTime(v * .25, t + 8); };
+  m.waveVol = 1; m.nodes.push(ns);
+  pad(); swell(); m.timers.push(setInterval(pad, 8000), setInterval(swell, 8000));
+  const boxLoop = () => { box(); m.timers.push(setTimeout(boxLoop, 1100 + Math.random() * 1700)); }; m.timers.push(setTimeout(boxLoop, 1500));
+  out.gain.linearRampToValueAtTime(1, a.currentTime + 4);
+  m.stop = (fade = 2) => { const t = a.currentTime; out.gain.cancelScheduledValues(t); out.gain.setValueAtTime(out.gain.value, t); out.gain.linearRampToValueAtTime(0, t + fade); m.timers.forEach(x => { clearInterval(x); clearTimeout(x); }); setTimeout(() => { try { ns.stop(); out.disconnect(); } catch (e) {} }, fade * 1000 + 200); };
+  m.tweet = vol => {
+    const t0 = a.currentTime, kind = Math.random(), notes = kind < .35 ? [[2300, 2900, .22], [2500, 3000, .22]] : kind < .6 ? [[2600, 2200, .35]] : kind < .8 ? [[2000, 2600, .5], [2700, 2300, .4]] : [[2400, 3100, .14], [2500, 3100, .14], [2600, 3100, .14]];
+    let t = t0 + .05; notes.forEach(([f1, f2, d]) => { const o = a.createOscillator(), g = a.createGain(), f = a.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 3600; o.type = 'sine'; o.frequency.setValueAtTime(f1, t); o.frequency.exponentialRampToValueAtTime(f2, t + d * .6); o.frequency.exponentialRampToValueAtTime(f1 * .96, t + d); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.05 * vol, t + .04); g.gain.linearRampToValueAtTime(.035 * vol, t + d * .7); g.gain.linearRampToValueAtTime(0, t + d); o.connect(f); f.connect(g); g.connect(rev); g.connect(dry); o.start(t); o.stop(t + d + .05); t += d + .12 + Math.random() * .2; });
+  };
+  return m;
+}
+function bedVoice() { if (!('speechSynthesis' in window)) return null; const vs = speechSynthesis.getVoices(); return vs.find(x => /en-GB/i.test(x.lang) && /female|serena|kate|martha|stephanie|sonia|libby|daniel/i.test(x.name)) || vs.find(x => /en-GB/i.test(x.lang)) || vs.find(x => /^en/i.test(x.lang)); }
+function startBedtime(si, mins) {
+  stopBedtime(true);
+  const S = BED_STORIES[si], name = me.name, pages = S.p.map(x => x.replace(/\{n\}/g, name));
+  const stars = Array.from({ length: 70 }, () => `<i style="left:${(Math.random() * 100).toFixed(1)}%;top:${(Math.random() * 62).toFixed(1)}%;animation-delay:${(Math.random() * 4).toFixed(1)}s;transform:scale(${(.5 + Math.random()).toFixed(2)})"></i>`).join('');
+  const ov = document.createElement('div'); ov.className = 'bed';
+  ov.innerHTML = `<div class="bed-sky">${stars}<div class="bed-moon"></div><div class="bed-cloud c1"></div><div class="bed-cloud c2"></div></div>
+    <div class="bed-room"><div class="bed-lamp"></div><div class="bed-perch"></div><div class="bed-coco pet" id="bedCoco">${cocoSVG(150)}</div></div>
+    <div class="bed-book"><div class="bed-title">${S.e} ${esc(S.t)}</div><div class="bed-text" id="bedText"></div><div class="bed-dots">${pages.map((_, i) => `<i data-i="${i}"></i>`).join('')}</div>
+      <div class="bed-ctl"><button data-b="prev" aria-label="Back">⏮</button><button data-b="pause" aria-label="Pause">⏸</button><button data-b="next" aria-label="Next">⏭</button></div></div>
+    <div class="bed-dim" id="bedDim"><div class="bed-sleep" id="bedSleep"></div></div><button class="bed-x" aria-label="Stop">✕</button>`;
+  document.body.appendChild(ov);
+  const music = bedMusic(), voice = bedVoice();
+  bed = { ov, music, page: -1, paused: false, timers: [], mins, si, phase: 'story', wake: null };
+  try { navigator.wakeLock && navigator.wakeLock.request('screen').then(w => { if (bed) bed.wake = w; }).catch(() => {}); } catch (e) {}
+  const txt = ov.querySelector('#bedText');
+  const show = i => {
+    if (!bed || bed.ov !== ov) return; clearTimeout(bed.pageT);
+    if (i >= pages.length) return storyDone();
+    bed.page = Math.max(0, i);
+    txt.classList.remove('in'); setTimeout(() => { txt.textContent = pages[bed.page]; txt.classList.add('in'); }, 400);
+    ov.querySelectorAll('.bed-dots i').forEach((d, k) => d.classList.toggle('on', k <= bed.page));
+    if (bed.paused) return;
+    readPage(bed.page);
+  };
+  const readPage = i => {
+    const words = pages[i].split(/\s+/).length;
+    const next = () => { if (bed && bed.ov === ov && !bed.paused && bed.page === i) bed.pageT = setTimeout(() => show(i + 1), 1800); };
+    if (voice !== null && 'speechSynthesis' in window) {
+      try { speechSynthesis.cancel(); } catch (e) {}
+      const u = new SpeechSynthesisUtterance(pages[i]); u.lang = 'en-GB'; const v = bedVoice(); if (v) u.voice = v; u.rate = .82; u.pitch = 1.05; u.volume = 1;
+      let ended = false; u.onend = () => { if (!ended) { ended = true; next(); } }; u.onerror = () => { if (!ended) { ended = true; next(); } };
+      setTimeout(() => { if (bed && bed.ov === ov && bed.page === i && !bed.paused) speechSynthesis.speak(u); }, 600);
+      bed.pageT = setTimeout(() => { if (!ended && bed && bed.page === i && !speechSynthesis.speaking) { ended = true; next(); } }, 2500 + words * 520);
+    } else bed.pageT = setTimeout(() => show(i + 1), 2500 + words * 420);
+  };
+  const storyDone = () => {
+    if (!bed || bed.ov !== ov) return; bed.phase = 'sleep';
+    try { speechSynthesis.cancel(); } catch (e) {}
+    petSave({ storyNext: (si + 1) % BED_STORIES.length, tweetMins: mins, playAt: new Date().toISOString(), counts: bump('story') });
+    const coco = ov.querySelector('#bedCoco'); coco.classList.add('sleepy');
+    const end = `Goodnight, ${name}. Sweet dreams 🌙`;
+    txt.classList.remove('in'); setTimeout(() => { txt.textContent = mins ? `The end. Coco is snuggling down to sleep, and she'll tweet softly for ${mins} minutes. Close your eyes... 💤` : 'The end. ' + end; txt.classList.add('in'); }, 400);
+    if (voice !== null && 'speechSynthesis' in window) { setTimeout(() => { if (!bed || bed.ov !== ov) return; const u = new SpeechSynthesisUtterance(`The end. Goodnight, ${name}. Sweet dreams.`); u.lang = 'en-GB'; const v = bedVoice(); if (v) u.voice = v; u.rate = .78; u.pitch = 1.05; speechSynthesis.speak(u); }, 900); }
+    ov.querySelector('.bed-ctl').style.visibility = 'hidden';
+    const dim = ov.querySelector('#bedDim'), sl = ov.querySelector('#bedSleep');
+    setTimeout(() => { dim.classList.add('on'); }, 6000);
+    if (!mins) { bed.timers.push(setTimeout(() => { music && music.stop(20); sl.textContent = end; bed.timers.push(setTimeout(() => releaseWake(), 22000)); }, 12000)); return; }
+    // tweet phase: music gently fades down, tweets get softer and further apart
+    const total = mins * 60, t0 = Date.now();
+    if (music) { music.musicVol = .55; music.waveVol = .8; }
+    const tick = () => {
+      if (!bed || bed.ov !== ov) return;
+      const el = (Date.now() - t0) / 1000, f = Math.max(0, 1 - el / total), left = Math.max(0, Math.ceil((total - el) / 60));
+      sl.innerHTML = f > 0 ? `💤<br><small>${left} ${left === 1 ? 'minute' : 'minutes'} of sleepy tweets</small>` : `${end}`;
+      if (f <= 0) { music && music.stop(15); bed.timers.push(setTimeout(() => releaseWake(), 16000)); return; }
+      if (music) { music.musicVol = .55 * f + .05; music.waveVol = .3 + .5 * f; if (Math.random() < .8) { music.tweet(.35 + .65 * f); coco.classList.remove('a-nod'); void coco.offsetWidth; coco.classList.add('a-nod'); } }
+      bed.timers.push(setTimeout(tick, (4 + Math.random() * 5 + (1 - f) * 8) * 1000));
+    };
+    bed.timers.push(setTimeout(tick, 9000));
+  };
+  const releaseWake = () => { try { bed && bed.wake && bed.wake.release(); } catch (e) {} };
+  ov.querySelector('.bed-x').onclick = () => stopBedtime();
+  ov.querySelector('.bed-ctl').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b || !bed) return; const k = b.dataset.b;
+    try { speechSynthesis.cancel(); } catch (er) {} clearTimeout(bed.pageT);
+    if (k === 'pause') { bed.paused = !bed.paused; b.textContent = bed.paused ? '▶' : '⏸'; if (!bed.paused) readPage(bed.page); return; }
+    bed.paused = false; ov.querySelector('[data-b=pause]').textContent = '⏸';
+    show(k === 'next' ? bed.page + 1 : Math.max(0, bed.page - 1));
+  });
+  ov.querySelector('#bedDim').addEventListener('click', () => { const d = ov.querySelector('#bedDim'); d.classList.add('peek'); setTimeout(() => d.classList.remove('peek'), 4000); });
+  setTimeout(() => show(0), 2500);
+}
+function stopBedtime(quiet) {
+  if (!bed) return; const b = bed; bed = null;
+  try { speechSynthesis.cancel(); } catch (e) {} clearTimeout(b.pageT); b.timers.forEach(clearTimeout);
+  b.music && b.music.stop(1.2); try { b.wake && b.wake.release(); } catch (e) {}
+  b.ov.classList.add('out'); setTimeout(() => b.ov.remove(), 600);
+}
 const birdSound = b => (SND[BIRD_SND[b.name]] || SND.tweet)();
 const cocoSound = () => [SND.whistle, SND.chirrup, SND.tweet][Math.floor(Math.random() * 3)]();
 A.birdSing = el => { const b = BIRDS[Number(el.dataset.x)]; if (!b) return; birdSound(b); const w = el.querySelector('canvas, svg'); if (w) { w.classList.remove('a-hop'); void w.offsetWidth; w.classList.add('a-hop'); } toast(`${b.name}: ${{ hoot: 'Twit twoo!', coo: 'Coo coo!', knock: 'Rat-a-tat-tat!', squawk: 'SQUAWK!', honk: 'Honk honk!', croak: 'Croak!', screech: 'Screeee!' }[BIRD_SND[b.name]] || 'Tweet tweet!'}`); };
