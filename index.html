@@ -4910,8 +4910,21 @@ function startRecordStory(si) {
   const stopPlay = () => { if (rec.audio) { rec.audio.pause(); rec.audio = null; } };
   const startRec = async () => {
     stopPlay();
-    try { if (!rec.stream) rec.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }); }
-    catch (e) { tip.textContent = "The microphone isn't allowed. Ask Mum or Dad to turn it on in Settings."; return; }
+    try {
+      if (!rec.stream) {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw { name: 'NoMic' };
+        try { rec.stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+        catch (e1) { if (e1 && e1.name === 'NotAllowedError') throw e1; rec.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true } }); }
+      }
+    } catch (e) {
+      const n = (e && e.name) || 'Error';
+      tip.innerHTML = n === 'NotAllowedError' || n === 'SecurityError'
+        ? `The iPad said no to the microphone <small>(${n})</small>. Ask Mum or Dad to check <b>Settings → Screen Time → Content &amp; Privacy → Microphone</b> is set to <b>Allow Changes</b>, then close the app fully and try again.`
+        : n === 'NotFoundError' ? `No microphone was found <small>(${n})</small>.`
+        : n === 'NoMic' ? `Recording isn't available here <small>(${n})</small>. Try opening the app in Safari.`
+        : `The microphone didn't start <small>(${esc(n)})</small>. Close the app fully and try again.`;
+      return;
+    }
     const type = ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm'].find(t => window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t)) || '';
     try { rec.mr = new MediaRecorder(rec.stream, type ? { mimeType: type } : undefined); } catch (e) { tip.textContent = "Sorry, this device can't record."; return; }
     rec.chunks = []; const pg = rec.page;
