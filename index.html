@@ -528,6 +528,16 @@ body.fern .place-pick,body.fern .friend-pick,body.fern .race-pick{background:#1f
 .bed-x{position:absolute;right:14px;top:calc(14px + env(safe-area-inset-top));z-index:3;width:42px;height:42px;border-radius:50%;border:0;background:rgba(255,255,255,.12);color:#fff;font-size:18px;cursor:pointer}
 .bed-dim{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity 25s ease;display:flex;align-items:center;justify-content:center}.bed-dim.on{opacity:.86;pointer-events:auto}.bed-dim.on.peek{opacity:.55;transition:opacity 1s}
 .bed-sleep{color:#b9b0e8;text-align:center;font-size:28px;opacity:.55}.bed-sleep small{font-size:14px}
+
+.bed-own{display:flex;gap:8px;align-items:center;margin-top:10px;font-weight:700}.bed-story .vb{color:#be185d}
+.bed.rec{display:flex;flex-direction:column;align-items:center;padding:calc(14px + env(safe-area-inset-top)) 16px calc(18px + env(safe-area-inset-bottom))}
+.rec-top{width:100%;display:flex;align-items:center;gap:10px;justify-content:center;position:relative;min-height:44px}.rec-top span{opacity:.7;font-size:14px}.rec .bed-x{top:0}
+.rec-words{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;font-size:clamp(24px,4.4vw,40px);line-height:1.45;max-width:820px;padding:10px 8px;font-weight:600}
+.rec-dots{display:flex;gap:6px;margin:6px 0}.rec-dots i{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.2)}.rec-dots i.done{background:#4ade80}.rec-dots i.cur{outline:2px solid #fff;outline-offset:2px}
+.rec-meter{width:min(320px,80%);height:8px;border-radius:4px;background:rgba(255,255,255,.12);overflow:hidden;margin:6px 0}.rec-meter b{display:block;height:100%;width:0;background:#4ade80;transition:width .08s}
+.rec-tip{min-height:24px;opacity:.85;text-align:center;margin-bottom:10px}
+.rec-ctl{display:flex;gap:12px;align-items:center}.rec-ctl button{background:rgba(255,255,255,.12);border:0;color:#fff;min-width:52px;height:48px;border-radius:16px;font-size:16px;font-weight:800;cursor:pointer;padding:0 12px}.rec-ctl button:disabled{opacity:.3}
+.rec-ctl .rec-big{width:78px;height:78px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center}.rec-big span{width:52px;height:52px;border-radius:50%;background:#ef4444;transition:all .2s}.rec-big.on span{width:30px;height:30px;border-radius:8px;animation:recPulse 1s ease-in-out infinite alternate}@keyframes recPulse{to{box-shadow:0 0 0 10px rgba(239,68,68,.35)}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -2537,7 +2547,7 @@ async function petAction(a) {
   if (a.startsWith('go') && TANK_FUN[a.slice(2)]) { if (!pumpkinVisit(a.slice(2))) toast('Pumpkin is busy, try again in a moment'); return; }
   if (a === 'friends') { openModal(design() === 'fern' ? repSheet() : friendSheet()); return; }
   if (a === 'explore') { openModal(exploreSheet()); return; }
-  if (a === 'bedtime') { openModal(bedSheet()); return; }
+  if (a === 'bedtime') { A.bedtime(); return; }
   if (a === 'race') { openModal(raceSheet()); return; }
   if (['bask', 'log', 'splash', 'treasure'].includes(a)) { placeFun(a); return; }
   if (a === 'adventure') { startAdventure(); return; }
@@ -4862,12 +4872,82 @@ function bedSheet() {
   return `<div class="bed-pick"><div class="row"><div class="grow"><div class="eyebrow-dark">Bedtime with Coco</div><h3 style="margin:2px 0 0">🌙 Pick tonight's story</h3></div><button class="iconbtn sm" data-act="close" aria-label="Close">${ic('close')}</button></div>
     <div class="bed-list">${BED_STORIES.map((s, i) => `<label class="bed-story ${i === next ? 'on' : ''}"><input type="radio" name="bedStory" value="${i}" ${i === next ? 'checked' : ''}><span class="be">${s.e}</span><b>${esc(s.t)}</b>${i === next ? '<em>Tonight</em>' : ''}</label>`).join('')}</div>
     <label>After the story, Coco tweets softly for</label><div class="seg">${[0, 5, 10].map(m => `<label><input type="radio" name="bedMins" value="${m}" ${m === mins ? 'checked' : ''}><span>${m ? m + ' minutes' : 'No tweets'}</span></label>`).join('')}</div>
-    <button class="btn big mt" data-act="bedStart">🌙 Start the story</button><p class="muted" style="text-align:center">Turn the sound up, then snuggle down 💤</p></div>`;
+    <label class="bed-own"><input type="checkbox" id="bedOwn" checked> 🎙️ Play my own voice for stories I've recorded</label>
+    <button class="btn big mt" data-act="bedStart">🌙 Start the story</button>
+    <button class="btn sec mt" style="width:100%" data-act="bedRecord">🎙️ Record this story in my voice</button><p class="muted" style="text-align:center">Turn the sound up, then snuggle down 💤</p></div>`;
 }
-A.bedtime = () => openModal(bedSheet());
+/* recordings live on this iPad (not uploaded): one clip per page */
+const VoiceDB = (() => {
+  let dbp = null;
+  const open = () => dbp || (dbp = new Promise((res, rej) => { const r = indexedDB.open('family-voice', 1); r.onupgradeneeded = () => r.result.createObjectStore('clips'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }));
+  const run = async (mode, fn) => { const db = await open(); return new Promise((res, rej) => { const t = db.transaction('clips', mode), r = fn(t.objectStore('clips')); t.oncomplete = () => res(r ? r.result : undefined); t.onerror = () => rej(t.error); }); };
+  return { get: k => run('readonly', st => st.get(k)), put: (k, v) => run('readwrite', st => st.put(v, k)), del: k => run('readwrite', st => st.delete(k)), keys: () => run('readonly', st => st.getAllKeys()) };
+})();
+const voiceKey = (si, i) => `${me.id}:${si}:${i}`;
+const storyPages = si => [...BED_STORIES[si].p, 'The end. Goodnight, {n}. Sweet dreams.'].map(x => x.replace(/\{n\}/g, me.name));
+async function voiceCount() { try { const ks = await VoiceDB.keys(), c = {}; ks.forEach(k => { const [m, si] = String(k).split(':'); if (m === me.id) c[si] = (c[si] || 0) + 1; }); return c; } catch (e) { return {}; } }
+async function markVoiceBadges() { const c = await voiceCount(); document.querySelectorAll('.bed-story').forEach(el => { const si = el.querySelector('input').value, n = c[si] || 0, tot = storyPages(Number(si)).length; el.querySelector('.vb')?.remove(); if (n) el.insertAdjacentHTML('beforeend', `<em class="vb">🎙️ ${n >= tot ? 'Your voice' : `${n}/${tot} pages`}</em>`); }); }
+A.bedRecord = () => { const si = Number(document.querySelector('input[name=bedStory]:checked')?.value || 0); closeModal(); unlockAudio(); startRecordStory(si); };
+let rec = null;
+function startRecordStory(si) {
+  const S = BED_STORIES[si], pages = storyPages(si);
+  const ov = document.createElement('div'); ov.className = 'bed rec';
+  ov.innerHTML = `<div class="rec-top"><b>${S.e} ${esc(S.t)}</b><span id="recPg"></span><button class="bed-x" aria-label="Close">✕</button></div>
+    <div class="rec-words" id="recWords"></div>
+    <div class="rec-dots">${pages.map((_, i) => `<i data-i="${i}"></i>`).join('')}</div>
+    <div class="rec-meter"><b id="recLvl"></b></div><div class="rec-tip" id="recTip">Tap the red button and read the words out loud, nice and slowly 😊</div>
+    <div class="rec-ctl"><button data-r="prev" aria-label="Back page">◀</button><button data-r="play" aria-label="Listen">▶ Listen</button><button class="rec-big" data-r="rec" aria-label="Record"><span></span></button><button data-r="redo" aria-label="Delete this page">🗑</button><button data-r="next" aria-label="Next page">▶▶</button></div>`;
+  document.body.appendChild(ov);
+  rec = { ov, si, page: 0, have: new Set(), stream: null, mr: null, chunks: [], audio: null, raf: 0, an: null };
+  const words = ov.querySelector('#recWords'), tip = ov.querySelector('#recTip'), big = ov.querySelector('[data-r=rec]');
+  const paint = () => {
+    words.textContent = pages[rec.page]; ov.querySelector('#recPg').textContent = `Page ${rec.page + 1} of ${pages.length}`;
+    ov.querySelectorAll('.rec-dots i').forEach((d, k) => { d.classList.toggle('done', rec.have.has(k)); d.classList.toggle('cur', k === rec.page); });
+    ov.querySelector('[data-r=play]').disabled = !rec.have.has(rec.page); ov.querySelector('[data-r=redo]').disabled = !rec.have.has(rec.page);
+    if (!rec.mr) tip.textContent = rec.have.has(rec.page) ? 'Recorded ✓ Tap ▶ Listen to hear it, or ▶▶ for the next page' : 'Tap the red button and read the words out loud, nice and slowly 😊';
+  };
+  Promise.all(pages.map((_, i) => VoiceDB.get(voiceKey(si, i)).then(v => { if (v) rec.have.add(i); }).catch(() => {}))).then(() => { const first = pages.findIndex((_, i) => !rec.have.has(i)); rec.page = first < 0 ? 0 : first; paint(); });
+  const stopPlay = () => { if (rec.audio) { rec.audio.pause(); rec.audio = null; } };
+  const startRec = async () => {
+    stopPlay();
+    try { if (!rec.stream) rec.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }); }
+    catch (e) { tip.textContent = "The microphone isn't allowed. Ask Mum or Dad to turn it on in Settings."; return; }
+    const type = ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm'].find(t => window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t)) || '';
+    try { rec.mr = new MediaRecorder(rec.stream, type ? { mimeType: type } : undefined); } catch (e) { tip.textContent = "Sorry, this device can't record."; return; }
+    rec.chunks = []; const pg = rec.page;
+    rec.mr.ondataavailable = e => { if (e.data && e.data.size) rec.chunks.push(e.data); };
+    rec.mr.onstop = async () => {
+      const blob = new Blob(rec.chunks, { type: rec.mr.mimeType || type || 'audio/mp4' }); rec.mr = null; big.classList.remove('on'); cancelAnimationFrame(rec.raf); ov.querySelector('#recLvl').style.width = '0';
+      if (blob.size < 1500) { tip.textContent = "That was too short. Try again!"; paint(); return; }
+      await VoiceDB.put(voiceKey(si, pg), { buf: await blob.arrayBuffer(), type: blob.type });
+      rec.have.add(pg); paint();
+      if (rec.have.size === pages.length) { tip.textContent = `All done! 🎉 Tonight Coco will play your voice reading "${S.t}".`; celebrate && celebrate(); }
+      else if (pg === rec.page && pg < pages.length - 1) { tip.textContent = 'Lovely reading! ✓ Next page…'; setTimeout(() => { if (rec && rec.page === pg && !rec.mr) { rec.page++; paint(); } }, 1400); }
+    };
+    rec.mr.start(); big.classList.add('on'); tip.textContent = '🔴 Recording… tap the button again when you finish the page';
+    try { const a = audio(), src = a.createMediaStreamSource(rec.stream), an = a.createAnalyser(); an.fftSize = 512; src.connect(an); const d = new Uint8Array(an.fftSize); const lvl = ov.querySelector('#recLvl'); const loop = () => { if (!rec || !rec.mr) return; an.getByteTimeDomainData(d); let m = 0; for (const v of d) m = Math.max(m, Math.abs(v - 128)); lvl.style.width = Math.min(100, m * 1.6) + '%'; rec.raf = requestAnimationFrame(loop); }; loop(); } catch (e) {}
+    clearTimeout(rec.maxT); rec.maxT = setTimeout(() => { if (rec && rec.mr) rec.mr.stop(); }, 90000);
+  };
+  ov.querySelector('.rec-ctl').addEventListener('click', async e => {
+    const b = e.target.closest('button'); if (!b || !rec) return; const k = b.dataset.r;
+    if (k === 'rec') { if (rec.mr) rec.mr.stop(); else startRec(); return; }
+    if (rec.mr) return;
+    if (k === 'prev' || k === 'next') { stopPlay(); rec.page = Math.max(0, Math.min(pages.length - 1, rec.page + (k === 'next' ? 1 : -1))); paint(); }
+    if (k === 'play') { stopPlay(); const v = await VoiceDB.get(voiceKey(si, rec.page)); if (v) { rec.audio = new Audio(URL.createObjectURL(new Blob([v.buf], { type: v.type }))); rec.audio.play().catch(() => {}); } }
+    if (k === 'redo') { stopPlay(); await VoiceDB.del(voiceKey(si, rec.page)); rec.have.delete(rec.page); paint(); }
+  });
+  ov.querySelector('.bed-x').onclick = () => stopRecordStory();
+}
+function stopRecordStory() {
+  if (!rec) return; const r = rec; rec = null;
+  try { r.mr && r.mr.stop(); } catch (e) {} try { r.stream && r.stream.getTracks().forEach(t => t.stop()); } catch (e) {} if (r.audio) r.audio.pause();
+  r.ov.classList.add('out'); setTimeout(() => r.ov.remove(), 600); openModal(bedSheet()); setTimeout(markVoiceBadges, 50);
+}
+A.bedtime = () => { openModal(bedSheet()); setTimeout(markVoiceBadges, 50); };
 A.bedStart = () => {
   const si = Number(document.querySelector('input[name=bedStory]:checked')?.value || 0), mins = Number(document.querySelector('input[name=bedMins]:checked')?.value ?? 10);
-  closeModal(); unlockAudio(); startBedtime(si, mins);
+  const own = document.querySelector('#bedOwn')?.checked !== false;
+  closeModal(); unlockAudio(); startBedtime(si, mins, own);
 };
 /* calm music made in the browser: soft chords, a music box and gentle waves, all through a little reverb */
 function bedMusic() {
@@ -4907,8 +4987,9 @@ function bedMusic() {
   return m;
 }
 function bedVoice() { if (!('speechSynthesis' in window)) return null; const vs = speechSynthesis.getVoices(); return vs.find(x => /en-GB/i.test(x.lang) && /female|serena|kate|martha|stephanie|sonia|libby|daniel/i.test(x.name)) || vs.find(x => /en-GB/i.test(x.lang)) || vs.find(x => /^en/i.test(x.lang)); }
-function startBedtime(si, mins) {
+async function startBedtime(si, mins, own = true) {
   stopBedtime(true);
+  const clips = own ? await Promise.all(storyPages(si).map((_, i) => VoiceDB.get(voiceKey(si, i)).catch(() => null))) : [];
   const S = BED_STORIES[si], name = me.name, pages = S.p.map(x => x.replace(/\{n\}/g, name));
   const stars = Array.from({ length: 70 }, () => `<i style="left:${(Math.random() * 100).toFixed(1)}%;top:${(Math.random() * 62).toFixed(1)}%;animation-delay:${(Math.random() * 4).toFixed(1)}s;transform:scale(${(.5 + Math.random()).toFixed(2)})"></i>`).join('');
   const ov = document.createElement('div'); ov.className = 'bed';
@@ -4919,7 +5000,8 @@ function startBedtime(si, mins) {
     <div class="bed-dim" id="bedDim"><div class="bed-sleep" id="bedSleep"></div></div><button class="bed-x" aria-label="Stop">✕</button>`;
   document.body.appendChild(ov);
   const music = bedMusic(), voice = bedVoice();
-  bed = { ov, music, page: -1, paused: false, timers: [], mins, si, phase: 'story', wake: null };
+  bed = { ov, music, page: -1, paused: false, timers: [], mins, si, phase: 'story', wake: null, clips, audio: null };
+  const playClip = (v, done) => { try { const au = new Audio(URL.createObjectURL(new Blob([v.buf], { type: v.type }))); au.setAttribute('playsinline', ''); bed.audio = au; let fin = false; const f = () => { if (!fin) { fin = true; done(); } }; au.onended = f; au.onerror = f; au.play().catch(f); } catch (e) { done(); } };
   try { navigator.wakeLock && navigator.wakeLock.request('screen').then(w => { if (bed) bed.wake = w; }).catch(() => {}); } catch (e) {}
   const txt = ov.querySelector('#bedText');
   const show = i => {
@@ -4934,6 +5016,7 @@ function startBedtime(si, mins) {
   const readPage = i => {
     const words = pages[i].split(/\s+/).length;
     const next = () => { if (bed && bed.ov === ov && !bed.paused && bed.page === i) bed.pageT = setTimeout(() => show(i + 1), 1800); };
+    if (bed.clips[i]) { if (bed.audio && bed.audio._page === i && bed.audio.paused && bed.audio.currentTime > 0) { bed.audio.play().catch(() => next()); return; } bed.pageT = setTimeout(() => { if (bed && bed.ov === ov && bed.page === i && !bed.paused) { playClip(bed.clips[i], next); bed.audio._page = i; } }, 600); return; }
     if (voice !== null && 'speechSynthesis' in window) {
       try { speechSynthesis.cancel(); } catch (e) {}
       const u = new SpeechSynthesisUtterance(pages[i]); u.lang = 'en-GB'; const v = bedVoice(); if (v) u.voice = v; u.rate = .82; u.pitch = 1.05; u.volume = 1;
@@ -4949,7 +5032,9 @@ function startBedtime(si, mins) {
     const coco = ov.querySelector('#bedCoco'); coco.classList.add('sleepy');
     const end = `Goodnight, ${name}. Sweet dreams 🌙`;
     txt.classList.remove('in'); setTimeout(() => { txt.textContent = mins ? `The end. Coco is snuggling down to sleep, and she'll tweet softly for ${mins} minutes. Close your eyes... 💤` : 'The end. ' + end; txt.classList.add('in'); }, 400);
-    if (voice !== null && 'speechSynthesis' in window) { setTimeout(() => { if (!bed || bed.ov !== ov) return; const u = new SpeechSynthesisUtterance(`The end. Goodnight, ${name}. Sweet dreams.`); u.lang = 'en-GB'; const v = bedVoice(); if (v) u.voice = v; u.rate = .78; u.pitch = 1.05; speechSynthesis.speak(u); }, 900); }
+    const endClip = bed.clips[pages.length];
+    if (endClip) setTimeout(() => { if (bed && bed.ov === ov) playClip(endClip, () => {}); }, 900);
+    else if (voice !== null && 'speechSynthesis' in window) { setTimeout(() => { if (!bed || bed.ov !== ov) return; const u = new SpeechSynthesisUtterance(`The end. Goodnight, ${name}. Sweet dreams.`); u.lang = 'en-GB'; const v = bedVoice(); if (v) u.voice = v; u.rate = .78; u.pitch = 1.05; speechSynthesis.speak(u); }, 900); }
     ov.querySelector('.bed-ctl').style.visibility = 'hidden';
     const dim = ov.querySelector('#bedDim'), sl = ov.querySelector('#bedSleep');
     setTimeout(() => { dim.classList.add('on'); }, 6000);
@@ -4972,7 +5057,8 @@ function startBedtime(si, mins) {
   ov.querySelector('.bed-ctl').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b || !bed) return; const k = b.dataset.b;
     try { speechSynthesis.cancel(); } catch (er) {} clearTimeout(bed.pageT);
-    if (k === 'pause') { bed.paused = !bed.paused; b.textContent = bed.paused ? '▶' : '⏸'; if (!bed.paused) readPage(bed.page); return; }
+    if (k === 'pause') { bed.paused = !bed.paused; b.textContent = bed.paused ? '▶' : '⏸'; if (bed.paused) { if (bed.audio) bed.audio.pause(); } else readPage(bed.page); return; }
+    if (bed.audio) { bed.audio.pause(); bed.audio = null; }
     bed.paused = false; ov.querySelector('[data-b=pause]').textContent = '⏸';
     show(k === 'next' ? bed.page + 1 : Math.max(0, bed.page - 1));
   });
@@ -4981,7 +5067,7 @@ function startBedtime(si, mins) {
 }
 function stopBedtime(quiet) {
   if (!bed) return; const b = bed; bed = null;
-  try { speechSynthesis.cancel(); } catch (e) {} clearTimeout(b.pageT); b.timers.forEach(clearTimeout);
+  try { speechSynthesis.cancel(); } catch (e) {} clearTimeout(b.pageT); b.timers.forEach(clearTimeout); if (b.audio) b.audio.pause();
   b.music && b.music.stop(1.2); try { b.wake && b.wake.release(); } catch (e) {}
   b.ov.classList.add('out'); setTimeout(() => b.ov.remove(), 600);
 }
