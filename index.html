@@ -1870,9 +1870,12 @@ async function petSave(patch) { const p = petItem(); if (p) await upd(p.id, patc
 let ac = null;
 let silentEl = null;
 function silentWavUrl() { const n = 4410, b = new ArrayBuffer(44 + n * 2), v = new DataView(b), w = (o, t) => [...t].forEach((c, i) => v.setUint8(o + i, c.charCodeAt(0))); w(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); w(8, 'WAVE'); w(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, 44100, true); v.setUint32(28, 88200, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, 'data'); v.setUint32(40, n * 2, true); return URL.createObjectURL(new Blob([b], { type: 'audio/wav' })); }
+let micMode = false;
+function setAudioSession(t) { try { if (navigator.audioSession && navigator.audioSession.type !== t) navigator.audioSession.type = t; } catch (e) {} }
 function audio() {
-  // iPhones and iPads mute web sounds on silent unless the page asks for normal playback
-  try { if (navigator.audioSession && navigator.audioSession.type !== 'playback') navigator.audioSession.type = 'playback'; } catch (e) {}
+  // iPhones and iPads mute web sounds on silent unless the page asks for normal playback.
+  // While recording, the iPad needs "play-and-record" or the microphone refuses to start.
+  setAudioSession(micMode ? 'play-and-record' : 'playback');
   if (!ac) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
   if (ac && ac.state !== 'running') { try { ac.resume(); } catch (e) {} }
   return ac;
@@ -4913,8 +4916,16 @@ function startRecordStory(si) {
     try {
       if (!rec.stream) {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw { name: 'NoMic' };
+        micMode = true; setAudioSession('play-and-record');
+        try { if (silentEl) silentEl.pause(); } catch (e) {}
         try { rec.stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
-        catch (e1) { if (e1 && e1.name === 'NotAllowedError') throw e1; rec.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true } }); }
+        catch (e1) {
+          if (e1 && e1.name === 'NotAllowedError') throw e1;
+          setAudioSession('auto'); try { if (ac && ac.state === 'running') await ac.suspend(); } catch (e) {}
+          await new Promise(r => setTimeout(r, 300));
+          rec.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          setAudioSession('play-and-record'); try { if (ac) await ac.resume(); } catch (e) {}
+        }
       }
     } catch (e) {
       const n = (e && e.name) || 'Error';
@@ -4954,6 +4965,7 @@ function startRecordStory(si) {
 function stopRecordStory() {
   if (!rec) return; const r = rec; rec = null;
   try { r.mr && r.mr.stop(); } catch (e) {} try { r.stream && r.stream.getTracks().forEach(t => t.stop()); } catch (e) {} if (r.audio) r.audio.pause();
+  micMode = false; setTimeout(() => audio(), 400);
   r.ov.classList.add('out'); setTimeout(() => r.ov.remove(), 600); openModal(bedSheet()); setTimeout(markVoiceBadges, 50);
 }
 A.bedtime = () => { openModal(bedSheet()); setTimeout(markVoiceBadges, 50); };
