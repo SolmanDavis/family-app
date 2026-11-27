@@ -557,6 +557,15 @@ body.fern .place-pick,body.fern .friend-pick,body.fern .race-pick{background:#1f
 
 .nest.away .chick{display:none}.scene .chickpal{z-index:3}
 .bed-chick{position:absolute;bottom:2px;width:64px}.bed-chick.c0{left:-52px}.bed-chick.c1{right:-52px}
+
+.games-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-top:10px}
+.game-pick{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:12px;border-radius:16px;border:2px solid transparent;background:var(--soft,#f1f5f9);font:inherit;text-align:left;cursor:pointer;color:inherit}.game-pick .ge{font-size:36px}.game-pick small{opacity:.75}.game-pick em{font-style:normal;font-weight:800;color:#b45309;font-size:12px}.game-pick:hover{border-color:#f59e0b}
+body.fern .game-pick{background:#1f1f1f;color:#eee}
+.game{position:fixed;inset:0;z-index:9000;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;background:#6ec6f0}.game canvas{position:absolute;inset:0}
+.game-layer{position:absolute;inset:0;pointer-events:none}.game-pet{position:absolute;left:0;top:0;will-change:transform}
+.game-hud{position:absolute;left:14px;top:calc(12px + env(safe-area-inset-top));display:flex;gap:8px;z-index:2}.game-hud span{background:rgba(255,255,255,.9);border-radius:16px;padding:6px 12px;font-weight:900;font-size:18px;box-shadow:0 4px 12px rgba(0,0,0,.18)}
+.game-float{position:absolute;z-index:3;transform:translate(-50%,-50%);font-weight:900;font-size:24px;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.4);pointer-events:none;animation:reefPop .9s ease-out forwards}
+.game .adv-end.game-start{background:rgba(0,40,80,.35)}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -2001,7 +2010,7 @@ function eventRow(e, d) {
 }
 
 /* ===== Views ===== */
-const TITLES = { bedtime:'Bedtime story', tank:'My fish tank', brush:'Brushing teeth', tasks:'Tasks', family:'The family', chat:'Family chat', votes:'Family votes', home:'', chores:'Chores', pet:'', calendar:'Calendar', more:'More', feel:'How am I feeling?', calm:'Calm down', collection:'My collection', rewards:'Rewards shop', badges:'Badges', lists:'Lists', list:'List', contacts:'Contacts', sunny:'Sunny', diary:'My diary', homework:'Homework', notices:'Noticeboard', meals:'Meals', challenges:'Sister challenges', todo:'Our to-do list', summary:'Weekly summary', settings:'Settings', kid:'' };
+const TITLES = { games:'Games', bedtime:'Bedtime story', tank:'My fish tank', brush:'Brushing teeth', tasks:'Tasks', family:'The family', chat:'Family chat', votes:'Family votes', home:'', chores:'Chores', pet:'', calendar:'Calendar', more:'More', feel:'How am I feeling?', calm:'Calm down', collection:'My collection', rewards:'Rewards shop', badges:'Badges', lists:'Lists', list:'List', contacts:'Contacts', sunny:'Sunny', diary:'My diary', homework:'Homework', notices:'Noticeboard', meals:'Meals', challenges:'Sister challenges', todo:'Our to-do list', summary:'Weekly summary', settings:'Settings', kid:'' };
 const V = {};
 
 V.home = () => isKid() ? kidHome() : parentHome();
@@ -2230,10 +2239,10 @@ V.pet = () => {
   const scene = d === 'fern' ? place ? placeScene(p.where) : tankScene(TANK_DECOR.filter(t => earned(me.id) >= t.at).map(t => t.name)) : garden ? gardenScene() : cageScene(CAGE_DECOR.filter(t => earned(me.id) >= t.at).map(t => t.k));
   const ring = show ? learned.map((t, i) => { const [x, y] = ringPos(i, learned.length); return `<button class="trick-btn" style="left:${x}%;top:${y}%;animation-delay:${i * 40}ms" data-act="showTrick" data-x="${esc(t)}" aria-label="${esc(t)}" title="${esc(t)}">${trickInfo(t)[1]}</button>`; }).join('') : '';
   const acts = d === 'fern'
-    ? place ? [['explore','🗺️ Go somewhere else'],place.act,['flies','🪰 Catch bugs'],['friends','🦎 Invite friends'],['race','🏁 Race your cars'],['trick','⭐ Practise trick']]
-    : [['mist','💦 Mist tank'],['fruit','🍑 Feed fruit'],['flies','🪰 Let flies in'],['climb','🌿 Climb branch'],...TANK_DECOR.filter(t => earned(me.id) >= t.at && TANK_FUN[t.name] && TANK_FUN[t.name][0]).map(t => ['go' + t.name, TANK_FUN[t.name][0]]),['hand','✋ Sit on my hand'],['explore','🗺️ Go exploring'],['friends','🦎 Invite friends'],['race','🏁 Race your cars'],['trick','⭐ Practise trick']]
-    : garden ? [['bedtime','🌙 Bedtime story'],['inside','🏠 Go back inside'],['worms','🪱 Worms'],['friends','🐦 Invite friends'],['adventure','🪽 Fly to the forest & beach'],['whistle','🎵 Whistle a tune'],['trick','⭐ Practise trick']]
-    : [...(p.babies ? [['chicks','🍼 Feed the chicks']] : []),['bedtime','🌙 Bedtime story'],['water','💧 Fresh water'],['worms','🪱 Worms'],[p.out ? 'cage' : 'out', p.out ? '🏠 Back in cage' : '🕊️ Let her out'],['garden','🌳 Out in the garden'],['friends','🐦 Invite friends'],['adventure','🪽 Big adventure'],...(earned(me.id) >= CAGE_DECOR.find(t => t.k === 'swing').at ? [['swing','🪢 Swing']] : []),['whistle','🎵 Whistle a tune'],['trick','⭐ Practise trick']];
+    ? place ? [['games','🎮 Games'],['explore','🗺️ Go somewhere else'],place.act,['flies','🪰 Catch bugs'],['friends','🦎 Invite friends'],['race','🏁 Race your cars'],['trick','⭐ Practise trick']]
+    : [['games','🎮 Games'],['mist','💦 Mist tank'],['fruit','🍑 Feed fruit'],['flies','🪰 Let flies in'],['climb','🌿 Climb branch'],...TANK_DECOR.filter(t => earned(me.id) >= t.at && TANK_FUN[t.name] && TANK_FUN[t.name][0]).map(t => ['go' + t.name, TANK_FUN[t.name][0]]),['hand','✋ Sit on my hand'],['explore','🗺️ Go exploring'],['friends','🦎 Invite friends'],['race','🏁 Race your cars'],['trick','⭐ Practise trick']]
+    : garden ? [['games','🎮 Games'],['bedtime','🌙 Bedtime story'],['inside','🏠 Go back inside'],['worms','🪱 Worms'],['friends','🐦 Invite friends'],['adventure','🪽 Fly to the forest & beach'],['whistle','🎵 Whistle a tune'],['trick','⭐ Practise trick']]
+    : [...(p.babies ? [['chicks','🍼 Feed the chicks']] : []),['games','🎮 Games'],['bedtime','🌙 Bedtime story'],['water','💧 Fresh water'],['worms','🪱 Worms'],[p.out ? 'cage' : 'out', p.out ? '🏠 Back in cage' : '🕊️ Let her out'],['garden','🌳 Out in the garden'],['friends','🐦 Invite friends'],['adventure','🪽 Big adventure'],...(earned(me.id) >= CAGE_DECOR.find(t => t.k === 'swing').at ? [['swing','🪢 Swing']] : []),['whistle','🎵 Whistle a tune'],['trick','⭐ Practise trick']];
   const hint = learned.length ? (show ? `Tap a trick around the edge to watch ${pet.name} do it.` : 'Trick buttons hidden.') : `Learn a trick and it will appear around the edge.`;
   let h = `<div class="pet-wrap"><div class="pet-main"><div class="pet-top"><div class="card" style="padding:12px 12px 10px"><div class="sec-h" style="margin-bottom:8px"><span class="chip c-${d === 'fern' ? 'green' : 'blue'}">${ic(d === 'fern' ? 'eco' : 'flutter_dash', 'fill')}</span><h3>${pet.name}</h3>${learned.length ? `<button class="btn sec small" data-act="toggleTricks">${ic(show ? 'visibility_off' : 'visibility')} ${show ? 'Hide tricks' : 'Show tricks'}</button>` : ''}</div>
     <div class="stage">${scene}${ring}</div><div class="pet-acts">${acts.map(([a2, t]) => `<button class="btn sec" data-act="pet" data-x="${a2}">${t}</button>`).join('')}</div></div></div></div><div class="pet-side"><div class="card"><div class="stage-hint" style="margin-top:0">${hint}<br>Tap ${pet.name} to say hi, stroke her for a cuddle, or tap anywhere to send her there.</div>
@@ -2626,6 +2635,7 @@ async function petAction(a) {
   if (a === 'friends') { openModal(design() === 'fern' ? repSheet() : friendSheet()); return; }
   if (a === 'explore') { openModal(exploreSheet()); return; }
   if (a === 'bedtime') { A.bedtime(); return; }
+  if (a === 'games') { A.games(); return; }
   if (a === 'chicks') { if (p.out) return toast('The chicks are in the cage. Put Coco back in first!'); feedChicks(); return; }
   if (a === 'race') { openModal(raceSheet()); return; }
   if (['bask', 'log', 'splash', 'treasure'].includes(a)) { placeFun(a); return; }
@@ -2768,7 +2778,7 @@ V.more = () => {
   const row = (v, icon, col, name, sub = '') => `<button class="gi" data-act="go" data-v="${v}"><span class="chip c-${col}">${ic(icon, 'fill')}</span><div class="grow">${name}${sub ? `<div class="muted">${sub}</div>` : ''}</div>${ic('chevron_right', 'chev')}</button>`;
   if (isKid()) {
     const fern = design() === 'fern', rw = goalReward(me.id);
-    return `<div class="group-label">Me</div><div class="group">${design() === 'ginny' ? row('bedtime', 'bedtime', 'indigo', 'Bedtime story', 'Coco reads you a story') : ''}${row('tank', 'set_meal', 'teal', 'My fish tank', 'Tropical reef with 18 fish')}${row('collection', fern ? 'sports_motorsports' : 'flutter_dash', 'blue', fern ? 'My race cars' : 'My birds', `${unlockedCount(me.id, (fern ? CARS : BIRDS).length)} collected`)}<button class="gi" data-act="howItWorks"><span class="chip c-teal">${ic('record_voice_over', 'fill')}</span><div class="grow">How it works<div class="muted">Points, iPad time and rewards, read aloud</div></div>${ic('chevron_right', 'chev')}</button>${row('rewards', 'redeem', 'purple', 'Rewards shop', rw ? 'Saving for ' + esc(rw.data.name) : 'Spend your points')}${row('badges', 'military_tech', 'amber', 'My badges', `${earnedBadges(me.id).length} of ${badgesFor(me.id).length}`)}${row(fern ? 'calm' : 'feel', 'waves', 'teal', fern ? 'Calm down' : 'How am I feeling?')}${row('diary', 'auto_stories', 'pink', 'My diary', 'Only you can see it')}${row('homework', 'school', 'orange', 'Homework')}</div>
+    return `<div class="group-label">Me</div><div class="group">${row('games', 'sports_esports', 'orange', 'Games', 'Surfing, treat catch and bubble pop')}${design() === 'ginny' ? row('bedtime', 'bedtime', 'indigo', 'Bedtime story', 'Coco reads you a story') : ''}${row('tank', 'set_meal', 'teal', 'My fish tank', 'Tropical reef with 18 fish')}${row('collection', fern ? 'sports_motorsports' : 'flutter_dash', 'blue', fern ? 'My race cars' : 'My birds', `${unlockedCount(me.id, (fern ? CARS : BIRDS).length)} collected`)}<button class="gi" data-act="howItWorks"><span class="chip c-teal">${ic('record_voice_over', 'fill')}</span><div class="grow">How it works<div class="muted">Points, iPad time and rewards, read aloud</div></div>${ic('chevron_right', 'chev')}</button>${row('rewards', 'redeem', 'purple', 'Rewards shop', rw ? 'Saving for ' + esc(rw.data.name) : 'Spend your points')}${row('badges', 'military_tech', 'amber', 'My badges', `${earnedBadges(me.id).length} of ${badgesFor(me.id).length}`)}${row(fern ? 'calm' : 'feel', 'waves', 'teal', fern ? 'Calm down' : 'How am I feeling?')}${row('diary', 'auto_stories', 'pink', 'My diary', 'Only you can see it')}${row('homework', 'school', 'orange', 'Homework')}</div>
       <div class="group-label">Family</div><div class="group">${row('votes', 'how_to_vote', 'pink', 'Family votes', openVotesForMe() ? `<span class="pill warn">${openVotesForMe()} to vote on</span>` : 'Decide together')}${row('sunny', 'pets', 'amber', 'Sunny')}${row('challenges', 'handshake', 'green', 'Sister challenges')}${row('meals', 'restaurant', 'orange', 'Meals')}${row('lists', 'checklist', 'teal', 'Lists')}${row('notices', 'push_pin', 'red', 'Noticeboard')}${row('contacts', 'contacts', 'blue', 'Contacts')}</div>`;
   }
   const pr = K('redeem').filter(r => r.data.status === 'pending').length;
@@ -5367,6 +5377,207 @@ function chicksFollow(pts, delay = 300) {
   chickEls().forEach((g, i) => setTimeout(() => { const o = chickO(g); flyTour(g, pts.map(([x, y, l, d], j) => [x + (j === pts.length - 1 ? (i ? 45 : -45) : (i ? 18 : -18)), y + 12 + i * 6, l, d]), o); }, delay * (i + 1)));
 }
 function chicksHop(cls = 'a-hop', ms = 1200) { chickEls().forEach((g, i) => setTimeout(() => { g.classList.remove(cls); void g.offsetWidth; g.classList.add(cls); setTimeout(() => g.classList.remove(cls), ms); chickCheep(2); }, i * 150)); }
+/* ===== Mini games: surfing, catch the treats, bubble pop ===== */
+let gm = null;
+const GAMES = [
+  { k: 'surf', e: '🏄', t: 'Surf\'s up!', d: 'Ride the waves, jump the rocks and grab the shells. Tap to jump, tap again in the air to spin!' },
+  { k: 'catch', e: '🧺', t: 'Treat catch', d: 'Slide left and right to catch the falling treats. Watch out for the rocks!' },
+  { k: 'pop', e: '🫧', t: 'Bubble pop', d: 'Pop the bubbles as they float up. Puffer fish bubbles pop everything near them!' }
+];
+function gameBest(k) { return petItem()?.data.best?.[k] || 0; }
+function gamesSheet() {
+  const g = design() === 'ginny';
+  return `<div class="row"><div class="grow"><div class="eyebrow-dark">Games</div><h3 style="margin:2px 0 0">🎮 Let's play!</h3></div><button class="iconbtn sm" data-act="close" aria-label="Close">${ic('close')}</button></div>
+    <div class="games-grid">${GAMES.map(x => `<button class="game-pick" data-act="gameGo" data-x="${x.k}"><span class="ge">${x.e}</span><b>${x.t}</b><small>${x.d}</small>${gameBest(x.k) ? `<em>🏆 Best ${gameBest(x.k)}</em>` : ''}</button>`).join('')}
+    ${g ? `<button class="game-pick" data-act="gameGo" data-x="adventure"><span class="ge">🪽</span><b>Big adventure</b><small>Fly with Coco through the forest and over the beach.</small></button>` : `<button class="game-pick" data-act="gameGo" data-x="race"><span class="ge">🏁</span><b>Race day</b><small>Drive your cars round the race track.</small></button>`}</div>`;
+}
+A.games = () => openModal(gamesSheet());
+A.gameGo = el => { const k = el.dataset.x; closeModal(); unlockAudio(); if (k === 'adventure') return startAdventure(); if (k === 'race') return openModal(raceSheet()); startGame(k); };
+V.games = () => `<div class="card">${gamesSheet()}</div>`;
+function petCanvas(w) { return design() === 'ginny' ? cocoSVG(w) : geckoSVG(w); }
+function startGame(k) {
+  if (gm) return;
+  const G = GAMES.find(x => x.k === k), ov = document.createElement('div'); ov.className = 'game game-' + k;
+  ov.innerHTML = `<canvas></canvas><div class="game-hud"><span id="gScore">⭐ 0</span><span id="gTime">⏱ 60</span></div><button class="adv-x" aria-label="Stop">✕</button><div class="game-layer" id="gLayer"></div><div class="race-msg" id="gMsg"></div>
+    <div class="adv-end game-start" id="gStart"><div class="adv-card"><div style="font-size:52px">${G.e}</div><h2>${G.t}</h2><p>${G.d}</p>${gameBest(k) ? `<p>🏆 Your best: <b>${gameBest(k)}</b></p>` : ''}<button class="btn big" id="gGo">Play!</button></div></div>`;
+  document.body.appendChild(ov);
+  const cv = ov.querySelector('canvas'), ctx = cv.getContext('2d'), dpr = Math.min(2, devicePixelRatio || 1);
+  const size = () => { cv.width = innerWidth * dpr; cv.height = innerHeight * dpr; cv.style.width = innerWidth + 'px'; cv.style.height = innerHeight + 'px'; };
+  size(); addEventListener('resize', size);
+  gm = { k, ov, cv, ctx, dpr, score: 0, t: 60, run: false, raf: 0, cleanup: () => removeEventListener('resize', size) };
+  const msg = t => { const m = ov.querySelector('#gMsg'); m.textContent = t; m.classList.remove('show'); void m.offsetWidth; m.classList.add('show'); };
+  gm.msg = msg;
+  gm.add = (n, x, y) => { gm.score = Math.max(0, gm.score + n); const s = ov.querySelector('#gScore'); s.textContent = '⭐ ' + gm.score; if (x != null) { const f = document.createElement('div'); f.className = 'game-float'; f.textContent = (n > 0 ? '+' : '') + n; f.style.left = x + 'px'; f.style.top = y + 'px'; if (n < 0) f.style.color = '#ff6b6b'; ov.appendChild(f); setTimeout(() => f.remove(), 900); } };
+  ov.querySelector('.adv-x').onclick = () => endGame(false);
+  const init = { surf: surfGame, catch: catchGame, pop: popGame }[k];
+  const api = init(gm);
+  ov.querySelector('#gGo').onclick = () => {
+    ov.querySelector('#gStart').remove(); gm.run = true; gm.last = performance.now(); gm.t0 = gm.last; tone(660, 0, .1, 'triangle', .07); tone(990, .12, .15, 'triangle', .07);
+    const loop = now => {
+      if (!gm || gm.ov !== ov) return; const dt = Math.min(.04, (now - gm.last) / 1000); gm.last = now;
+      if (gm.run) { gm.t = Math.max(0, 60 - (now - gm.t0) / 1000); ov.querySelector('#gTime').textContent = '⏱ ' + Math.ceil(gm.t); if (gm.t <= 0) { gm.run = false; setTimeout(() => endGame(true), 400); msg("Time's up! ⏰"); } }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0); api.step(dt, now / 1000, innerWidth, innerHeight);
+      gm.raf = requestAnimationFrame(loop);
+    };
+    gm.raf = requestAnimationFrame(loop);
+  };
+}
+async function endGame(done) {
+  if (!gm) return; const g = gm;
+  if (!done) { cancelAnimationFrame(g.raf); g.cleanup(); g.ov.remove(); gm = null; return; }
+  const best = gameBest(g.k), nb = g.score > best;
+  await petSave({ best: { ...(petItem()?.data.best || {}), [g.k]: Math.max(best, g.score) }, playAt: new Date().toISOString(), counts: bump('game') });
+  const card = document.createElement('div'); card.className = 'adv-end';
+  card.innerHTML = `<div class="adv-card"><div style="font-size:50px">${nb ? '🏆' : '🎉'}</div><h2>${nb ? 'New best score!' : 'Well played!'}</h2><p style="font-size:30px;font-weight:900;margin:4px 0">⭐ ${g.score}</p><p class="muted">Your best: ${Math.max(best, g.score)}</p><div class="row" style="justify-content:center;gap:10px"><button class="btn" id="gAgain">Play again</button><button class="btn sec" id="gDone">Done</button></div></div>`;
+  g.ov.appendChild(card); if (nb) { celebrate && celebrate(); whistleTune(); }
+  card.querySelector('#gAgain').onclick = () => { const k = g.k; cancelAnimationFrame(g.raf); g.cleanup(); g.ov.remove(); gm = null; startGame(k); };
+  card.querySelector('#gDone').onclick = () => endGame(false);
+}
+const rr = (a, b) => a + Math.random() * (b - a);
+
+/* ---------- Surf's up ---------- */
+function surfGame(g) {
+  const ginny = design() === 'ginny', layer = g.ov.querySelector('#gLayer');
+  const pal = document.createElement('div'); pal.className = 'game-pet' + (ginny ? ' flying' : ''); pal.innerHTML = petCanvas(ginny ? 70 : 60); layer.appendChild(pal);
+  const chicks = ginny ? Array.from({ length: chickCount() }, (_, i) => { const c = document.createElement('div'); c.className = 'game-pet flying'; c.innerHTML = chickHTML(i, 40); layer.appendChild(c); return c; }) : [];
+  const s = { x: 0, y: 0, vy: 0, air: false, spin: 0, spinning: false, wipe: 0, speed: 230, things: [], spray: [], next: 1.2, big: [], bigNext: 6, sc: 0 };
+  const hair = ginny ? '#f2d27a' : '#6a4024', suit = ginny ? '#e0457b' : '#2a9d8f';
+  const base = H => H * .64;
+  const water = (x, t, H) => { let y = base(H) + Math.sin((x + s.sc) / 90) * 6 + Math.sin((x + s.sc * 1.3) / 47 + t) * 3; s.big.forEach(b => { const d = (x - b.x) / b.w; y -= b.h * Math.exp(-d * d); }); return y; };
+  const jump = () => { if (!g.run) return; if (s.wipe > 0) return; if (!s.air) { s.vy = -520; s.air = true; tone(520, 0, .08, 'sine', .05); } else if (!s.spinning) { s.spinning = true; s.spin = 0; tone(880, 0, .1, 'triangle', .05); } };
+  g.ov.addEventListener('pointerdown', e => { if (!e.target.closest('button')) jump(); });
+  const key = e => { if (e.code === 'Space' || e.key === 'ArrowUp') jump(); }; addEventListener('keydown', key); const cl = g.cleanup; g.cleanup = () => { cl(); removeEventListener('keydown', key); };
+  const surfer = (c, x, y, a, sp) => {
+    c.save(); c.translate(x, y); c.rotate(a + sp);
+    c.fillStyle = '#fff'; c.beginPath(); c.ellipse(0, 0, 34, 6, 0, 0, 7); c.fill(); c.fillStyle = suit; c.fillRect(-30, -1.5, 60, 3);
+    c.strokeStyle = '#111827'; c.lineWidth = 6; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(-10, -4); c.lineTo(-6, -18); c.lineTo(-2, -32); c.moveTo(10, -4); c.lineTo(6, -18); c.lineTo(-2, -32); c.stroke();
+    c.strokeStyle = suit; c.lineWidth = 9; c.beginPath(); c.moveTo(-2, -32); c.lineTo(0, -52); c.stroke();
+    c.lineWidth = 5; c.strokeStyle = suit; c.beginPath(); c.moveTo(0, -48); c.lineTo(-18, -42); c.moveTo(0, -48); c.lineTo(18, -54); c.stroke();
+    c.fillStyle = '#f1c7a0'; c.beginPath(); c.arc(2, -62, 8, 0, 7); c.fill(); c.fillStyle = hair; c.beginPath(); c.arc(0, -65, 8.5, Math.PI * .9, Math.PI * 2.1); c.fill(); c.beginPath(); c.ellipse(-9, -60, 3.5, 8, .4, 0, 7); c.fill();
+    c.restore();
+  };
+  return { step(dt, t, W, H) {
+    const c = g.ctx; s.x = W * .3;
+    if (g.run) { s.speed = Math.min(420, s.speed + dt * 3); s.sc += s.speed * dt; }
+    // sky and sea
+    let gr = c.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, '#6ec6f0'); gr.addColorStop(.55, '#bfe9fb'); gr.addColorStop(.56, '#2b9fd6'); gr.addColorStop(1, '#0f5f8f'); c.fillStyle = gr; c.fillRect(0, 0, W, H);
+    c.fillStyle = '#fff6c4'; c.beginPath(); c.arc(W * .8, H * .14, 34, 0, 7); c.fill();
+    c.fillStyle = 'rgba(255,255,255,.9)'; for (let i = 0; i < 5; i++) { const x = ((i * 260 - s.sc * .1) % (W + 300) + W + 300) % (W + 300) - 150, y = 50 + (i % 3) * 40; c.beginPath(); c.ellipse(x, y, 50, 14, 0, 0, 7); c.ellipse(x + 26, y - 8, 30, 14, 0, 0, 7); c.fill(); }
+    c.fillStyle = '#3d8fbf'; c.beginPath(); c.moveTo(0, H * .56); for (let x = 0; x <= W; x += 20) c.lineTo(x, H * .56 + Math.sin((x + s.sc * .4) / 60) * 4); c.lineTo(W, H); c.lineTo(0, H); c.fill();
+    // big waves roll in
+    if (g.run && (s.bigNext -= dt) <= 0) { s.big.push({ x: W + 200, w: rr(110, 160), h: rr(40, 70) }); s.bigNext = rr(5, 9); }
+    s.big.forEach(b => b.x -= s.speed * dt * .8); s.big = s.big.filter(b => b.x > -300);
+    // main water
+    gr = c.createLinearGradient(0, base(H) - 80, 0, H); gr.addColorStop(0, '#36b3e8'); gr.addColorStop(1, '#0b4f7a'); c.fillStyle = gr;
+    c.beginPath(); c.moveTo(0, H); for (let x = 0; x <= W; x += 8) c.lineTo(x, water(x, t, H)); c.lineTo(W, H); c.fill();
+    c.strokeStyle = 'rgba(255,255,255,.85)'; c.lineWidth = 4; c.beginPath(); for (let x = 0; x <= W; x += 8) { const y = water(x, t, H); x ? c.lineTo(x, y) : c.moveTo(x, y); } c.stroke();
+    c.fillStyle = 'rgba(255,255,255,.35)'; for (let i = 0; i < 30; i++) { const x = ((i * 97 - s.sc * .9) % W + W) % W; c.fillRect(x, water(x, t, H) + 18 + (i % 5) * 22, 14, 2); }
+    // spawn things
+    if (g.run && (s.next -= dt) <= 0) {
+      const r = Math.random();
+      if (r < .4) s.things.push({ k: ['rock', 'buoy', 'jelly'][Math.floor(Math.random() * 3)], x: W + 40 });
+      else if (r < .75) { const n = 4; for (let i = 0; i < n; i++) s.things.push({ k: 'shell', x: W + 40 + i * 42, air: 30 + Math.sin(i / (n - 1) * Math.PI) * 110 }); }
+      else s.things.push({ k: 'star', x: W + 40, air: rr(90, 170) });
+      s.next = rr(.9, 1.8) * 300 / s.speed;
+    }
+    // surfer physics
+    const wy = water(s.x, t, H), slope = Math.atan2(water(s.x + 6, t, H) - water(s.x - 6, t, H), 12);
+    if (s.air) { s.vy += 1300 * dt; s.y += s.vy * dt; if (s.spinning) s.spin += dt * 13; if (s.y >= wy) { s.y = wy; s.air = false; s.vy = 0; if (s.spinning) { if (s.spin > 5) { g.add(5, s.x, s.y - 90); g.msg(['Rad spin! 🤙', 'Awesome! 🌀', 'Tubular! 🏄'][Math.floor(Math.random() * 3)]); tone(1320, 0, .12, 'triangle', .07); } s.spinning = false; s.spin = 0; } for (let i = 0; i < 10; i++) s.spray.push({ x: s.x + rr(-20, 20), y: s.y, vx: rr(-80, 40), vy: rr(-200, -60), l: .6 }); } }
+    else { s.y = wy; if (s.wipe <= 0) s.spray.push({ x: s.x - 30, y: s.y, vx: rr(-140, -60), vy: rr(-90, -20), l: .45 }); }
+    if (s.wipe > 0) s.wipe -= dt;
+    // things move, draw and collide
+    s.things.forEach(o => {
+      o.x -= s.speed * dt; const oy = water(o.x, t, H), y = o.air ? oy - o.air : oy;
+      if (o.k === 'rock') { c.fillStyle = '#6b7280'; c.beginPath(); c.moveTo(o.x - 26, oy + 8); c.lineTo(o.x - 16, oy - 22); c.lineTo(o.x + 2, oy - 30); c.lineTo(o.x + 20, oy - 14); c.lineTo(o.x + 28, oy + 8); c.fill(); c.fillStyle = '#9ca3af'; c.beginPath(); c.moveTo(o.x - 14, oy - 20); c.lineTo(o.x + 2, oy - 28); c.lineTo(o.x + 6, oy - 16); c.fill(); }
+      else if (o.k === 'buoy') { c.fillStyle = '#ef4444'; c.beginPath(); c.arc(o.x, oy - 10, 14, Math.PI, 0); c.fill(); c.fillStyle = '#fff'; c.fillRect(o.x - 14, oy - 12, 28, 5); c.fillStyle = '#374151'; c.fillRect(o.x - 1.5, oy - 40, 3, 18); c.fillStyle = '#fbbf24'; c.beginPath(); c.arc(o.x, oy - 42, 4 + Math.sin(t * 8), 0, 7); c.fill(); }
+      else if (o.k === 'jelly') { const jy = oy - 6 + Math.sin(t * 3 + o.x * .02) * 3; c.fillStyle = 'rgba(244,114,182,.85)'; c.beginPath(); c.arc(o.x, jy - 6, 15, Math.PI, 0); c.fill(); c.strokeStyle = 'rgba(244,114,182,.8)'; c.lineWidth = 2.5; for (let i = -2; i <= 2; i++) { c.beginPath(); c.moveTo(o.x + i * 5, jy - 6); c.quadraticCurveTo(o.x + i * 5 + Math.sin(t * 5 + i) * 5, jy + 8, o.x + i * 5, jy + 18); c.stroke(); } c.fillStyle = '#111'; c.beginPath(); c.arc(o.x - 5, jy - 10, 1.8, 0, 7); c.arc(o.x + 5, jy - 10, 1.8, 0, 7); c.fill(); }
+      else if (!o.got) { c.font = `${o.k === 'star' ? 34 : 28}px serif`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(o.k === 'star' ? '⭐' : '🐚', o.x, y + Math.sin(t * 4 + o.x * .05) * 4); }
+      const dx = Math.abs(o.x - s.x), sy = s.y - 30;
+      if ((o.k === 'shell' || o.k === 'star') && !o.got && dx < 30 && Math.abs(y - sy) < 44) { o.got = true; const v = o.k === 'star' ? 3 : 1; g.add(v, o.x, y - 20); tone(o.k === 'star' ? 1568 : 1175, 0, .08, 'triangle', .07); }
+      if (['rock', 'buoy', 'jelly'].includes(o.k) && !o.hit && s.wipe <= 0 && dx < 26 && s.y > oy - 28) { o.hit = true; s.wipe = 1.4; s.air = false; s.spinning = false; g.msg('Wipeout! 🌊'); g.add(-2, s.x, s.y - 80); tone(180, 0, .3, 'sawtooth', .05); for (let i = 0; i < 26; i++) s.spray.push({ x: s.x + rr(-20, 30), y: s.y, vx: rr(-160, 160), vy: rr(-300, -80), l: .9 }); s.speed = Math.max(230, s.speed - 60); }
+    });
+    s.things = s.things.filter(o => o.x > -60 && !(o.got && (o.k === 'shell' || o.k === 'star')));
+    // spray
+    c.fillStyle = 'rgba(255,255,255,.9)'; s.spray.forEach(p => { p.l -= dt; p.vy += 600 * dt; p.x += p.vx * dt - s.speed * dt * .3; p.y += p.vy * dt; c.beginPath(); c.arc(p.x, p.y, 3 * Math.max(0, p.l / .5), 0, 7); c.fill(); }); s.spray = s.spray.filter(p => p.l > 0);
+    // surfer
+    const wob = s.wipe > 0 ? Math.sin(t * 25) * .6 : 0;
+    surfer(c, s.x, s.wipe > 0 ? s.y + 16 : s.y - 4, s.air ? -.25 + s.vy * .0004 : slope * .9 + wob, s.spinning ? s.spin : 0);
+    // Coco flies alongside (or Pumpkin rides the board)
+    if (ginny) { pal.style.transform = `translate(${s.x + 40}px, ${s.y - 170 + Math.sin(t * 3) * 10}px)`; chicks.forEach((ch, i) => { ch.style.transform = `translate(${s.x - 20 - i * 40}px, ${s.y - 150 + Math.sin(t * 3 + i + 1) * 9}px)`; }); }
+    else pal.style.transform = `translate(${s.x + 2}px, ${s.y - 34}px) rotate(${(s.air ? -.25 : slope * .9) * 57}deg)`;
+  } };
+}
+
+/* ---------- Treat catch ---------- */
+function catchGame(g) {
+  const ginny = design() === 'ginny', layer = g.ov.querySelector('#gLayer');
+  const p = document.createElement('div'); p.className = 'game-pet'; p.innerHTML = petCanvas(ginny ? 90 : 100); layer.appendChild(p);
+  const chicks = ginny ? Array.from({ length: chickCount() }, (_, i) => { const c = document.createElement('div'); c.className = 'game-pet'; c.innerHTML = chickHTML(i, 46); layer.appendChild(c); return c; }) : [];
+  const good = ginny ? ['🍓', '🌻', '🫐', '🍎', '🌽'] : ['🦗', '🪰', '🐛', '🍑', '🦟'];
+  const s = { x: innerWidth / 2, tx: innerWidth / 2, items: [], next: .6, dizzy: 0, speed: 1, cx: [innerWidth / 2 - 60, innerWidth / 2 + 60] };
+  const move = e => { s.tx = e.clientX; };
+  g.ov.addEventListener('pointerdown', move); g.ov.addEventListener('pointermove', e => { if (e.buttons || e.pointerType === 'touch') move(e); });
+  const key = e => { if (e.key === 'ArrowLeft') s.tx -= 60; if (e.key === 'ArrowRight') s.tx += 60; }; addEventListener('keydown', key); const cl = g.cleanup; g.cleanup = () => { cl(); removeEventListener('keydown', key); };
+  return { step(dt, t, W, H) {
+    const c = g.ctx, ground = H - 70;
+    let gr = c.createLinearGradient(0, 0, 0, H);
+    if (ginny) { gr.addColorStop(0, '#8fd3f4'); gr.addColorStop(.75, '#d9f2fb'); } else { gr.addColorStop(0, '#f6b26b'); gr.addColorStop(.75, '#fde1b0'); }
+    c.fillStyle = gr; c.fillRect(0, 0, W, H);
+    c.fillStyle = ginny ? '#64b34f' : '#e2b064'; c.fillRect(0, ground, W, H - ground);
+    c.fillStyle = ginny ? '#4a9a3a' : '#cf9a4e'; for (let x = 0; x < W; x += 24) { c.beginPath(); c.arc(x, ground, 14, Math.PI, 0); c.fill(); }
+    if (ginny) { c.fillStyle = '#7a4e2a'; c.fillRect(30, ground - 210, 26, 210); c.fillStyle = '#3f9b4f'; [[43, ground - 230, 70], [0, ground - 200, 50], [90, ground - 190, 48]].forEach(([x, y, r]) => { c.beginPath(); c.arc(x, y, r, 0, 7); c.fill(); }); }
+    else { c.fillStyle = '#3f9b4f'; c.fillRect(W - 60, ground - 120, 18, 120); c.beginPath(); c.arc(W - 51, ground - 120, 9, Math.PI, 0); c.fill(); }
+    // spawn
+    if (g.run) { s.speed = 1 + (60 - g.t) / 40; if ((s.next -= dt) <= 0) { const r = Math.random(); s.items.push({ x: rr(30, W - 30), y: -30, v: rr(150, 210) * s.speed, e: r < .12 ? '🪨' : r < .2 ? '⭐' : good[Math.floor(Math.random() * good.length)], r: rr(-1, 1) }); s.next = rr(.35, .8) / s.speed; } }
+    // player moves smoothly
+    if (s.dizzy > 0) s.dizzy -= dt; s.x += (Math.max(40, Math.min(W - 40, s.tx)) - s.x) * Math.min(1, dt * (s.dizzy > 0 ? 3 : 12));
+    const py = ground - (ginny ? 100 : 54);
+    c.font = '34px serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+    s.items.forEach(o => {
+      o.y += o.v * dt; o.r += dt; c.save(); c.translate(o.x, o.y); c.rotate(Math.sin(o.r * 3) * .3); c.fillText(o.e, 0, 0); c.restore();
+      const catchers = [[s.x, py + 30, 46], ...s.cx.map((x, i) => i < chicks.length ? [x, ground - 30, 26] : null).filter(Boolean)];
+      for (const [cx, cy, rad] of catchers) if (!o.done && Math.abs(o.x - cx) < rad && Math.abs(o.y - cy) < 34) {
+        o.done = true;
+        if (o.e === '🪨') { g.add(-3, o.x, o.y); s.dizzy = 1.2; g.msg('Bonk! 😵'); tone(160, 0, .25, 'square', .05); }
+        else { const v = o.e === '⭐' ? 5 : 1; g.add(v, o.x, o.y - 20); tone(v > 1 ? 1568 : 988 + Math.random() * 300, 0, .07, 'triangle', .07); if (ginny && Math.random() < .3) cocoSound(); }
+      }
+    });
+    s.items = s.items.filter(o => !o.done && o.y < H + 40);
+    p.style.transform = `translate(${s.x - p.offsetWidth / 2}px, ${py - p.offsetHeight * .5}px) scaleX(${s.tx < s.x - 2 ? -1 : 1}) rotate(${s.dizzy > 0 ? Math.sin(t * 20) * 12 : 0}deg)`;
+    chicks.forEach((ch, i) => { s.cx[i] += ((s.x + (i ? 70 : -70)) - s.cx[i]) * Math.min(1, dt * 5); ch.style.transform = `translate(${s.cx[i] - 23}px, ${ground - 52 + Math.abs(Math.sin(t * 8 + i)) * -6}px)`; });
+  } };
+}
+
+/* ---------- Bubble pop ---------- */
+function popGame(g) {
+  const s = { b: [], next: .3, fish: Array.from({ length: 7 }, (_, i) => ({ x: Math.random() * innerWidth, y: 120 + Math.random() * (innerHeight - 260), v: rr(30, 70) * (i % 2 ? 1 : -1), c: ['#ff7a1a', '#ffd21a', '#1d5fd8', '#a855f7', '#2dd4bf'][i % 5] })), pops: [] };
+  const pop = (o, chain) => {
+    if (o.dead) return; o.dead = true; const v = o.e === '⭐' ? 3 : o.e === '🐡' ? 2 : 1; g.add(v, o.x, o.y - 20); tone(700 + Math.random() * 700, 0, .06, 'sine', .07);
+    for (let i = 0; i < 10; i++) { const a = Math.random() * 7; s.pops.push({ x: o.x, y: o.y, vx: Math.cos(a) * rr(60, 160), vy: Math.sin(a) * rr(60, 160), l: .5 }); }
+    if (o.e === '🐡' && !chain) { g.msg('Puffer power! 🐡'); s.b.forEach(q => { if (!q.dead && Math.hypot(q.x - o.x, q.y - o.y) < 170) pop(q, true); }); }
+  };
+  g.ov.addEventListener('pointerdown', e => { if (e.target.closest('button') || !g.run) return; let hit = null, hd = 1e9; s.b.forEach(o => { const d = Math.hypot(o.x - e.clientX, o.y - e.clientY); if (!o.dead && d < o.r + 14 && d < hd) { hd = d; hit = o; } }); if (hit) pop(hit); });
+  return { step(dt, t, W, H) {
+    const c = g.ctx; let gr = c.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, '#1ea5d6'); gr.addColorStop(1, '#073b5c'); c.fillStyle = gr; c.fillRect(0, 0, W, H);
+    c.fillStyle = 'rgba(255,255,255,.07)'; for (let i = 0; i < 5; i++) { c.beginPath(); const x = W * (.1 + i * .2) + Math.sin(t * .3 + i) * 30; c.moveTo(x, 0); c.lineTo(x + 60, 0); c.lineTo(x + 160, H); c.lineTo(x + 40, H); c.fill(); }
+    c.fillStyle = '#e8d3a0'; c.beginPath(); c.moveTo(0, H); for (let x = 0; x <= W; x += 30) c.lineTo(x, H - 50 - Math.sin(x / 70) * 10); c.lineTo(W, H); c.fill();
+    [['#ff5a36', .12], ['#e64a9f', .3], ['#8b5cf6', .72], ['#2dd4bf', .88]].forEach(([col, f], i) => { const x = W * f; c.strokeStyle = col; c.lineWidth = 7; c.lineCap = 'round'; for (let k = -2; k <= 2; k++) { c.beginPath(); c.moveTo(x, H - 50); c.quadraticCurveTo(x + k * 14 + Math.sin(t * 1.4 + k + i) * 8, H - 100, x + k * 22 + Math.sin(t * 1.2 + k) * 10, H - 140 - Math.abs(k) * -10); c.stroke(); } });
+    s.fish.forEach(f => { f.x += f.v * dt; if (f.x < -40) f.x = W + 40; if (f.x > W + 40) f.x = -40; const y = f.y + Math.sin(t * 2 + f.x * .02) * 8, d = f.v > 0 ? 1 : -1; c.fillStyle = f.c; c.beginPath(); c.ellipse(f.x, y, 18, 10, 0, 0, 7); c.fill(); c.beginPath(); c.moveTo(f.x - d * 16, y); c.lineTo(f.x - d * 30, y - 9); c.lineTo(f.x - d * 30, y + 9); c.fill(); c.fillStyle = '#111'; c.beginPath(); c.arc(f.x + d * 9, y - 2, 2.2, 0, 7); c.fill(); });
+    if (g.run && (s.next -= dt) <= 0) { const r = Math.random(); s.b.push({ x: rr(40, W - 40), y: H + 40, r: rr(26, 40), v: rr(60, 110) * (1 + (60 - g.t) / 50), w: Math.random() * 6, e: r < .1 ? '🐡' : r < .22 ? '⭐' : ['🐠', '🐚', '🦀', '🐟', '🦐', '🐙'][Math.floor(Math.random() * 6)] }); s.next = rr(.25, .6); }
+    c.textAlign = 'center'; c.textBaseline = 'middle';
+    s.b.forEach(o => {
+      o.y -= o.v * dt; const x = o.x + Math.sin(t * 2 + o.w) * 12;
+      o.x += (x - o.x) * .02;
+      gr = c.createRadialGradient(o.x - o.r * .35, o.y - o.r * .35, o.r * .1, o.x, o.y, o.r); gr.addColorStop(0, 'rgba(255,255,255,.55)'); gr.addColorStop(.7, 'rgba(180,230,255,.12)'); gr.addColorStop(1, 'rgba(220,245,255,.55)');
+      c.fillStyle = gr; c.beginPath(); c.arc(o.x, o.y, o.r, 0, 7); c.fill(); c.strokeStyle = 'rgba(255,255,255,.7)'; c.lineWidth = 1.5; c.stroke();
+      c.font = `${Math.round(o.r * .95)}px serif`; c.fillText(o.e, o.x, o.y + 1);
+      c.fillStyle = 'rgba(255,255,255,.85)'; c.beginPath(); c.ellipse(o.x - o.r * .4, o.y - o.r * .45, o.r * .18, o.r * .1, -.6, 0, 7); c.fill();
+    });
+    s.b = s.b.filter(o => !o.dead && o.y > -60);
+    c.fillStyle = 'rgba(255,255,255,.9)'; s.pops.forEach(p => { p.l -= dt; p.x += p.vx * dt; p.y += p.vy * dt; c.beginPath(); c.arc(p.x, p.y, 3 * p.l / .5, 0, 7); c.fill(); }); s.pops = s.pops.filter(p => p.l > 0);
+  } };
+}
 const birdSound = b => (SND[BIRD_SND[b.name]] || SND.tweet)();
 const cocoSound = () => [SND.whistle, SND.chirrup, SND.tweet][Math.floor(Math.random() * 3)]();
 A.birdSing = el => { const b = BIRDS[Number(el.dataset.x)]; if (!b) return; birdSound(b); const w = el.querySelector('canvas, svg'); if (w) { w.classList.remove('a-hop'); void w.offsetWidth; w.classList.add('a-hop'); } toast(`${b.name}: ${{ hoot: 'Twit twoo!', coo: 'Coo coo!', knock: 'Rat-a-tat-tat!', squawk: 'SQUAWK!', honk: 'Honk honk!', croak: 'Croak!', screech: 'Screeee!' }[BIRD_SND[b.name]] || 'Tweet tweet!'}`); };
