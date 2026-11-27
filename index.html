@@ -538,6 +538,22 @@ body.fern .place-pick,body.fern .friend-pick,body.fern .race-pick{background:#1f
 .rec-tip{min-height:24px;opacity:.85;text-align:center;margin-bottom:10px}
 .rec-ctl{display:flex;gap:12px;align-items:center}.rec-ctl button{background:rgba(255,255,255,.12);border:0;color:#fff;min-width:52px;height:48px;border-radius:16px;font-size:16px;font-weight:800;cursor:pointer;padding:0 12px}.rec-ctl button:disabled{opacity:.3}
 .rec-ctl .rec-big{width:78px;height:78px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center}.rec-big span{width:52px;height:52px;border-radius:50%;background:#ef4444;transition:all .2s}.rec-big.on span{width:30px;height:30px;border-radius:8px;animation:recPulse 1s ease-in-out infinite alternate}@keyframes recPulse{to{box-shadow:0 0 0 10px rgba(239,68,68,.35)}}
+
+.nest{position:absolute;z-index:2;pointer-events:auto}
+.nest-back,.nest-front{position:absolute;left:0;right:0;border-radius:50%;pointer-events:none}
+.nest-back{top:44%;height:40%;background:radial-gradient(ellipse at 50% 40%,#5b3a1c 0%,#7a5228 55%,#9a6a38 70%,rgba(0,0,0,0) 72%)}
+.nest-front{top:56%;height:44%;background:repeating-linear-gradient(20deg,rgba(255,230,180,.0) 0 5px,rgba(255,230,180,.25) 5px 7px),repeating-linear-gradient(-25deg,rgba(60,35,10,.0) 0 6px,rgba(60,35,10,.3) 6px 8px),radial-gradient(ellipse at 50% 0%,#b8874e 0%,#9a6a38 45%,#6e4520 100%);box-shadow:0 6px 10px rgba(0,0,0,.25);border-radius:0 0 50% 50% / 0 0 100% 100%}
+.nest .chick,.nest .egg{position:absolute;bottom:26%;cursor:pointer}.nest .chick{left:-8%}.nest .chick.c2,.nest .egg{left:40%}
+.nest .egg.pop canvas{animation:eggPop .6s ease-in forwards}@keyframes eggPop{40%{transform:scale(1.25)}100%{transform:scale(.2);opacity:0}}
+.egg-timer{position:absolute;left:50%;top:calc(100% + 8px);transform:translateX(-50%);white-space:nowrap;background:#fff;color:#4a3a20;border-radius:12px;padding:3px 10px;font-weight:800;font-size:12px;box-shadow:0 3px 8px rgba(0,0,0,.2)}
+.nest-hungry{position:absolute;left:4%;top:-8px;background:#ffe08a;color:#5a4000;border-radius:10px;padding:2px 8px;font-weight:800;font-size:11px;display:none}.nest-hungry.on{display:block;animation:a-nod .8s infinite}
+.scene .spoon{position:absolute;font-size:30px;z-index:5;transition:top .9s ease-in-out;transform:rotate(-30deg);pointer-events:none}
+.surprise{position:fixed;inset:0;z-index:9400;background:rgba(10,20,40,.08)}.surprise.out{animation:bedOut .5s forwards}
+.sp-coco{position:absolute;width:110px;cursor:pointer}.sp-coco.peck{animation:spPeck .26s ease-in-out}@keyframes spPeck{50%{rotate:28deg;translate:8px 4px}}
+.sp-tap{position:absolute;width:24px;height:24px;margin:-12px 0 0 -12px;border-radius:50%;border:3px solid rgba(255,255,255,.95);box-shadow:0 0 10px rgba(0,0,0,.25);animation:reefRip .7s ease-out forwards;pointer-events:none}
+.sp-say{position:absolute;background:#fff;color:#1d2a3a;border-radius:16px;padding:8px 14px;font-weight:800;font-size:16px;box-shadow:0 8px 20px rgba(0,0,0,.25);max-width:240px;animation:reefMsg 3s ease-out forwards;pointer-events:none}
+.surprise:not(.ready) .sp-hint{display:none}.sp-hint{position:absolute;left:50%;bottom:12%;transform:translateX(-50%);background:#ffd43b;color:#3a2a00;font-weight:900;font-size:20px;padding:12px 22px;border-radius:24px;box-shadow:0 8px 20px rgba(0,0,0,.25);animation:advPulse 1s ease-in-out infinite alternate;cursor:pointer}
+.surprise.ready .sp-say{animation:none}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -1257,6 +1273,7 @@ const B3D = (() => {
     const key = c.dataset.b;
     if (key === 'pumpkin' || key.startsWith('r:')) return frameRep(c, now, key === 'pumpkin' ? PUMPKIN : (typeof REPTILES !== 'undefined' && REPTILES[Number(key.slice(2))]) || PUMPKIN);
     if (key.startsWith('c:')) return frameCar(c, now, CARS[Number(key.slice(2))] || CARS[0]);
+    if (key.startsWith('chick') || key === 'egg') return frameBaby(c, now, key);
     const st = c._st || (c._st = { ph: Math.random() * 100, yawT: 0, yaw: 0, hy: 0, hz: 0 });
     const t = now / 1000 + st.ph, coco = c.dataset.b === 'coco', b = spec(c), locked = c.dataset.l === '1';
     const host = c.closest('.flying, .pet, .guest') || c.parentElement;
@@ -1279,6 +1296,57 @@ const B3D = (() => {
     const pitch = { m: C(T(0, by, 0), RZ(pit), S(1, breathe, 1), T(0, -by, 0)) };
     const k = Number(c.dataset.k) * (b.shape === 'flamingo' ? .66 : b.shape === 'owl' ? .92 : 1), fx = Number(c.dataset.fx), fy = Number(c.dataset.fy);
     draw(c._ctx || (c._ctx = c.getContext('2d')), parts, W, H, k, fx, fy, (fly ? -12 : -28 + st.yaw) * D, pitch, [c.width, c.height]);
+  }
+  /* ===== Coco's babies: a fluffy chick and an egg ===== */
+  function chickModel(st) {
+    const P = [], fl = '#efe2bc', face = '#f6df8e', pink = '#e8a79a', fz = srand(st.seed || 5);
+    const beg = st.beg, leg = [[-2, 3], [3, -3]];
+    leg.forEach(([x, z]) => { P.push(seg([x, 9, z], [x + .5, 1, z], 1.3, pink, { tx: 0 })); [-30, 0, 30].forEach(a => P.push(seg([x + .5, .8, z], [x + .5 + Math.cos(a * D) * 3.2, .5, z + Math.sin(a * D) * 3.2], .8, pink, { tx: 0 }))); });
+    P.push(ell(0, 16, 0, 14, 13, 12.5, fl, { c2: '#fbf4de', dir: [.5, -.6, 0], ed: [.1, .6], tx: 2.6, sp: .05, rm: .45 }));
+    for (let i = 0; i < 26; i++) { const a = fz() * Math.PI * 2, b = (fz() - .3) * 1.4; P.push(ell(Math.cos(a) * Math.cos(b) * 13, 16 + Math.sin(b) * 12, Math.sin(a) * Math.cos(b) * 12, 3.4, 3.4, 3.4, fz() < .5 ? fl : '#f5ecd0', { tx: .8, sp: 0, rm: .5 })); }
+    const fw = beg ? Math.sin(st.t * 40) * 35 : Math.sin(st.t * 2) * 4;
+    [1, -1].forEach(sg => P.push(part(C(T(-2, 19, sg * 11.5), RX(sg * -(20 + fw) * D), T(-3, -2, 0), S(6, 3.5, 2)), '#e6d6a6', { tx: 2 })));
+    const H = C(T(5, 32, 0), RY((st.hy || 0) * D), RZ(((st.hz || 0) + (beg ? 32 : 0)) * D));
+    const hp = (x, y, z, rx, ry, rz, c, o = {}) => part(C(H, T(x, y, z), o.r || I(), S(rx, ry, rz)), c, o);
+    P.push(hp(0, 0, 0, 11.5, 11, 11, '#f1e4b6', { c2: face, dir: [.85, .1, .3], ed: [.05, .5], tx: 2.2, rm: .4 }));
+    for (let i = 0; i < 3; i++) P.push(part(C(H, T(-1 + i * 1.5, 10, (i - 1) * 1.5), RZ((100 + i * 12) * D), T(2.5, 0, 0), S(3, .8, .8)), '#f6e7a8', { tx: 0 }));
+    [1, -1].forEach(sg => {
+      P.push(hp(4.5, -3.8, sg * 8.8, 3, 2.6, 1.2, '#ffb07a', { tx: 0, sp: 0 }));
+      if (st.blink) P.push(hp(6, 2, sg * 8.2, 2.6, .5, 1.6, '#3a2a1e', { tx: 0 }));
+      else { P.push(hp(6, 2, sg * 8.2, 2.9, 2.9, 2.2, '#120c08', { sp: 1, sh: 70, tx: 0, rm: 0 })); P.push(hp(6.6, 3.2, sg * 9.9, .9, .9, .5, '#fff', { tx: 0, sp: 0, rm: 0 })); }
+    });
+    const open = beg ? 26 + Math.sin(st.t * 18) * 8 : 0;
+    P.push(part(C(H, T(9.5, -1, 0), RZ((-12 + open * .3) * D), S(5, 2.6, 2.6)), '#d7a99a', { g: 'c', tx: 0, sp: .3 }));
+    P.push(part(C(H, T(9.5, -2.2, 0), RZ((-22 - open) * D), S(4.4, 1.6, 2.2)), '#caa090', { g: 'c', tx: 0 }));
+    if (beg) P.push(hp(10.5, -2.4, 0, 2.2, 1.2, 1.6, '#ff7f8a', { tx: 0 }));
+    return P;
+  }
+  function eggModel(st) {
+    const P = [], fz = srand(17);
+    P.push(ell(0, 15, 0, 10.5, 14, 10.5, '#fbf4e6', { c2: '#efe2c8', dir: [0, -1, 0], ed: [.1, .9], tx: 0, sp: .35, sh: 40, rm: .3 }));
+    for (let i = 0; i < 16; i++) { const a = fz() * Math.PI * 2, b = (fz() - .5) * 1.8; P.push(ell(Math.cos(a) * Math.cos(b) * 10.2, 15 + Math.sin(b) * 13.5, Math.sin(a) * Math.cos(b) * 10.2, .6 + fz() * .5, .5 + fz() * .4, .6 + fz() * .5, '#c9b48f', { tx: 0, sp: 0 })); }
+    const cr = st.crack || 0;
+    if (cr > 0) { let prev = null; const n = Math.round(4 + cr * 4); for (let i = 0; i <= n; i++) { const a = -Math.PI * .1 + i / n * Math.PI * .8 * Math.min(1, cr), y = 19 + (i % 2 ? 2.4 : -2.4), pt = [Math.cos(a) * 10.6, y, Math.sin(a) * 10.6]; if (prev) P.push(seg(prev, pt, .45, '#5a4632', { tx: 0 })); prev = pt; } }
+    return P;
+  }
+  function frameBaby(c, now, key) {
+    const st = c._st || (c._st = { ph: Math.random() * 100, hy: 0 }), t = now / 1000 + st.ph, host = c.closest('.chick, .egg') || c.parentElement;
+    const W = Number(c.dataset.w), H = Number(c.dataset.h), k = Number(c.dataset.k);
+    let parts, root;
+    if (key === 'egg') {
+      const wob = Number(host?.dataset.wob || 0), cr = Number(host?.dataset.crack || 0);
+      parts = eggModel({ crack: cr });
+      root = C(T(Number(c.dataset.fx), Number(c.dataset.fy), 0), S(k), RZ(Math.sin(t * (6 + wob * 20)) * wob * .22), RY(-.3));
+    } else {
+      const beg = !!(host && host.classList.contains('begging')), sleepy = !!c.closest('.sleepy');
+      const cyc = t % 7, look = beg ? 0 : cyc < 2 ? 0 : cyc < 3.2 ? 30 : cyc < 4.2 ? -25 : 0;
+      st.hy += (look - st.hy) * .07;
+      parts = chickModel({ t, beg, seed: Number(key.split(':')[1] || 0) * 7 + 3, blink: sleepy || t % 3.6 < .16, hy: st.hy, hz: sleepy ? -14 : Math.sin(t * 2.6) * 4 });
+      const bob = beg ? Math.abs(Math.sin(t * 14)) * 2.2 : Math.sin(t * 2.4) * .4;
+      root = C(T(Number(c.dataset.fx), Number(c.dataset.fy) + bob, 0), S(k), RY((-26 + Math.sin(t * .4) * 10) * D), S(1, 1 + Math.sin(t * 2.4) * .02, 1));
+    }
+    glDraw(parts, W, H, root, c.width, c.height);
+    const ctx = c._ctx || (c._ctx = c.getContext('2d')); ctx.clearRect(0, 0, c.width, c.height); ctx.drawImage(cv, 0, SZ - c.height, c.width, c.height, 0, 0, c.width, c.height);
   }
   function frameRep(c, now, R) {
     const st = c._st || (c._st = { ph: Math.random() * 100, yaw: 0, hy: 0 }), t = now / 1000 + st.ph, locked = c.dataset.l === '1';
@@ -2162,7 +2230,7 @@ V.pet = () => {
     ? place ? [['explore','🗺️ Go somewhere else'],place.act,['flies','🪰 Catch bugs'],['friends','🦎 Invite friends'],['race','🏁 Race your cars'],['trick','⭐ Practise trick']]
     : [['mist','💦 Mist tank'],['fruit','🍑 Feed fruit'],['flies','🪰 Let flies in'],['climb','🌿 Climb branch'],...TANK_DECOR.filter(t => earned(me.id) >= t.at && TANK_FUN[t.name] && TANK_FUN[t.name][0]).map(t => ['go' + t.name, TANK_FUN[t.name][0]]),['hand','✋ Sit on my hand'],['explore','🗺️ Go exploring'],['friends','🦎 Invite friends'],['race','🏁 Race your cars'],['trick','⭐ Practise trick']]
     : garden ? [['bedtime','🌙 Bedtime story'],['inside','🏠 Go back inside'],['worms','🪱 Worms'],['friends','🐦 Invite friends'],['adventure','🪽 Fly to the forest & beach'],['whistle','🎵 Whistle a tune'],['trick','⭐ Practise trick']]
-    : [['bedtime','🌙 Bedtime story'],['water','💧 Fresh water'],['worms','🪱 Worms'],[p.out ? 'cage' : 'out', p.out ? '🏠 Back in cage' : '🕊️ Let her out'],['garden','🌳 Out in the garden'],['friends','🐦 Invite friends'],['adventure','🪽 Big adventure'],...(earned(me.id) >= CAGE_DECOR.find(t => t.k === 'swing').at ? [['swing','🪢 Swing']] : []),['whistle','🎵 Whistle a tune'],['trick','⭐ Practise trick']];
+    : [...(p.babies ? [['chicks','🍼 Feed the chicks']] : []),['bedtime','🌙 Bedtime story'],['water','💧 Fresh water'],['worms','🪱 Worms'],[p.out ? 'cage' : 'out', p.out ? '🏠 Back in cage' : '🕊️ Let her out'],['garden','🌳 Out in the garden'],['friends','🐦 Invite friends'],['adventure','🪽 Big adventure'],...(earned(me.id) >= CAGE_DECOR.find(t => t.k === 'swing').at ? [['swing','🪢 Swing']] : []),['whistle','🎵 Whistle a tune'],['trick','⭐ Practise trick']];
   const hint = learned.length ? (show ? `Tap a trick around the edge to watch ${pet.name} do it.` : 'Trick buttons hidden.') : `Learn a trick and it will appear around the edge.`;
   let h = `<div class="pet-wrap"><div class="pet-main"><div class="pet-top"><div class="card" style="padding:12px 12px 10px"><div class="sec-h" style="margin-bottom:8px"><span class="chip c-${d === 'fern' ? 'green' : 'blue'}">${ic(d === 'fern' ? 'eco' : 'flutter_dash', 'fill')}</span><h3>${pet.name}</h3>${learned.length ? `<button class="btn sec small" data-act="toggleTricks">${ic(show ? 'visibility_off' : 'visibility')} ${show ? 'Hide tricks' : 'Show tricks'}</button>` : ''}</div>
     <div class="stage">${scene}${ring}</div><div class="pet-acts">${acts.map(([a2, t]) => `<button class="btn sec" data-act="pet" data-x="${a2}">${t}</button>`).join('')}</div></div></div></div><div class="pet-side"><div class="card"><div class="stage-hint" style="margin-top:0">${hint}<br>Tap ${pet.name} to say hi, stroke her for a cuddle, or tap anywhere to send her there.</div>
@@ -2220,6 +2288,8 @@ function mountPetExtras() {
       else if (r < .7 && !scene.querySelector('.fly')) { const W = scene.clientWidth, H = scene.clientHeight; pet.style.transform = Math.random() < .5 ? 'scaleX(-1)' : 'none'; pet.style.left = (10 + Math.random() * (W - 110)) + 'px'; pet.style.top = (60 + Math.random() * (H - 150)) + 'px'; }
       else { pet.classList.remove('a-nod'); void pet.offsetWidth; pet.classList.add('a-nod'); setTimeout(() => pet.classList.remove('a-nod'), 1300); }
     } else {
+      if (r < .22 && $('#nest') && cocoFeedChicks()) return;
+      if (r < .32 && $('#nest') && hungryChicks()) { const n = $('#nest'); n.querySelectorAll('.chick').forEach(c => { c.classList.add('begging'); setTimeout(() => c.classList.remove('begging'), 1500); }); chickCheep(4); bubble(scene, Math.max(6, n.offsetLeft - 10), Math.max(6, n.offsetTop - 40), ['Cheep cheep! 🍼', 'We\'re hungry!', 'Peep peep peep!'][Math.floor(Math.random() * 3)]); return; }
       if (r < .18 && $('#swingSeat') && cocoSwing()) return;
       const c = r < .4 ? 'a-tilt' : r < .7 ? 'a-nod' : 'flap';
       pet.classList.remove(c); void pet.offsetWidth; pet.classList.add(c); setTimeout(() => pet.classList.remove(c), 2000);
@@ -2302,7 +2372,7 @@ function flyPath(el, to, o = {}) {
 }
 async function flyTour(el, pts, o = {}) {
   for (let i = 0; i < pts.length; i++) {
-    if (!el.isConnected) return;
+    if (!el.isConnected || (o.cancel && o.cancel())) return;
     const last = i === pts.length - 1;
     await flyPath(el, pts[i], { ...o, keep: !last, ease: pts.length === 1 ? 'inout' : i === 0 ? 'in' : last ? 'out' : 'lin', lift: pts[i][2] ?? o.lift, dur: pts[i][3] });
   }
@@ -2435,8 +2505,8 @@ function placeCocoInCage(animate) {
 }
 function mountPet() {
   stopPet(); if (swinging) { clearTimeout(swinging); swinging = null; petBusy = false; } clearInterval(guestT); guestT = null; if (view !== 'pet') return;
-  startGuests(); setTimeout(mountFriends, 0); if (design() === 'fern') { setTimeout(mountPlace, 0); setTimeout(mountReps, 50); }
-  try { if (sceneRO) sceneRO.disconnect(); sceneRO = new ResizeObserver(() => { fitCage(); placeCocoInCage(); }); const sc0 = $('#scene'); if (sc0) sceneRO.observe(sc0); } catch (e) {}
+  startGuests(); setTimeout(mountFriends, 0); setTimeout(mountNest, 0); if (design() === 'fern') { setTimeout(mountPlace, 0); setTimeout(mountReps, 50); }
+  try { if (sceneRO) sceneRO.disconnect(); sceneRO = new ResizeObserver(() => { fitCage(); placeCocoInCage(); placeNest(); }); const sc0 = $('#scene'); if (sc0) sceneRO.observe(sc0); } catch (e) {}
   fitCage();
   updatePetStats();
   const scene = $('#scene'), pet = $('#petEl'); if (!scene || !pet) return;
@@ -2551,6 +2621,7 @@ async function petAction(a) {
   if (a === 'friends') { openModal(design() === 'fern' ? repSheet() : friendSheet()); return; }
   if (a === 'explore') { openModal(exploreSheet()); return; }
   if (a === 'bedtime') { A.bedtime(); return; }
+  if (a === 'chicks') { if (p.out) return toast('The chicks are in the cage. Put Coco back in first!'); feedChicks(); return; }
   if (a === 'race') { openModal(raceSheet()); return; }
   if (['bask', 'log', 'splash', 'treasure'].includes(a)) { placeFun(a); return; }
   if (a === 'adventure') { startAdventure(); return; }
@@ -2957,7 +3028,7 @@ function render() {
   if (same) window.scrollTo(0, y); else window.scrollTo(0, 0);
   const hd = document.querySelector('header.top'); if (hd) document.documentElement.style.setProperty('--hdr', hd.offsetHeight + 'px');
   if (view === 'pet') { mountPet(); mountPetExtras(); }
-  maybeStartBrush(); setTimeout(streakRepairNov18, 1500);
+  maybeStartBrush(); setTimeout(streakRepairNov18, 1500); maybeBabySurprise();
   if (!visitTimer) scheduleVisit(true);
   if (view === 'calm') mountCalm();
   document.body.classList.remove('wide');
@@ -5111,6 +5182,137 @@ function stopBedtime(quiet) {
   try { speechSynthesis.cancel(); } catch (e) {} clearTimeout(b.pageT); b.timers.forEach(clearTimeout); if (b.cur) { b.cur.stopped = true; try { b.cur.src.stop(); } catch (e) {} }
   b.music && b.music.stop(1.2); try { b.wake && b.wake.release(); } catch (e) {}
   b.ov.classList.add('out'); setTimeout(() => b.ov.remove(), 600);
+}
+/* ===== Coco's babies: a surprise, a nest with a chick and an egg that hatches on Sunday morning ===== */
+const EGG_DUE = '2026-11-29T08:00:00Z';
+const chickHTML = (i, w) => B3D.html('chick:' + i, w, { vw: 100, vh: 100, fx: 50, fy: 6, k: 1.25, noPerch: true }) || '🐣';
+const eggHTML = w => B3D.html('egg', w, { vw: 100, vh: 100, fx: 50, fy: 6, k: 1.7, noPerch: true }) || '🥚';
+function babies() { return petItem()?.data.babies || null; }
+async function saveBabies(patch) { const b = babies() || {}; await petSave({ babies: { ...b, ...patch } }); }
+function chickName(i) { const c = babies()?.chicks?.[i]; return (c && c.name) || (i ? 'the new chick' : 'baby'); }
+function hungryChicks() { const b = babies(); return b && (!b.fedAt || Date.now() - new Date(b.fedAt) > 3 * 3600e3); }
+function eggLeft() { const b = babies(); return b ? new Date(b.eggDue || EGG_DUE) - Date.now() : 0; }
+function eggFmt(ms) { if (ms <= 0) return 'Hatching…'; const m = Math.floor(ms / 60000), d = Math.floor(m / 1440), h = Math.floor(m % 1440 / 60), mm = m % 60, ss = Math.floor(ms / 1000) % 60; return d ? `${d} day${d > 1 ? 's' : ''} ${h}h ${mm}m` : h ? `${h}h ${mm}m ${ss}s` : `${mm}m ${ss}s`; }
+let nestT = null;
+function mountNest() {
+  clearInterval(nestT); nestT = null;
+  const scene = $('#scene'), b = babies(); if (!scene || !b || design() !== 'ginny' || scene.dataset.where === 'garden') return;
+  scene.querySelector('#nest')?.remove();
+  const hatched = !!b.hatchedAt, n = document.createElement('div'); n.id = 'nest'; n.className = 'nest';
+  n.innerHTML = `<div class="nest-back"></div><div class="chick" data-i="0">${chickHTML(0, 60)}</div>${hatched ? `<div class="chick c2" data-i="1">${chickHTML(1, 60)}</div>` : `<div class="egg" data-wob="0" data-crack="0">${eggHTML(60)}</div>`}<div class="nest-front"></div>${hatched ? '' : '<div class="egg-timer" id="eggTimer"></div>'}<div class="nest-hungry" id="nestHungry">Hungry! 🍼</div>`;
+  scene.appendChild(n); placeNest();
+  const tick = () => {
+    if (!n.isConnected) { clearInterval(nestT); return; }
+    const t = $('#eggTimer'), left = eggLeft(); if (t) t.textContent = left > 0 ? '🥚 Hatches in ' + eggFmt(left) : '🥚 Hatching…';
+    const egg = n.querySelector('.egg'); if (egg) egg.dataset.wob = left < 3600e3 ? '1' : left < 6 * 3600e3 ? '.5' : '.12';
+    n.querySelector('#nestHungry').classList.toggle('on', !!hungryChicks());
+    if (!babies()?.hatchedAt && left <= 0 && !n._hatching && isGinnie()) hatchEgg();
+  };
+  tick(); nestT = setInterval(tick, 1000);
+  n.addEventListener('click', e => { const c = e.target.closest('.chick'); if (c) { chickCheep(); c.classList.add('begging'); setTimeout(() => c.classList.remove('begging'), 1400); bubble(scene, Math.max(6, n.offsetLeft - 10), Math.max(6, n.offsetTop - 40), [`Cheep cheep! 🐣`, `${chickName(+c.dataset.i)} says hi!`, 'Peep peep!'][Math.floor(Math.random() * 3)]); } else if (e.target.closest('.egg')) { bubble(scene, Math.max(6, n.offsetLeft - 10), Math.max(6, n.offsetTop - 40), eggLeft() > 0 ? `Not yet! ${eggFmt(eggLeft())} to go 🥚` : 'Something is happening… 🥚'); } });
+}
+function placeNest() {
+  const n = $('#nest'); if (!n) return; const [x, y] = scenePt(150, 238), [x2] = scenePt(230, 238), w = Math.max(80, x2 - x);
+  n.style.width = w + 'px'; n.style.height = (w * .62) + 'px'; n.style.left = (x - w / 2) + 'px'; n.style.top = (y - w * .62) + 'px';
+  n.querySelectorAll('canvas.b3d').forEach(c => { c.style.width = (w * .66) + 'px'; c.style.height = (w * .66) + 'px'; });
+}
+const isGinnie = () => !!me && isKid() && design() === 'ginny';
+function chickCheep(n = 3) { for (let i = 0; i < n; i++) tone(3200 + Math.random() * 600, i * .13, .07, 'sine', .04); }
+/* Coco looks after her babies */
+function cocoFeedChicks() {
+  const pet = $('#petEl'), n = $('#nest'), scene = $('#scene'); if (!pet || !n || petBusy || petItem()?.data.out) return false;
+  const [fx, fy] = scenePt(176, 232); petBusy = true;
+  flyPath(pet, [fx, fy], { lift: 20 }).then(() => {
+    if (!pet.isConnected) { petBusy = false; return; }
+    pet.style.transformOrigin = '35px 77px'; pet.style.transform = 'scaleX(-1)';
+    const chicks = n.querySelectorAll('.chick'); chicks.forEach(c => c.classList.add('begging')); chickCheep(5);
+    let k = 0; const bob = setInterval(() => { pet.classList.remove('a-nod'); void pet.offsetWidth; pet.classList.add('a-nod'); if (++k > 2) clearInterval(bob); }, 700);
+    const names = (babies()?.chicks || []).map(c => c.name).filter(Boolean);
+    bubble(scene, Math.max(6, fx - 90), Math.max(6, fy - 110), names.length ? `Dinner time, ${names.join(' and ')}! 🐛` : ['Here you go, babies! 🐛', 'Open wide! 😋', 'Mummy is here 💛'][Math.floor(Math.random() * 3)]);
+    setTimeout(() => { chicks.forEach(c => c.classList.remove('begging')); const [px, py] = scenePt(205, 166); flyPath(pet, [px, py], { lift: 16 }).then(() => { petBusy = false; }); }, 2600);
+  });
+  return true;
+}
+/* Ginnie feeds the chicks with a little spoon */
+async function feedChicks() {
+  const n = $('#nest'), scene = $('#scene'); if (!n || !scene) return toast('The chicks are in Coco\'s cage. Bring Coco inside first.');
+  const chicks = [...n.querySelectorAll('.chick')];
+  for (const [i, c] of chicks.entries()) {
+    const sp = document.createElement('div'); sp.className = 'spoon'; sp.textContent = '🥄'; scene.appendChild(sp);
+    const r = c.getBoundingClientRect(), sr = scene.getBoundingClientRect();
+    sp.style.left = (r.left - sr.left + r.width * .9) + 'px'; sp.style.top = (scene.clientHeight + 10) + 'px';
+    await new Promise(res => setTimeout(res, 30)); sp.style.top = (r.top - sr.top + r.height * .25) + 'px';
+    c.classList.add('begging'); chickCheep(4);
+    await new Promise(res => setTimeout(res, 1200));
+    emit(scene, r.left - sr.left + r.width / 2, r.top - sr.top, ['💛', '😋', '✨'], 4, 40); tone(880, 0, .08, 'triangle', .05);
+    await new Promise(res => setTimeout(res, 500)); sp.style.top = (scene.clientHeight + 10) + 'px'; c.classList.remove('begging'); setTimeout(() => sp.remove(), 700);
+    bubble(scene, Math.max(6, r.left - sr.left - 30), Math.max(6, r.top - sr.top - 40), [`${chickName(i)} is full! 😋`, 'Yummy! 🐣', 'Thank you! 💛'][Math.floor(Math.random() * 3)]);
+  }
+  await saveBabies({ fedAt: new Date().toISOString(), feeds: (babies()?.feeds || 0) + 1 });
+  const h = $('#nestHungry'); if (h) h.classList.remove('on');
+  setTimeout(() => { if ($('#petEl') && Math.random() < .7) bubble(scene, $('#petEl').offsetLeft - 20, $('#petEl').offsetTop - 18, `Thank you for helping, ${me.name}! 💛`); }, 600);
+}
+/* Sunday morning: the egg hatches */
+async function hatchEgg() {
+  const n = $('#nest'), egg = n && n.querySelector('.egg'), scene = $('#scene'); if (!egg || n._hatching) return; n._hatching = true;
+  bubble(scene, Math.max(6, n.offsetLeft - 20), Math.max(6, n.offsetTop - 50), 'The egg is hatching! 🥚😮');
+  egg.dataset.wob = '1.6';
+  for (let c = 1; c <= 3; c++) { await new Promise(r => setTimeout(r, 1300)); egg.dataset.crack = c * .7; tone(2400, 0, .05, 'square', .03); tone(1900, .08, .05, 'square', .03); }
+  await new Promise(r => setTimeout(r, 900));
+  egg.classList.add('pop'); emit(scene, n.offsetLeft + n.offsetWidth * .7, n.offsetTop + n.offsetHeight * .3, ['✨', '🐣', '💛', '🥚'], 14, 80); celebrate && celebrate(); chickCheep(6);
+  await saveBabies({ hatchedAt: new Date().toISOString(), chicks: [...(babies()?.chicks || [{ name: '' }]).slice(0, 1), { name: '', born: new Date().toISOString() }] });
+  render();
+  setTimeout(() => { const pet = $('#petEl'); if (pet) bubble($('#scene'), pet.offsetLeft - 30, pet.offsetTop - 18, 'My second baby! 🐣🐣'); nameChickModal(1); }, 900);
+}
+function nameChickModal(i) {
+  openModal(`<div style="text-align:center"><div style="font-size:54px">🐣</div><h3>${i ? 'The egg has hatched!' : 'Coco has a baby chick!'}</h3><p class="muted">${i ? `${esc(chickName(0))} has a little brother or sister.` : 'And there\'s an egg in the nest too. It will hatch on Sunday morning!'} What will you call ${i ? 'the new chick' : 'Coco\'s chick'}?</p></div>
+    <form data-form="nameChick"><input type="hidden" name="i" value="${i}"><input name="name" maxlength="16" required placeholder="Chick's name" autocomplete="off"><button class="btn big">💛 Save name</button></form>`);
+}
+F.nameChick = async f => { const b = babies(); if (!b) return; const ch = [...(b.chicks || [])]; ch[+f.i] = { ...(ch[+f.i] || {}), name: f.name.trim().slice(0, 16) }; closeModal(); await saveBabies({ chicks: ch }); toast(`Welcome, ${f.name.trim()}! 🐣`); render(); };
+/* The surprise: Coco flies around the app to get Ginnie's attention */
+let surpriseOn = false;
+function maybeBabySurprise() {
+  if (surpriseOn || !isGinnie() || babies() || document.querySelector('.bed, .adv, .race, .surprise')) return;
+  surpriseOn = true; setTimeout(babySurprise, 1200);
+}
+async function babySurprise() {
+  const W = innerWidth, H = innerHeight, ov = document.createElement('div'); ov.className = 'surprise';
+  ov.innerHTML = `<div class="sp-coco" id="spCoco">${cocoSVG(110)}</div><div class="sp-hint" id="spHint">Tap Coco! 👆</div>`;
+  document.body.appendChild(ov); unlockAudio();
+  const coco = ov.querySelector('#spCoco'), o = { fx: 55, fy: 118 };
+  coco.style.left = '-140px'; coco.style.top = (H * .15) + 'px';
+  const say = (t, ms = 2600) => { const b = document.createElement('div'); b.className = 'sp-say'; b.textContent = t; b.style.left = Math.max(8, Math.min(W - 240, coco.offsetLeft - 40)) + 'px'; b.style.top = Math.max(8, coco.offsetTop - 50) + 'px'; ov.appendChild(b); setTimeout(() => b.remove(), ms); };
+  const tapTap = async () => { for (let i = 0; i < 3; i++) { coco.classList.remove('peck'); void coco.offsetWidth; coco.classList.add('peck'); await new Promise(r => setTimeout(r, 160)); const rp = document.createElement('div'); rp.className = 'sp-tap'; rp.style.left = (coco.offsetLeft + 98) + 'px'; rp.style.top = (coco.offsetTop + 74) + 'px'; ov.appendChild(rp); setTimeout(() => rp.remove(), 700); tone(1800, 0, .03, 'square', .05); await new Promise(r => setTimeout(r, 260)); } };
+  let gone = false;
+  const go2 = async () => {
+    if (gone) return; gone = true; if (coco._fly) coco._fly.stop(true); ov.classList.remove('ready'); ov.querySelectorAll('.sp-say').forEach(b => b.remove()); cocoSound();
+    const now = new Date().toISOString();
+    await petSave({ out: false, where: 'room', babies: { introAt: now, eggDue: EGG_DUE, chicks: [{ name: '', born: now }], fedAt: new Date(Date.now() - 2 * 3600e3).toISOString() } });
+    go('pet');
+    await new Promise(r => setTimeout(r, 700));
+    const pet = $('#petEl'), sc = $('#scene'); if (pet) pet.style.visibility = 'hidden';
+    const sr = sc ? sc.getBoundingClientRect() : { left: W / 2, top: H / 2 }, [px, py] = sc ? scenePt(205, 166) : [0, 0];
+    await flyTour(coco, [[W * .5, H * .25, 40, 800], [sr.left + px, sr.top + py, 40]], o);
+    ov.classList.add('out'); setTimeout(() => ov.remove(), 500); if (pet) pet.style.visibility = '';
+    surpriseOn = false;
+    const scene = $('#scene'), n = $('#nest');
+    if (scene && n) { emit(scene, n.offsetLeft + n.offsetWidth / 2, n.offsetTop, ['💛', '🐣', '✨', '🥚'], 12, 70); chickCheep(5); bubble(scene, Math.max(6, n.offsetLeft - 40), Math.max(6, n.offsetTop - 60), 'Meet my baby! 🐣 And look, an egg! 🥚'); }
+    celebrate && celebrate(); whistleTune();
+    setTimeout(() => nameChickModal(0), 3200);
+  };
+  coco.addEventListener('click', go2); ov.querySelector('#spHint').addEventListener('click', go2);
+  const oS = { ...o, cancel: () => gone };
+  await new Promise(r => setTimeout(r, 300)); cocoSound();
+  if (gone) return; await flyTour(coco, [[W * .3, H * .3, 60, 1000], [W * .75, H * .2, 50, 1100], [W * .55, H * .5, 40]], oS);
+  if (gone) return; say('Tap tap tap! 👀'); await tapTap(); await tapTap();
+  await new Promise(r => setTimeout(r, 500)); cocoSound();
+  if (gone) return; await flyTour(coco, [[W * .2, H * .15, 60, 900], [W * .8, H * .45, 50, 1200], [W * .75, H * .65, 30]], oS);
+  if (gone) return; say(`${me.name}! ${me.name}! Come quick! 🐣`, 3000); await tapTap();
+  await new Promise(r => setTimeout(r, 700)); petSound();
+  if (gone) return; await flyTour(coco, [[W * .5, H * .3, 50, 900], [W * .5, H * .55, 30]], oS);
+  if (gone) return; say('Follow me! I have a surprise! 🥚', 60000);
+  if (gone) return; ov.classList.add('ready');
+  setTimeout(go2, 30000);
 }
 const birdSound = b => (SND[BIRD_SND[b.name]] || SND.tweet)();
 const cocoSound = () => [SND.whistle, SND.chirrup, SND.tweet][Math.floor(Math.random() * 3)]();
