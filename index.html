@@ -554,6 +554,9 @@ body.fern .place-pick,body.fern .friend-pick,body.fern .race-pick{background:#1f
 .sp-say{position:absolute;background:#fff;color:#1d2a3a;border-radius:16px;padding:8px 14px;font-weight:800;font-size:16px;box-shadow:0 8px 20px rgba(0,0,0,.25);max-width:240px;animation:reefMsg 3s ease-out forwards;pointer-events:none}
 .surprise:not(.ready) .sp-hint{display:none}.sp-hint{position:absolute;left:50%;bottom:12%;transform:translateX(-50%);background:#ffd43b;color:#3a2a00;font-weight:900;font-size:20px;padding:12px 22px;border-radius:24px;box-shadow:0 8px 20px rgba(0,0,0,.25);animation:advPulse 1s ease-in-out infinite alternate;cursor:pointer}
 .surprise.ready .sp-say{animation:none}
+
+.nest.away .chick{display:none}.scene .chickpal{z-index:3}
+.bed-chick{position:absolute;bottom:2px;width:64px}.bed-chick.c0{left:-52px}.bed-chick.c1{right:-52px}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -1304,7 +1307,7 @@ const B3D = (() => {
     leg.forEach(([x, z]) => { P.push(seg([x, 9, z], [x + .5, 1, z], 1.3, pink, { tx: 0 })); [-30, 0, 30].forEach(a => P.push(seg([x + .5, .8, z], [x + .5 + Math.cos(a * D) * 3.2, .5, z + Math.sin(a * D) * 3.2], .8, pink, { tx: 0 }))); });
     P.push(ell(0, 16, 0, 14, 13, 12.5, fl, { c2: '#fbf4de', dir: [.5, -.6, 0], ed: [.1, .6], tx: 2.6, sp: .05, rm: .45 }));
     for (let i = 0; i < 26; i++) { const a = fz() * Math.PI * 2, b = (fz() - .3) * 1.4; P.push(ell(Math.cos(a) * Math.cos(b) * 13, 16 + Math.sin(b) * 12, Math.sin(a) * Math.cos(b) * 12, 3.4, 3.4, 3.4, fz() < .5 ? fl : '#f5ecd0', { tx: .8, sp: 0, rm: .5 })); }
-    const fw = beg ? Math.sin(st.t * 40) * 35 : Math.sin(st.t * 2) * 4;
+    const fw = beg || st.fly ? Math.sin(st.t * 40) * (st.fly ? 55 : 35) : Math.sin(st.t * 2) * 4;
     [1, -1].forEach(sg => P.push(part(C(T(-2, 19, sg * 11.5), RX(sg * -(20 + fw) * D), T(-3, -2, 0), S(6, 3.5, 2)), '#e6d6a6', { tx: 2 })));
     const H = C(T(5, 32, 0), RY((st.hy || 0) * D), RZ(((st.hz || 0) + (beg ? 32 : 0)) * D));
     const hp = (x, y, z, rx, ry, rz, c, o = {}) => part(C(H, T(x, y, z), o.r || I(), S(rx, ry, rz)), c, o);
@@ -1341,7 +1344,7 @@ const B3D = (() => {
       const beg = !!(host && host.classList.contains('begging')), sleepy = !!c.closest('.sleepy');
       const cyc = t % 7, look = beg ? 0 : cyc < 2 ? 0 : cyc < 3.2 ? 30 : cyc < 4.2 ? -25 : 0;
       st.hy += (look - st.hy) * .07;
-      parts = chickModel({ t, beg, seed: Number(key.split(':')[1] || 0) * 7 + 3, blink: sleepy || t % 3.6 < .16, hy: st.hy, hz: sleepy ? -14 : Math.sin(t * 2.6) * 4 });
+      parts = chickModel({ t, beg, fly: !!c.closest('.flying'), seed: Number(key.split(':')[1] || 0) * 7 + 3, blink: sleepy || t % 3.6 < .16, hy: st.hy, hz: sleepy ? -14 : Math.sin(t * 2.6) * 4 });
       const bob = beg ? Math.abs(Math.sin(t * 14)) * 2.2 : Math.sin(t * 2.4) * .4;
       root = C(T(Number(c.dataset.fx), Number(c.dataset.fy) + bob, 0), S(k), RY((-26 + Math.sin(t * .4) * 10) * D), S(1, 1 + Math.sin(t * 2.4) * .02, 1));
     }
@@ -2257,6 +2260,7 @@ function mountPetExtras() {
   scene.addEventListener('pointerup', e => {
     const was = down; down = null;
     const fb = e.target.closest('.pal');
+    if (fb && fb.dataset.ci !== undefined) { chickCheep(3); fb.classList.add('begging'); setTimeout(() => fb.classList.remove('begging'), 1000); bubble(scene, Math.max(6, Math.min(scene.clientWidth - 150, fb.offsetLeft - 20)), Math.max(6, fb.offsetTop - 30), [`${chickName(+fb.dataset.ci)} says cheep! 🐣`, 'Peep peep! 💛', 'Hi Ginnie!'][Math.floor(Math.random() * 3)]); return; }
     if (fb && fb.dataset.ri !== undefined) { const R = REPTILES[fb.dataset.ri]; SND.gecko(); fb.classList.add('licking'); setTimeout(() => fb.classList.remove('licking'), 600); bubble(scene, Math.max(6, Math.min(scene.clientWidth - 150, fb.offsetLeft)), Math.max(6, fb.offsetTop - 16), [`${R.name} says hi! 👋`, ...R.say][Math.floor(Math.random() * 3)]); return; }
     if (fb) { const b = BIRDS[fb.dataset.fi]; birdSound(b); fb.classList.remove('a-hop'); void fb.offsetWidth; fb.classList.add('a-hop'); setTimeout(() => fb.classList.remove('a-hop'), 1000); bubble(scene, Math.max(6, Math.min(scene.clientWidth - 150, fb.offsetLeft - 10)), Math.max(6, fb.offsetTop - 16), [`${b.name} says hi! 👋`, 'Tweet tweet!', `Hi ${me.name}! 💛`][Math.floor(Math.random() * 3)]); return; }
     if (e.target.closest('.trick-btn,.fly,button')) return;
@@ -2414,7 +2418,8 @@ function cocoLoop() {
   const ltr = Math.random() < .5, a = ltr ? .15 : .85, b = ltr ? .85 : .15;
   petBusy = true; petSound();
   bubble(scene, Math.max(6, pet.offsetLeft - 20), Math.max(6, pet.offsetTop - 18), ['Wheee! 🪽', 'Watch me fly!', 'Zoom! 💨'][Math.floor(Math.random() * 3)]);
-  return flyTour(pet, [[W * a, top + 90, 60, 900], [W * b, top + 70, 40, 1300], [W * .5, top + 150, 30, 900], [land[0], land[1], 50]]).then(() => { petBusy = false; });
+  const loopPts = [[W * a, top + 90, 60, 900], [W * b, top + 70, 40, 1300], [W * .5, top + 150, 30, 900], [land[0], land[1], 50]]; chicksFollow(loopPts);
+  return flyTour(pet, loopPts).then(() => { petBusy = false; });
 }
 function birdGuest(goEat) {
   const scene = $('#scene'); if (!scene || design() !== 'ginny') return;
@@ -2505,7 +2510,7 @@ function placeCocoInCage(animate) {
 }
 function mountPet() {
   stopPet(); if (swinging) { clearTimeout(swinging); swinging = null; petBusy = false; } clearInterval(guestT); guestT = null; if (view !== 'pet') return;
-  startGuests(); setTimeout(mountFriends, 0); setTimeout(mountNest, 0); if (design() === 'fern') { setTimeout(mountPlace, 0); setTimeout(mountReps, 50); }
+  startGuests(); setTimeout(mountFriends, 0); setTimeout(mountNest, 0); setTimeout(mountChicks, 120); if (design() === 'fern') { setTimeout(mountPlace, 0); setTimeout(mountReps, 50); }
   try { if (sceneRO) sceneRO.disconnect(); sceneRO = new ResizeObserver(() => { fitCage(); placeCocoInCage(); placeNest(); }); const sc0 = $('#scene'); if (sc0) sceneRO.observe(sc0); } catch (e) {}
   fitCage();
   updatePetStats();
@@ -2575,7 +2580,7 @@ function doTrick(name, ok = true) {
   const px = () => pet.offsetLeft + pet.offsetWidth / 2, py = () => pet.offsetTop;
   petBusy = true; setTimeout(() => { petBusy = false; }, 2800);
   if (!ok) { cls('wobble', 1600); setTimeout(() => bubble(scene, px() - 20, py() - 14, 'Oops!'), 500); return true; }
-  petSound();
+  petSound(); if (design() === 'ginny') setTimeout(() => chicksHop(anim === 'fly' ? 'a-hop' : 'a-dance', 1600), 300);
   if (anim === 'oneleg') cls('oneleg');
   else if (anim === 'flap') cls('flap');
   else if (anim === 'wavefoot') cls('wavefoot');
@@ -2625,10 +2630,10 @@ async function petAction(a) {
   if (a === 'race') { openModal(raceSheet()); return; }
   if (['bask', 'log', 'splash', 'treasure'].includes(a)) { placeFun(a); return; }
   if (a === 'adventure') { startAdventure(); return; }
-  if (a === 'garden') { if (petBusy) return toast('Coco is busy, try again in a moment'); petBusy = true; if (p.out) await flyPath(pet, [-60, 40], { noLand: true, lift: 40 }); petBusy = false; cocoArrive = 'garden'; await petSave({ out: true, where: 'garden' }); render(); return; }
-  if (a === 'inside') { if (petBusy) return toast('Coco is busy, try again in a moment'); petBusy = true; await flyPath(pet, [-60, 40], { noLand: true, lift: 40 }); petBusy = false; cocoArrive = 'window'; await petSave({ out: true, where: 'room' }); render(); return; }
+  if (a === 'garden') { if (petBusy) return toast('Coco is busy, try again in a moment'); petBusy = true; if (p.out) { chickEls().forEach(g => flyPath(g, [-60, 60], { ...chickO(g), noLand: true, lift: 40 })); await flyPath(pet, [-60, 40], { noLand: true, lift: 40 }); } petBusy = false; cocoArrive = 'garden'; await petSave({ out: true, where: 'garden' }); render(); return; }
+  if (a === 'inside') { if (petBusy) return toast('Coco is busy, try again in a moment'); petBusy = true; chickEls().forEach(g => flyPath(g, [-60, 60], { ...chickO(g), noLand: true, lift: 40 })); await flyPath(pet, [-60, 40], { noLand: true, lift: 40 }); petBusy = false; cocoArrive = 'window'; await petSave({ out: true, where: 'room' }); render(); return; }
   if (a === 'swing') { if (!cocoSwing()) toast('Coco is busy, try again in a moment'); return; }
-  if (a === 'cage' && design() === 'ginny' && p.out && !petBusy) { petBusy = true; petSound(); const [dx, dy] = scenePt(180, 236), [px, py] = scenePt(205, 166); await flyTour(pet, [[dx, dy, 40], [px, py, 10, 650]]); petBusy = false; }
+  if (a === 'cage' && design() === 'ginny' && p.out && !petBusy) { petBusy = true; petSound(); const [dx, dy] = scenePt(180, 236), [px, py] = scenePt(205, 166); clearInterval(chickT); chickEls().forEach((g, i) => { const [nx, ny] = scenePt(135 + i * 35, 226); flyTour(g, [[dx, dy, 30], [nx, ny, 8, 600]], chickO(g)); }); await flyTour(pet, [[dx, dy, 40], [px, py, 10, 650]]); petBusy = false; }
   if (a === 'out' || a === 'cage') { if (a === 'out') cocoLeaving = true; await petSave({ out: a === 'out' }); render(); setTimeout(petSound, 300); if (a === 'out') setTimeout(petSound, 1500); return; }
   if (a === 'trick') {
     const tr = { ...(p.tricks || {}) }, name = pd.tricks.find(t => (tr[t] || 0) < 100);
@@ -3928,7 +3933,7 @@ function birdFun(k) {
   const W = scene.clientWidth, H = scene.clientHeight, gs = cocoFriends.map(friendEl).filter(Boolean), out = petItem()?.data.out;
   birdShow = true; const end = ms => setTimeout(() => { birdShow = false; petBusy = false; }, ms);
   if (k === 'party') {
-    petBusy = true; const floorY = scenePt(0, 298)[1], all = [...(out ? [pet] : []), ...gs], gap = W / (all.length + 1);
+    petBusy = true; const floorY = scenePt(0, 298)[1], all = [...(out ? [pet] : []), ...gs, ...chickEls()], gap = W / (all.length + 1);
     all.forEach((el, n) => { const isPet = el === pet, fx = isPet ? 35 : el.offsetWidth / 2, fy = isPet ? 77 : el.offsetWidth * .92; flyPath(el, [gap * (n + 1), floorY], { fx, fy, guest: !isPet }); });
     setTimeout(() => {
       whistleTune(); setTimeout(whistleTune, 1700);
@@ -3941,8 +3946,8 @@ function birdFun(k) {
     end(6200); return;
   }
   if (k === 'sing') {
-    const singers = [pet, ...gs], order = [...singers, ...singers];
-    order.forEach((el, n) => setTimeout(() => { if (!el.isConnected) return; if (el === pet) petSound(); else birdSound(BIRDS[el.dataset.fi]); el.classList.remove('a-nod'); void el.offsetWidth; el.classList.add('a-nod'); setTimeout(() => el.classList.remove('a-nod'), 900); emit(scene, el.offsetLeft + el.offsetWidth / 2, el.offsetTop, ['🎵', '🎶'], 2, 30); }, n * 700));
+    const singers = [pet, ...gs, ...chickEls()], order = [...singers, ...singers];
+    order.forEach((el, n) => setTimeout(() => { if (!el.isConnected) return; if (el === pet) petSound(); else if (el.dataset.ci !== undefined) chickCheep(4); else birdSound(BIRDS[el.dataset.fi]); el.classList.remove('a-nod'); void el.offsetWidth; el.classList.add('a-nod'); setTimeout(() => el.classList.remove('a-nod'), 900); emit(scene, el.offsetLeft + el.offsetWidth / 2, el.offsetTop, ['🎵', '🎶'], 2, 30); }, n * 700));
     setTimeout(() => { whistleTune(); bubble(scene, W / 2 - 60, 20, 'Everybody sing! 🎶'); }, order.length * 700);
     petSave({ playAt: new Date().toISOString(), counts: bump('sing') });
     end(order.length * 700 + 1800); return;
@@ -3952,7 +3957,7 @@ function birdFun(k) {
     petBusy = true; const top = scenePt(0, 0)[1], spots = roomSpots(), land = spots[Math.floor(Math.random() * spots.length)], ltr = Math.random() < .5;
     const pts = [[W * (ltr ? .15 : .85), top + 80, 60, 900], [W * (ltr ? .85 : .15), top + 60, 40, 1200], [W * .5, top + 160, 30, 900], [W * (ltr ? .2 : .8), top + 110, 40, 900], [land[0], land[1], 50]];
     bubble(scene, Math.max(6, pet.offsetLeft - 20), Math.max(6, pet.offsetTop - 18), "Can't catch me! 😄"); petSound();
-    flyTour(pet, pts).then(() => { petBusy = false; });
+    flyTour(pet, pts).then(() => { petBusy = false; }); chicksFollow(pts, 250);
     gs.forEach((g, n) => setTimeout(() => { const sz = g.offsetWidth; flyTour(g, pts.map(([x, y, l, d], j) => [x + (j === pts.length - 1 ? (n % 2 ? 1 : -1) * (50 + n * 30) : 0), y + 10, l, d]), { fx: sz / 2, fy: sz * .92, guest: true }); birdSound(BIRDS[g.dataset.fi]); }, 350 * (n + 1)));
     petSave({ playAt: new Date().toISOString(), counts: bump('chase') });
     end(6500); return;
@@ -4035,7 +4040,7 @@ function startAdventure() {
   const H0 = innerHeight, W0 = innerWidth, s = H0 / 400, w = advWorld(W0 / s), ov = document.createElement('div'); ov.className = 'adv';
   const size = Math.round(Math.min(W0 * .22, 66 * s));
   ov.innerHTML = `<div class="adv-l adv-far">${w.far}</div><div class="adv-l adv-mid">${w.mid}</div><div class="adv-l adv-near">${w.near}<div class="adv-items">${w.items.map((it, i) => `<span class="adv-it" data-i="${i}" style="left:${it.x * s}px;top:${it.y * s}px;font-size:${Math.round(26 * s)}px">${it.e}</span>`).join('')}</div></div>
-    <div class="adv-birds"><div class="adv-b flying" id="advCoco">${cocoSVG(size)}</div>${friends.map((b, i) => `<div class="adv-b flying adv-f" data-fi="${i}">${birdSVG(b, false, Math.round(size * .85), true)}</div>`).join('')}</div>
+    <div class="adv-birds"><div class="adv-b flying" id="advCoco">${cocoSVG(size)}</div>${design() === 'ginny' ? Array.from({ length: chickCount() }, (_, i) => `<div class="adv-b flying adv-f" data-ci="${i}">${chickHTML(i, Math.round(size * .55))}</div>`).join('') : ''}${friends.map((b, i) => `<div class="adv-b flying adv-f" data-fi="${i}">${birdSVG(b, false, Math.round(size * .85), true)}</div>`).join('')}</div>
     <div class="adv-hud"><span id="advScore">⭐ 0</span></div><button class="adv-x" aria-label="Stop">✕</button><div class="adv-banner" id="advBanner"></div><div class="adv-tip" id="advTip">Tap anywhere to flap! 🪽</div>`;
   document.body.appendChild(ov);
   ov.querySelectorAll('.adv-l svg').forEach(sv => { sv.style.height = H0 + 'px'; sv.style.width = (Number(sv.getAttribute('width')) * s) + 'px'; });
@@ -5090,7 +5095,7 @@ async function startBedtime(si, mins, own = true) {
   const stars = Array.from({ length: 70 }, () => `<i style="left:${(Math.random() * 100).toFixed(1)}%;top:${(Math.random() * 62).toFixed(1)}%;animation-delay:${(Math.random() * 4).toFixed(1)}s;transform:scale(${(.5 + Math.random()).toFixed(2)})"></i>`).join('');
   const ov = document.createElement('div'); ov.className = 'bed';
   ov.innerHTML = `<div class="bed-sky">${stars}<div class="bed-moon"></div><div class="bed-cloud c1"></div><div class="bed-cloud c2"></div></div>
-    <div class="bed-room"><div class="bed-lamp"></div><div class="bed-perch"></div><div class="bed-coco pet" id="bedCoco">${cocoSVG(150)}</div></div>
+    <div class="bed-room"><div class="bed-lamp"></div><div class="bed-perch"></div><div class="bed-coco pet" id="bedCoco">${cocoSVG(150)}${design() === 'ginny' ? Array.from({ length: chickCount() }, (_, i) => `<div class="bed-chick c${i}">${chickHTML(i, 64)}</div>`).join('') : ''}</div></div>
     <div class="bed-book"><div class="bed-title">${S.e} ${esc(S.t)}</div><div class="bed-text" id="bedText"></div><div class="bed-dots">${pages.map((_, i) => `<i data-i="${i}"></i>`).join('')}</div>
       <div class="bed-ctl"><button data-b="prev" aria-label="Back">⏮</button><button data-b="pause" aria-label="Pause">⏸</button><button data-b="next" aria-label="Next">⏭</button></div></div>
     <div class="bed-dim" id="bedDim"><div class="bed-sleep" id="bedSleep"></div></div><button class="bed-x" aria-label="Stop">✕</button>`;
@@ -5276,6 +5281,7 @@ function maybeBabySurprise() {
   surpriseOn = true; setTimeout(babySurprise, 1200);
 }
 async function babySurprise() {
+  if (babies() || !isGinnie()) { surpriseOn = false; return; }
   const W = innerWidth, H = innerHeight, ov = document.createElement('div'); ov.className = 'surprise';
   ov.innerHTML = `<div class="sp-coco" id="spCoco">${cocoSVG(110)}</div><div class="sp-hint" id="spHint">Tap Coco! 👆</div>`;
   document.body.appendChild(ov); unlockAudio();
@@ -5314,6 +5320,53 @@ async function babySurprise() {
   if (gone) return; ov.classList.add('ready');
   setTimeout(go2, 30000);
 }
+/* ===== The chicks go everywhere Coco goes ===== */
+let chickT = null;
+function chickEls() { return [...document.querySelectorAll('#scene .chickpal')]; }
+function chicksOut() { const p = petItem()?.data; return design() === 'ginny' && !!babies() && !!p && (!!p.out || p.where === 'garden'); }
+function chickCount() { const b = babies(); return b ? (b.hatchedAt ? 2 : 1) : 0; }
+const chickO = el => ({ fx: el.offsetWidth / 2, fy: el.offsetWidth * .94, guest: true });
+function mountChicks() {
+  clearInterval(chickT); chickT = null;
+  const scene = $('#scene'); if (!scene || !chicksOut()) return;
+  const n = $('#nest'); if (n) n.classList.add('away');
+  const pet = $('#petEl'), size = Math.round(Math.max(40, Math.min(60, scene.clientHeight * .12)));
+  for (let i = 0; i < chickCount(); i++) {
+    if (scene.querySelector(`.chickpal[data-ci="${i}"]`)) continue;
+    const g = document.createElement('div'); g.className = 'guest pal chickpal'; g.dataset.ci = i; g.style.width = size + 'px'; g.innerHTML = chickHTML(i, size);
+    const [sx, sy] = n ? [n.offsetLeft + n.offsetWidth * (.3 + i * .4), n.offsetTop + n.offsetHeight * .5] : [(pet ? pet.offsetLeft + 35 : scene.clientWidth / 2) + (i ? 50 : -50), scene.clientHeight - 50];
+    g.style.left = (sx - size / 2) + 'px'; g.style.top = (sy - size * .94) + 'px'; scene.appendChild(g);
+  }
+  chickT = setInterval(chickTick, 1300);
+}
+function chickTick() {
+  const scene = $('#scene'), pet = $('#petEl'); if (!scene || !pet || view !== 'pet' || document.hidden) return;
+  if (!chicksOut()) { clearInterval(chickT); chickT = null; return; }
+  const W = scene.clientWidth, H = scene.clientHeight;
+  chickEls().forEach((g, i) => {
+    if (g.classList.contains('flying') || g._busy) return;
+    const o = chickO(g), worm = [...scene.querySelectorAll('.worm:not(.taken):not(.target)')][0];
+    if (worm && Math.random() < .75) {
+      worm.classList.add('taken'); g._busy = true;
+      flyPath(g, [worm.offsetLeft + worm.offsetWidth / 2 + (i ? 14 : -14), H - 46], { ...o, lift: 25 }).then(() => {
+        g.classList.add('begging'); chickCheep(3);
+        setTimeout(() => { worm.style.transition = 'transform .2s, opacity .2s'; worm.style.transform = 'scaleX(.15)'; worm.style.opacity = '0'; }, 500);
+        setTimeout(() => { worm.remove(); g.classList.remove('begging'); g._busy = false; emit(scene, g.offsetLeft + g.offsetWidth / 2, g.offsetTop, ['😋', '💛'], 2, 30); bubble(scene, Math.max(6, g.offsetLeft - 20), Math.max(6, g.offsetTop - 30), [`${chickName(+g.dataset.ci)} got a worm!`, 'Yum! 🪱', 'Cheep! 😋'][Math.floor(Math.random() * 3)]); }, 1000);
+      });
+      return;
+    }
+    // stay close to Mum
+    const cx = pet.offsetLeft + 35, cy = pet.offsetTop + 77, side = i ? 1 : -1;
+    const tx = Math.max(25, Math.min(W - 25, cx + side * (42 + Math.random() * 20))), ty = cy;
+    const d = Math.hypot(tx - (g.offsetLeft + o.fx), ty - (g.offsetTop + o.fy));
+    if (d > 45 && !pet.classList.contains('flying')) flyPath(g, [tx, ty], { ...o, lift: Math.min(40, 10 + d * .2) });
+    else if (Math.random() < .08) { chickCheep(2); g.classList.add('begging'); setTimeout(() => g.classList.remove('begging'), 900); }
+  });
+}
+function chicksFollow(pts, delay = 300) {
+  chickEls().forEach((g, i) => setTimeout(() => { const o = chickO(g); flyTour(g, pts.map(([x, y, l, d], j) => [x + (j === pts.length - 1 ? (i ? 45 : -45) : (i ? 18 : -18)), y + 12 + i * 6, l, d]), o); }, delay * (i + 1)));
+}
+function chicksHop(cls = 'a-hop', ms = 1200) { chickEls().forEach((g, i) => setTimeout(() => { g.classList.remove(cls); void g.offsetWidth; g.classList.add(cls); setTimeout(() => g.classList.remove(cls), ms); chickCheep(2); }, i * 150)); }
 const birdSound = b => (SND[BIRD_SND[b.name]] || SND.tweet)();
 const cocoSound = () => [SND.whistle, SND.chirrup, SND.tweet][Math.floor(Math.random() * 3)]();
 A.birdSing = el => { const b = BIRDS[Number(el.dataset.x)]; if (!b) return; birdSound(b); const w = el.querySelector('canvas, svg'); if (w) { w.classList.remove('a-hop'); void w.offsetWidth; w.classList.add('a-hop'); } toast(`${b.name}: ${{ hoot: 'Twit twoo!', coo: 'Coo coo!', knock: 'Rat-a-tat-tat!', squawk: 'SQUAWK!', honk: 'Honk honk!', croak: 'Croak!', screech: 'Screeee!' }[BIRD_SND[b.name]] || 'Tweet tweet!'}`); };
